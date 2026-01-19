@@ -10,6 +10,7 @@
 #include "GameFramework/PlayerState.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
+#include "Project_Bang_Squad/UI/Stage/StageMainWidget.h"
 
 void AStagePlayerController::BeginPlay()
 {
@@ -18,6 +19,17 @@ void AStagePlayerController::BeginPlay()
 	//Local인 경우에만
 	if (IsLocalPlayerController())
 	{
+			//UI
+		if (StageMainWidgetClass)
+		{
+			StageMainWidget = CreateWidget<UStageMainWidget>(this, StageMainWidgetClass);
+			if (StageMainWidget)
+			{
+				StageMainWidget->SetVisibility(ESlateVisibility::Visible);
+				StageMainWidget->AddToViewport();
+			}
+		}
+		
 		FInputModeGameOnly GameInputMode;
 		SetInputMode(GameInputMode);
 		bShowMouseCursor = false;
@@ -25,9 +37,18 @@ void AStagePlayerController::BeginPlay()
 		//GameInstance에서 내가 고른 직업 꺼내오기
 		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 		{
+			ServerSetNickName(GI->UserNickname);
 			//서버에게 소환 요청
 			ServerRequestSpawn(GI->GetMyJob());
 		}
+	}
+}
+
+void AStagePlayerController::ServerSetNickName_Implementation(const FString& InNickName)
+{
+	if (PlayerState)
+	{
+		PlayerState->SetPlayerName(InNickName);
 	}
 }
 

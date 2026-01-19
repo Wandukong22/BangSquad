@@ -25,6 +25,8 @@ protected:
 	float RespawnEndTime = 0.f;
 
 public:
+	EJobType GetJob() { return Job; }
+	float GetRespawnEndTime() { return RespawnEndTime; }
 	void SetRespawnEndTime(float NewTime);
 	void SetJob(EJobType NewJob);
 };

@@ -3,10 +3,10 @@
 
 #include "LobbyMainWidget.h"
 
-#include "LobbyPlayerRow.h"
 #include "Components/Button.h"
 #include "Project_Bang_Squad/Game/Lobby/LobbyPlayerController.h"
 #include "Project_Bang_Squad/Game/Lobby/LobbyPlayerState.h"
+#include "Project_Bang_Squad/UI/PlayerRow.h"
 
 void ULobbyMainWidget::NativeConstruct()
 {
@@ -40,15 +40,18 @@ void ULobbyMainWidget::UpdatePlayerList()
 	
 #pragma endregion 
 	//List 갱신
-	for (APlayerState* PS : SortedPlayers/*GS->PlayerArray*/)
+	for (APlayerState* PS : SortedPlayers)
 	{
 		ALobbyPlayerState* LobbyPS = Cast<ALobbyPlayerState>(PS);
 		if (LobbyPS)
 		{
-			ULobbyPlayerRow* Row = CreateWidget<ULobbyPlayerRow>(PlayerListContainer, PlayerRowClass);
+			//위젯 생성
+			UPlayerRow* Row = CreateWidget<UPlayerRow>(PlayerListContainer, PlayerRowClass);
 			if (Row)
 			{
-				Row->UpdateInfo(LobbyPS->GetPlayerName(), LobbyPS->bIsReady, LobbyPS->CurrentJob);
+				Row->SetWidgetMode(ERowMode::Lobby);
+				Row->SetTargetPlayerState(LobbyPS);
+				Row->UpdateLobbyInfo(LobbyPS->bIsReady, LobbyPS->CurrentJob);
 				PlayerListContainer->AddChild(Row);
 			}
 		}
