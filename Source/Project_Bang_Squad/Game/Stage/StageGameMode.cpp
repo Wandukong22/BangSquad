@@ -79,21 +79,6 @@ void AStageGameMode::RequestRespawn(AController* Controller)
 		}
 	}
 	
-	//UI 띄우기
-	if (RespawnWidgetClass)
-	{
-		if (!RespawnWidgetInstance)
-		{
-			RespawnWidgetInstance = CreateWidget<URespawnWidget>(GetWorld(), RespawnWidgetClass);
-		}
-
-		if (RespawnWidgetInstance)
-		{
-			RespawnWidgetInstance->AddToViewport();
-			RespawnWidgetInstance->StartCountdown(WaitTime);
-		}
-	}
-	
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindUObject(this, &AStageGameMode::RespawnPlayerElapsed, Controller);
 
@@ -145,11 +130,6 @@ void AStageGameMode::RespawnPlayerElapsed(AController* DeadController)
 	}
 
 	ExecuteRespawn(DeadController);
-
-	if (RespawnWidgetInstance)
-	{
-		RespawnWidgetInstance->RemoveFromParent();
-	}
 }
 
 FTransform AStageGameMode::GetRespawnTransform(AController* Controller)
