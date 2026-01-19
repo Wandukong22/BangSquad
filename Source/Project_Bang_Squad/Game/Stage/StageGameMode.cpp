@@ -6,6 +6,7 @@
 #include "StagePlayerController.h"
 #include "StagePlayerState.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/GameStateBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
 #include "Project_Bang_Squad/UI/Lobby/JobSelectWidget.h"
@@ -72,7 +73,10 @@ void AStageGameMode::RequestRespawn(AController* Controller)
 
 	if (AStagePlayerState* PS = Controller->GetPlayerState<AStagePlayerState>())
 	{
-		PS->SetRespawnEndTime(GetWorld()->GetTimeSeconds() + WaitTime);
+		if (AGameStateBase* GS = GetGameState<AGameStateBase>())
+		{
+			PS->SetRespawnEndTime(GS->GetServerWorldTimeSeconds() + WaitTime);
+		}
 	}
 	
 	//UI 띄우기

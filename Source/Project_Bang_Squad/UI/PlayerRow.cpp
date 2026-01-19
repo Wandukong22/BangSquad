@@ -3,6 +3,7 @@
 
 #include "Project_Bang_Squad/UI/PlayerRow.h"
 
+#include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
 #include "Project_Bang_Squad/Character/Component/HealthComponent.h"
 #include "Project_Bang_Squad/Game/Stage/StagePlayerState.h"
@@ -100,7 +101,12 @@ void UPlayerRow::UpdateStageInfo()
 	AStagePlayerState* StagePS = Cast<AStagePlayerState>(TargetPlayerState.Get());
 	if (StagePS)
 	{
-		float RemainTime = StagePS->GetRespawnEndTime() - GetWorld()->GetTimeSeconds();
+		float RemainTime;
+
+		if (GetWorld()->GetGameState())
+		{
+			RemainTime = StagePS->GetRespawnEndTime() - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+		}
 		if (RemainTime > 0.f) //죽음
 		{
 			if (Overlay_Death) Overlay_Death->SetVisibility(ESlateVisibility::Visible);
