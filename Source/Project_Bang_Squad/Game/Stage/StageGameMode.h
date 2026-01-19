@@ -32,16 +32,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BS|Stage")
 	void ClearStageAndMove(FString NextMapName);
 
-	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
-	TSubclassOf<class UUserWidget> RespawnWidgetClass;
-
 protected:
 	void RespawnPlayerElapsed(AController* DeadController);
 
 	//부활 위치 계산
 	FTransform GetRespawnTransform(AController* Controller);
-
-private:
-	UPROPERTY()
-	URespawnWidget* RespawnWidgetInstance;
 };

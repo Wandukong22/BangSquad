@@ -40,7 +40,7 @@ public:
 	UVerticalBox* PlayerListContainer;
 
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
-	TSubclassOf<class ULobbyPlayerRow> PlayerRowClass;
+	TSubclassOf<class UPlayerRow> PlayerRowClass;
 
 	void UpdatePlayerList();
 

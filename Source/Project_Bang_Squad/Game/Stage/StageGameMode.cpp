@@ -6,6 +6,7 @@
 #include "StagePlayerController.h"
 #include "StagePlayerState.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/GameStateBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
 #include "Project_Bang_Squad/UI/Lobby/JobSelectWidget.h"
@@ -72,21 +73,9 @@ void AStageGameMode::RequestRespawn(AController* Controller)
 
 	if (AStagePlayerState* PS = Controller->GetPlayerState<AStagePlayerState>())
 	{
-		PS->SetRespawnEndTime(GetWorld()->GetTimeSeconds() + WaitTime);
-	}
-	
-	//UI 띄우기
-	if (RespawnWidgetClass)
-	{
-		if (!RespawnWidgetInstance)
+		if (AGameStateBase* GS = GetGameState<AGameStateBase>())
 		{
-			RespawnWidgetInstance = CreateWidget<URespawnWidget>(GetWorld(), RespawnWidgetClass);
-		}
-
-		if (RespawnWidgetInstance)
-		{
-			RespawnWidgetInstance->AddToViewport();
-			RespawnWidgetInstance->StartCountdown(WaitTime);
+			PS->SetRespawnEndTime(GS->GetServerWorldTimeSeconds() + WaitTime);
 		}
 	}
 	
@@ -141,11 +130,6 @@ void AStageGameMode::RespawnPlayerElapsed(AController* DeadController)
 	}
 
 	ExecuteRespawn(DeadController);
-
-	if (RespawnWidgetInstance)
-	{
-		RespawnWidgetInstance->RemoveFromParent();
-	}
 }
 
 FTransform AStageGameMode::GetRespawnTransform(AController* Controller)

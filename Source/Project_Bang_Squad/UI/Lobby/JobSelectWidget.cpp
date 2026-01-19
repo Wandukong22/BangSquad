@@ -7,6 +7,7 @@
 #include "Project_Bang_Squad/Game/Lobby/LobbyPlayerController.h"
 #include "Project_Bang_Squad/Game/Lobby/LobbyPlayerState.h"
 #include "Project_Bang_Squad/Game/Lobby/LobbyGameState.h"
+#include "Project_Bang_Squad/UI/PlayerRow.h"
 
 void UJobSelectWidget::NativeConstruct()
 {
@@ -44,6 +45,45 @@ void UJobSelectWidget::UpdateJobAvailAbility()
 	if (Btn_SelectStriker) Btn_SelectStriker->SetIsEnabled(!TakenJobs.Contains(EJobType::Striker));
 	if (Btn_SelectMage) Btn_SelectMage->SetIsEnabled(!TakenJobs.Contains(EJobType::Mage));
 	if (Btn_SelectPaladin) Btn_SelectPaladin->SetIsEnabled(!TakenJobs.Contains(EJobType::Paladin));
+}
+
+void UJobSelectWidget::UpdatePlayerList()
+{
+	if (!PlayerListContainer || !PlayerRowClass) return;
+
+	PlayerListContainer->ClearChildren();
+
+	ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>();
+	if (!GS) return;
+
+#pragma region PlayerList Sorting
+	//플레이어 순서가 네트워크 데이터 도착 순서대로 하고 있어서 뒤죽박죽 나옴
+	//-> Sort 후 나타내기
+	TArray<APlayerState*> SortedPlayers = GS->PlayerArray;
+
+	SortedPlayers.Sort([](const APlayerState& A, const APlayerState& B)
+	{
+		return A.GetPlayerId() < B.GetPlayerId();
+	});
+	
+#pragma endregion 
+	//List 갱신
+	for (APlayerState* PS : SortedPlayers)
+	{
+		ALobbyPlayerState* LobbyPS = Cast<ALobbyPlayerState>(PS);
+		if (LobbyPS)
+		{
+			//위젯 생성
+			UPlayerRow* Row = CreateWidget<UPlayerRow>(PlayerListContainer, PlayerRowClass);
+			if (Row)
+			{
+				Row->SetWidgetMode(ERowMode::Lobby);
+				Row->SetTargetPlayerState(LobbyPS);
+				Row->UpdateLobbyInfo(LobbyPS->bIsReady, LobbyPS->CurrentJob);
+				PlayerListContainer->AddChild(Row);
+			}
+		}
+	}
 }
 
 void UJobSelectWidget::OnPickTitan()

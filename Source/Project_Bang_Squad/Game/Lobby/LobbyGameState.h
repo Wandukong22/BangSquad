@@ -10,7 +10,8 @@ UENUM(BlueprintType)
 enum class ELobbyPhase : uint8
 {
 	PreviewJob,
-	SelectJob
+	SelectJob,
+	GameStarting //맵 이동 때 UI 프리즈 하기 위해
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLobbyPhaseChanged, ELobbyPhase, NewPhase);

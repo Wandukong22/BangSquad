@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "StagePlayerController.generated.h"
 
+class UStageMainWidget;
 enum class EJobType : uint8;
 /**
  * 
@@ -22,6 +23,10 @@ public:
 	//서버에게 소환해달라고 요청하는 함수
 	UFUNCTION(Server, Reliable)
 	void ServerRequestSpawn(EJobType MyJob);
+
+	//서버에게 닉네임 알리기
+	UFUNCTION(Server, Reliable)
+	void ServerSetNickName(const FString& InNickName);
 
 	//캐릭터 사망 시 호출
 	void StartSpectating();
@@ -50,4 +55,10 @@ public:
 private:
 	UPROPERTY()
 	int32 DeathCount = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
+	TSubclassOf<UStageMainWidget> StageMainWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UStageMainWidget> StageMainWidget;
 };

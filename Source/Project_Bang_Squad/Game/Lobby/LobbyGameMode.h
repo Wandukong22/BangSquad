@@ -32,7 +32,9 @@ public:
 	void CheckConfirmedJob();
 
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+	
+	UPROPERTY()
+	TSet<EJobType> ConfirmedJobs;
 
-	//직업 중복 확인
-	bool IsJobTaken(EJobType NewJob, class ALobbyPlayerState* RequestingPS);
+	bool TryConfirmJob(EJobType Job, class ALobbyPlayerState* RequestingPS);
 };

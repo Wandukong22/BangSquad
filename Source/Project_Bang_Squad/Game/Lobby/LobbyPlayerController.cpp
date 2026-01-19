@@ -61,12 +61,25 @@ void ALobbyPlayerController::RequestConfirmedJob(EJobType FinalJob)
 
 void ALobbyPlayerController::RefreshLobbyUI()
 {
+	ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>();
+	if (GS && GS->CurrentPhase == ELobbyPhase::GameStarting)
+		return;
+	
 	if (LobbyMainWidget && LobbyMainWidget->IsInViewport())
 	{
 		LobbyMainWidget->UpdatePlayerList();
 	}
 
 	if (JobSelectWidget && JobSelectWidget->IsInViewport())
+	{
+		JobSelectWidget->UpdateJobAvailAbility();
+		JobSelectWidget->UpdatePlayerList();
+	}
+}
+
+void ALobbyPlayerController::Client_JobSelectFailed_Implementation(EJobType FailedJob)
+{
+	if (JobSelectWidget)
 	{
 		JobSelectWidget->UpdateJobAvailAbility();
 	}
@@ -103,7 +116,7 @@ void ALobbyPlayerController::OnLobbyPhaseChanged(ELobbyPhase NewPhase)
 {
 	if (NewPhase == ELobbyPhase::PreviewJob)
 	{
-		if (JobSelectWidget) //혹시 몰라서 넣어둠
+		if (JobSelectWidget) 
 			JobSelectWidget->SetVisibility(ESlateVisibility::Hidden);
 
 		SetMenuState(true);
@@ -124,11 +137,11 @@ void ALobbyPlayerController::OnLobbyPhaseChanged(ELobbyPhase NewPhase)
 			JobSelectWidget->StartUp();
 
 			JobSelectWidget->UpdateJobAvailAbility();
+			JobSelectWidget->UpdatePlayerList();
 		}
 	}
 }
 
-//TODO: 나중에 삭제 가능 / 일단 테스트를 위해 Tab키 지정함
 void ALobbyPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -211,24 +224,20 @@ void ALobbyPlayerController::ServerToggleReady_Implementation()
 
 void ALobbyPlayerController::ServerConfirmedJob_Implementation(EJobType FinalJob)
 {
-	UE_LOG(LogTemp, Warning, TEXT("[Server] PC: Job Confirm 요청 받음! (JobIndex: %d)"), (uint8)FinalJob);
-
 	ALobbyPlayerState* PS = GetPlayerState<ALobbyPlayerState>();
 	ALobbyGameMode* GM = GetWorld()->GetAuthGameMode<ALobbyGameMode>();
 	
 	if (PS && GM)
 	{
-		if (GM->IsJobTaken(FinalJob, PS))
+		bool bSuccess = GM->TryConfirmJob(FinalJob, PS);
+
+		if (!bSuccess)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("[Server] 거절됨: 이미 선택된 직업"));
-			return;
+			Client_JobSelectFailed(FinalJob);
 		}
-
-		//직업 설정 및 확정 상태로 변경
-		PS->SetJob(FinalJob);
-		PS->SetIsConfirmedJob(true);
-
-		//게임 시작 조건 체크
-		GM->CheckConfirmedJob();
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("[Server] 직업 확정 성공: %d"), (uint8)FinalJob);
+		}
 	}
 }

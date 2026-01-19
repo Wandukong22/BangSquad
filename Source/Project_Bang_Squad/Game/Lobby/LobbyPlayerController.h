@@ -48,6 +48,9 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerConfirmedJob(EJobType FinalJob);
 
+	UFUNCTION(Client, Reliable)
+	void Client_JobSelectFailed(EJobType FailedJob);
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
 	TSubclassOf<class UUserWidget> LobbyMainWidgetClass;
@@ -69,6 +72,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "BS|Input")
 	class UInputAction* IA_ToggleLobbyMenu;
 
+
+	
 private:
 	bool bIsMenuVisible = true;
 

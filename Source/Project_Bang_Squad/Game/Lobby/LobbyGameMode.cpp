@@ -23,23 +23,20 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 	//TODO: 초기화 작업들 (PlayerState 데이터 갱신 등등...)
 }
 
-bool ALobbyGameMode::IsJobTaken(EJobType NewJob, class ALobbyPlayerState* RequestingPS)
+bool ALobbyGameMode::TryConfirmJob(EJobType Job, class ALobbyPlayerState* RequestingPS)
 {
-	ALobbyGameState* GS = GetGameState<ALobbyGameState>();
-	if (!GS) return false;
+	if (ConfirmedJobs.Contains(Job)) return false;
 
-	for (APlayerState* PS : GS->PlayerArray)
-	{
-		ALobbyPlayerState* LobbyPS = Cast<ALobbyPlayerState>(PS);
-		if (LobbyPS && LobbyPS != RequestingPS)
-		{
-			if (LobbyPS->bIsConfirmedJob && LobbyPS->CurrentJob == NewJob)
-			{
-				return true;
-			}
-		}
-	}
-	return false;
+	//플레이어 상태 업데이트
+	RequestingPS->SetJob(Job);
+	RequestingPS->SetIsConfirmedJob(true);
+
+	//목록에 등록
+	ConfirmedJobs.Add(Job);
+
+	CheckConfirmedJob();
+
+	return true;
 }
 
 void ALobbyGameMode::ChangePlayerCharacter(AController* Controller, EJobType NewJob)
@@ -91,7 +88,7 @@ void ALobbyGameMode::CheckAllReady()
 	//이동
 
 	//TODO: 4명으로 바꿔야함
-	if (bAllReady && GS->PlayerArray.Num() == 4)
+	if (bAllReady && GS->PlayerArray.Num() == 2)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[GameMode] ✅ 4인 전원 준비 완료! 직업 선택 페이즈로 전환합니다."));
 		GS->SetLobbyPhase(ELobbyPhase::SelectJob);
@@ -132,6 +129,15 @@ void ALobbyGameMode::CheckConfirmedJob()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[GameMode] ✅ 전원 직업 확정 완료! 게임(TestMap)으로 이동합니다. 🚀"));
 
-		GetWorld()->ServerTravel("/Game/TeamShare/Level/Stage1_Demo?listen");
+		//상태 변경
+		if (GS)
+			GS->SetLobbyPhase(ELobbyPhase::GameStarting);
+
+		//상태 동기화 시간 벌기 위해 1초 뒤 이동
+		FTimerHandle TravelTimer;
+		GetWorldTimerManager().SetTimer(TravelTimer, [this]()
+		{
+			GetWorld()->ServerTravel("/Game/TeamShare/Level/Stage1_Demo?listen");
+		}, 1.f, false);
 	}
 }
