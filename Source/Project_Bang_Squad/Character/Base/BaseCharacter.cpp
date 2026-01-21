@@ -10,7 +10,6 @@
 #include "TimerManager.h"
 #include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h" // [필수] 데미지 처리를 위해 필요
-#include "Project_Bang_Squad/Game/Stage/StageGameMode.h"
 #include "Project_Bang_Squad/Game/Stage/StagePlayerController.h"
 
 ABaseCharacter::ABaseCharacter()
@@ -59,23 +58,6 @@ void ABaseCharacter::BeginPlay()
 	if (HealthComp)
 	{
 		HealthComp->OnDead.AddDynamic(this, &ABaseCharacter::OnDeath);
-	}
-
-	if (UWorld* World = GetWorld())
-	{
-		if (AStageGameMode* GM = Cast<AStageGameMode>(World->GetAuthGameMode()))
-		{
-			if (GM->IsMiniGameMap())
-			{
-				// 이동속도, 무게 고정
-				// 주의: MaxWalkSpeed 1.0은 거의 멈춤입니다. 비율(Scale)이 1.0이란 뜻이라면 기본값(600 등)을 넣으세요.
-				GetCharacterMovement()->MaxWalkSpeed = 600.0f; // 예: 기본 속도
-				GetCharacterMovement()->Mass = 100.0f;         // 예: 기본 무게
-				GetCharacterMovement()->GravityScale = 1.0f;   // 중력 1.0
-                
-				// 직업별 보너스 스탯 무시하고 초기화하는 로직이 필요하면 여기 작성
-			}
-		}
 	}
 }
 
@@ -137,35 +119,14 @@ void ABaseCharacter::OnDeath()
 		}
 		
 		//[B] 일반 스테이지인가? -> 관전 모드 전환
-		else if (AStageGameMode* StageGM = Cast<AStageGameMode>(GM)) // Cast 변경
-		{
-			// ★ 여기서 분기! 미니게임이면 관전 모드 안 감
-			if (StageGM->IsMiniGameMap())
-			{
-				// 그냥 리스폰 요청만 보냄 (관전 모드 전환 X)
-				StageGM->RequestRespawn(GetController());
-			}
-			else
-			{
-				// 일반 스테이지 -> 관전 모드 전환 (기존 코드)
-				if (AStagePlayerController* PC = Cast<AStagePlayerController>(GetController()))
-				{
-					FTimerHandle Handle;
-					World->GetTimerManager().SetTimer(Handle, PC, &AStagePlayerController::StartSpectating, 2.0f, false);
-				}
-				// 일반 스테이지 부활 요청
-				StageGM->RequestRespawn(GetController());
-			}
-		}
-	}
-		/*else if (AStagePlayerController* PC = Cast<AStagePlayerController>(GetController()))
+		else if (AStagePlayerController* PC = Cast<AStagePlayerController>(GetController()))
 		{
 			FTimerHandle Handle;
 			
 			World->GetTimerManager().SetTimer(Handle, PC, &AStagePlayerController::StartSpectating,
 				2.0f, false);
 		}
-	}*/
+	}
 	
 }
 
