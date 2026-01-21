@@ -29,5 +29,6 @@ void AStagePlayerState::UpdateMiniGameCheckpoint(int32 NewIndex)
 	if (NewIndex > MiniGameCheckpointIndex)
 	{
 		MiniGameCheckpointIndex = NewIndex;
+		//TODO: 체크포인트 저장 UI는 여기서
 	}
 }
