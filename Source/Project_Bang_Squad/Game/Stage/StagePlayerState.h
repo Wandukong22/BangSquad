@@ -29,4 +29,14 @@ public:
 	float GetRespawnEndTime() { return RespawnEndTime; }
 	void SetRespawnEndTime(float NewTime);
 	void SetJob(EJobType NewJob);
+
+	//MiniGame용
+	UPROPERTY(Replicated)
+	int32 MiniGameCheckpointIndex = 0;
+
+	//체크포인트 갱신 함수
+	void UpdateMiniGameCheckpoint(int32 NewIndex);
+
+	//현재 체크포인트 가져오기
+	int32 GetMiniGameCheckpoint() { return MiniGameCheckpointIndex; }
 };

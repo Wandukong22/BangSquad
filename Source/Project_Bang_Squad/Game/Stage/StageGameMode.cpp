@@ -61,30 +61,44 @@ void AStageGameMode::RequestRespawn(AController* Controller)
 {
 	if (!Controller) return;
 
-	float WaitTime = 3.f;
-
-	if (AStagePlayerController* StagePC = Cast<AStagePlayerController>(Controller))
+	if (IsMiniGameMap())
 	{
-		float CalculatedTime = 3.f + (StagePC->GetDeathCount() * 2.f);
-		WaitTime = FMath::Min(CalculatedTime, 15.f);
+		float WaitTime = 5.f;
 
-		StagePC->IncreaseDeathCount();
+		//리스폰 타이머 설정
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindUObject(this, &AStageGameMode::RespawnPlayerElapsed, Controller);
+
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, WaitTime, false);
 	}
-
-	if (AStagePlayerState* PS = Controller->GetPlayerState<AStagePlayerState>())
+	else
 	{
-		if (AGameStateBase* GS = GetGameState<AGameStateBase>())
+		float WaitTime = 3.f;
+
+		if (AStagePlayerController* StagePC = Cast<AStagePlayerController>(Controller))
 		{
-			PS->SetRespawnEndTime(GS->GetServerWorldTimeSeconds() + WaitTime);
-		}
-	}
-	
-	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindUObject(this, &AStageGameMode::RespawnPlayerElapsed, Controller);
+			float CalculatedTime = 3.f + (StagePC->GetDeathCount() * 2.f);
+			WaitTime = FMath::Min(CalculatedTime, 15.f);
 
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, WaitTime, false);
-	UE_LOG(LogTemp, Warning, TEXT("[GameMode] 플레이어 사망! %f초 뒤 부활"), WaitTime);
+			StagePC->IncreaseDeathCount();
+		}
+
+		if (AStagePlayerState* PS = Controller->GetPlayerState<AStagePlayerState>())
+		{
+			if (AGameStateBase* GS = GetGameState<AGameStateBase>())
+			{
+				PS->SetRespawnEndTime(GS->GetServerWorldTimeSeconds() + WaitTime);
+			}
+		}
+	
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindUObject(this, &AStageGameMode::RespawnPlayerElapsed, Controller);
+
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, WaitTime, false);
+		UE_LOG(LogTemp, Warning, TEXT("[GameMode] 플레이어 사망! %f초 뒤 부활"), WaitTime);
+	}
 }
 
 void AStageGameMode::ExecuteRespawn(AController* Controller)
@@ -119,6 +133,18 @@ void AStageGameMode::ClearStageAndMove(FString NextMapName)
 	GetWorld()->ServerTravel(Url);
 }
 
+bool AStageGameMode::IsMiniGameMap() const
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		//접두사 제거한 Map이름
+		FString MapName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
+		return MapName.Contains(TEXT("MiniGame"));
+	}
+	return false;
+}
+
 void AStageGameMode::RespawnPlayerElapsed(AController* DeadController)
 {
 	if (!DeadController) return;
@@ -134,6 +160,16 @@ void AStageGameMode::RespawnPlayerElapsed(AController* DeadController)
 
 FTransform AStageGameMode::GetRespawnTransform(AController* Controller)
 {
+	if (IsMiniGameMap())
+	{
+		AActor* StartSpot = FindPlayerStart(Controller);
+		if (StartSpot)
+		{
+			return StartSpot->GetActorTransform();
+		}
+		return FTransform::Identity;
+	}
+	
 	UWorld* World = GetWorld();
 	if (!World) return FTransform::Identity;
 

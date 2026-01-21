@@ -155,7 +155,7 @@ void UBSGameInstance::OpenMainMenuLevel()
 {
 	APlayerController* PC = GetFirstLocalPlayerController();
 	if (!PC) return;
-	PC->ClientTravel("/Game/Maps/Main", ETravelType::TRAVEL_Absolute);
+	PC->ClientTravel("/Game/Maps/MenuMap", ETravelType::TRAVEL_Absolute);
 }
 
 void UBSGameInstance::OnCreateSessionComplete(FName InSessionName, bool IsSuccess)
@@ -296,7 +296,7 @@ void UBSGameInstance::OnNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENe
 	APlayerController* PC = GetFirstLocalPlayerController();
 	if (PC)
 	{
-		PC->ClientTravel("/Game/Maps/MainMenuMap", ETravelType::TRAVEL_Absolute);
+		PC->ClientTravel("/Game/Maps/MenuMap", ETravelType::TRAVEL_Absolute);
 	}
 }
 

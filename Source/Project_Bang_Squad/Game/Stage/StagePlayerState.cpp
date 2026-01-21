@@ -11,6 +11,7 @@ void AStagePlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimePropert
 
 	DOREPLIFETIME(AStagePlayerState, Job);
 	DOREPLIFETIME(AStagePlayerState, RespawnEndTime);
+	DOREPLIFETIME(AStagePlayerState, MiniGameCheckpointIndex);
 }
 
 void AStagePlayerState::SetRespawnEndTime(float NewTime)
@@ -21,4 +22,12 @@ void AStagePlayerState::SetRespawnEndTime(float NewTime)
 void AStagePlayerState::SetJob(EJobType NewJob)
 {
 	Job = NewJob;
+}
+
+void AStagePlayerState::UpdateMiniGameCheckpoint(int32 NewIndex)
+{
+	if (NewIndex > MiniGameCheckpointIndex)
+	{
+		MiniGameCheckpointIndex = NewIndex;
+	}
 }

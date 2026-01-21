@@ -105,10 +105,15 @@ private:
 	// 온라인 세션
 	IOnlineSessionPtr SessionInterface;
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;
-	
+
 	//최종 선택된 직업
 	UPROPERTY()
 	EJobType MyJob = EJobType::None;
+
+	//미니게임 방문 여부
+	UPROPERTY()
+	bool bHasVisitedMiniGame = false;
+
 public:
 	FORCEINLINE EJobType GetMyJob() const { return MyJob; }
 	void SetMyJob(EJobType NewJob) { MyJob = NewJob; }
@@ -116,4 +121,7 @@ public:
 	//닉네임 저장
 	UPROPERTY()
 	FString UserNickname;
+
+	bool GetbHasVisitedMiniGame() { return bHasVisitedMiniGame; }
+	void SetbHasVisitedMiniGame(bool bNew) { bHasVisitedMiniGame = bNew; }
 };

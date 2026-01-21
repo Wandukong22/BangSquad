@@ -32,6 +32,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BS|Stage")
 	void ClearStageAndMove(FString NextMapName);
 
+	bool IsMiniGameMap() const;
+
 protected:
 	void RespawnPlayerElapsed(AController* DeadController);
 
