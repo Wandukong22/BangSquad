@@ -124,4 +124,21 @@ public:
 
 	bool GetbHasVisitedMiniGame() { return bHasVisitedMiniGame; }
 	void SetbHasVisitedMiniGame(bool bNew) { bHasVisitedMiniGame = bNew; }
+
+#pragma region Stage Data Save
+public:
+	//죽은 몬스터의 고유 해시값(ID) 저장
+	UPROPERTY()
+	TSet<uint32> DeadMonsterIDs;
+
+	//몬스터가 죽었을 때 ID 저장
+	UFUNCTION()
+	void MarkMonsterAsDead(uint32 ActorHash);
+
+	UFUNCTION()
+	bool IsMonsterDead(uint32 ActorHash) const;
+
+	UFUNCTION()
+	void ClearMonsterData();
+#pragma endregion 
 };

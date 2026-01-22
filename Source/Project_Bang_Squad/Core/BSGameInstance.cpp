@@ -348,3 +348,18 @@ void UBSGameInstance::StartSession()
 	if (SessionInterface.IsValid())
 		SessionInterface->StartSession(SESSION_NAME);
 }
+
+void UBSGameInstance::MarkMonsterAsDead(uint32 ActorHash)
+{
+	DeadMonsterIDs.Add(ActorHash);
+}
+
+bool UBSGameInstance::IsMonsterDead(uint32 ActorHash) const
+{
+	return DeadMonsterIDs.Contains(ActorHash);
+}
+
+void UBSGameInstance::ClearMonsterData()
+{
+	DeadMonsterIDs.Empty();
+}
