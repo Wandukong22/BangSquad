@@ -41,6 +41,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "BS|Input")
 	class UInputAction* IA_SpectateNext;
 
+	//상호작용 키
+	UPROPERTY(EditDefaultsOnly, Category = "BS|Input")
+	class UInputAction* IA_Interact;
+
+	//입력 감지
+	void OnInputInteract();
+	//서버에게 요청
+	UFUNCTION(Server, Reliable)
+	void Server_Interact();
+
 public:
 	UPROPERTY(BlueprintReadOnly)
 	EJobType SavedJobType;

@@ -8,8 +8,11 @@
 #include "StagePlayerState.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
+#include "Project_Bang_Squad/Game/InteractionInterface.h"
+#include "Project_Bang_Squad/Game/MiniGame/MiniGameMode.h"
 #include "Project_Bang_Squad/UI/Stage/StageMainWidget.h"
 
 void AStagePlayerController::BeginPlay()
@@ -19,7 +22,7 @@ void AStagePlayerController::BeginPlay()
 	//Local인 경우에만
 	if (IsLocalPlayerController())
 	{
-			//UI
+		//UI
 		if (StageMainWidgetClass)
 		{
 			StageMainWidget = CreateWidget<UStageMainWidget>(this, StageMainWidgetClass);
@@ -29,11 +32,11 @@ void AStagePlayerController::BeginPlay()
 				StageMainWidget->AddToViewport();
 			}
 		}
-		
+
 		FInputModeGameOnly GameInputMode;
 		SetInputMode(GameInputMode);
 		bShowMouseCursor = false;
-		
+
 		//GameInstance에서 내가 고른 직업 꺼내오기
 		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 		{
@@ -58,9 +61,15 @@ void AStagePlayerController::StartSpectating()
 
 	if (HasAuthority())
 	{
-		if (AStageGameMode* GM = GetWorld()->GetAuthGameMode<AStageGameMode>())
+		// StageGameMode 체크
+		if (AStageGameMode* StageGM = GetWorld()->GetAuthGameMode<AStageGameMode>())
 		{
-			GM->RequestRespawn(this);
+			StageGM->RequestRespawn(this);
+		}
+		// MiniGameMode 체크
+		else if (AMiniGameMode* MiniGM = GetWorld()->GetAuthGameMode<AMiniGameMode>())
+		{
+			MiniGM->RequestRespawn(this);
 		}
 	}
 }
@@ -73,9 +82,9 @@ void AStagePlayerController::SetupInputComponent()
 	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		if (IA_SpectateNext)
-		{
 			EIC->BindAction(IA_SpectateNext, ETriggerEvent::Started, this, &AStagePlayerController::ViewNextPlayer);
-		}
+		if (IA_Interact)
+			EIC->BindAction(IA_Interact, ETriggerEvent::Started, this, &AStagePlayerController::OnInputInteract);
 	}
 }
 
@@ -98,7 +107,7 @@ void AStagePlayerController::ViewNextPlayer()
 
 		ABaseCharacter* Char = Cast<ABaseCharacter>(PS->GetPawn());
 		// 캐릭터가 존재하고 살아있다면 리스트에 추가
-		if (Char && !Char->IsDead()) 
+		if (Char && !Char->IsDead())
 		{
 			AlivePlayers.Add(Char);
 		}
@@ -127,6 +136,50 @@ void AStagePlayerController::ViewNextPlayer()
 	SetViewTargetWithBlend(AlivePlayers[NextIndex], 0.5f, VTBlend_Cubic);
 }
 
+void AStagePlayerController::OnInputInteract()
+{
+	Server_Interact();
+}
+
+void AStagePlayerController::Server_Interact_Implementation()
+{
+	APawn* MyPawn = GetPawn();
+	if (!MyPawn) return;
+
+	FVector Start = MyPawn->GetActorLocation();
+	FVector End = Start;
+	float Radius = 150.f;
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(MyPawn);
+
+	TArray<AActor*> OutActors;
+
+	UKismetSystemLibrary::SphereOverlapActors(
+		GetWorld(),
+		Start,
+		Radius,
+		ObjectTypes,
+		nullptr,
+		ActorsToIgnore,
+		OutActors
+	);
+
+	for (AActor* Actor : OutActors)
+	{
+		if (Actor && Actor->Implements<UInteractionInterface>())
+		{
+			IInteractionInterface::Execute_Interact(Actor, MyPawn);
+
+			return;
+		}
+	}
+}
+
 void AStagePlayerController::ServerRequestSpawn_Implementation(EJobType MyJob)
 {
 	SavedJobType = MyJob;
@@ -135,10 +188,15 @@ void AStagePlayerController::ServerRequestSpawn_Implementation(EJobType MyJob)
 	{
 		PS->SetJob(MyJob);
 	}
-	
+	AGameModeBase* AutoGM = GetWorld()->GetAuthGameMode();
+
 	//서버에서 게임모드를 찾아 실제 소환명령
-	if (AStageGameMode* GM = GetWorld()->GetAuthGameMode<AStageGameMode>())
+	if (AStageGameMode* StageGM = Cast<AStageGameMode>(AutoGM))
 	{
-		GM->SpawnPlayerCharacter(this, MyJob);
+		StageGM->SpawnPlayerCharacter(this, MyJob);
+	}
+	else if (AMiniGameMode* MiniGM = Cast<AMiniGameMode>(AutoGM))
+	{
+		MiniGM->SpawnPlayerCharacter(this, MyJob);
 	}
 }
