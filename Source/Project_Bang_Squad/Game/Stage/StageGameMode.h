@@ -17,6 +17,7 @@ class PROJECT_BANG_SQUAD_API AStageGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
+	AStageGameMode();
 	//TODO: LobbyGameMode에도 똑같은 게 있어서 바꿀 필요 있음
 	UPROPERTY(EditDefaultsOnly, Category = "BS|Class")
 	TMap<EJobType, TSubclassOf<ACharacter>> JobCharacterMap;
@@ -32,9 +33,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BS|Stage")
 	void ClearStageAndMove(FString NextMapName);
 
+	bool IsMiniGameMap() const;
+
 protected:
 	void RespawnPlayerElapsed(AController* DeadController);
 
 	//부활 위치 계산
 	FTransform GetRespawnTransform(AController* Controller);
+
+	virtual void PostLogin(APlayerController* NewPlayer) override;
 };

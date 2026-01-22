@@ -11,6 +11,25 @@ void AStagePlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimePropert
 
 	DOREPLIFETIME(AStagePlayerState, Job);
 	DOREPLIFETIME(AStagePlayerState, RespawnEndTime);
+	DOREPLIFETIME(AStagePlayerState, MiniGameCheckpointIndex);
+	DOREPLIFETIME(AStagePlayerState, StageCheckpointIndex);
+	DOREPLIFETIME(AStagePlayerState, DeathCount);
+}
+
+void AStagePlayerState::CopyProperties(APlayerState* PlayerState)
+{
+	Super::CopyProperties(PlayerState);
+
+	AStagePlayerState* PS = Cast<AStagePlayerState>(PlayerState);
+	if (PS)
+	{
+		PS->Job = Job;
+		PS->RespawnEndTime = RespawnEndTime;
+		PS->StageCheckpointIndex = StageCheckpointIndex;
+		PS->DeathCount = DeathCount;
+		
+		//TODO: 체력 넣을거면 여기다가
+	}
 }
 
 void AStagePlayerState::SetRespawnEndTime(float NewTime)
@@ -21,4 +40,24 @@ void AStagePlayerState::SetRespawnEndTime(float NewTime)
 void AStagePlayerState::SetJob(EJobType NewJob)
 {
 	Job = NewJob;
+}
+
+void AStagePlayerState::UpdateMiniGameCheckpoint(int32 NewIndex)
+{
+	if (NewIndex > MiniGameCheckpointIndex)
+	{
+		MiniGameCheckpointIndex = NewIndex;
+
+		//TODO: 체크포인트 저장 UI는 여기서
+	}
+}
+
+void AStagePlayerState::UpdateStageCheckpoint(int32 NewIndex)
+{
+	if (NewIndex > StageCheckpointIndex)
+	{
+		StageCheckpointIndex = NewIndex;
+		
+		//TODO: 체크포인트 저장 UI는 여기서
+	}
 }

@@ -34,12 +34,22 @@ public:
 protected:
 	virtual void SetupInputComponent() override;
 
-	// 관전 대상 변경 함수
+	//관전 대상 변경 함수
 	void ViewNextPlayer();
 
-	// 에디터에서 할당할 입력 액션 (스페이스바 등)
+	//에디터에서 할당할 입력 액션 (스페이스바 등)
 	UPROPERTY(EditDefaultsOnly, Category = "BS|Input")
 	class UInputAction* IA_SpectateNext;
+
+	//상호작용 키
+	UPROPERTY(EditDefaultsOnly, Category = "BS|Input")
+	class UInputAction* IA_Interact;
+
+	//입력 감지
+	void OnInputInteract();
+	//서버에게 요청
+	UFUNCTION(Server, Reliable)
+	void Server_Interact();
 
 public:
 	UPROPERTY(BlueprintReadOnly)

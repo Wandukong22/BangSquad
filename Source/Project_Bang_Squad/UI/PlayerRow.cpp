@@ -77,11 +77,14 @@ void UPlayerRow::UpdateProfileImage(EJobType JobType)
 
 void UPlayerRow::UpdateStageInfo()
 {
-	if (TargetPlayerState.IsValid() && Txt_Name)
+	if (!TargetPlayerState.IsValid()) return;
+
+	if (Txt_Name)
 	{
 		Txt_Name->SetText(FText::FromString(TargetPlayerState->GetPlayerName()));
 	}
-	
+
+
 	//HP바
 	APawn* MyPawn = TargetPlayerState->GetPawn();
 	if (MyPawn)

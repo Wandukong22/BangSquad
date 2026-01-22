@@ -45,6 +45,7 @@ public:
 	TMap<EJobType, UTexture2D*> JobIcons;
 
 public:
+	class APlayerState* GetTargetPlayerState() const { return TargetPlayerState.Get(); }
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	//모드 설정
@@ -58,6 +59,7 @@ public:
 	void UpdateLobbyInfo(bool bIsReady, EJobType JobType);
 
 	void UpdateStageInfo();
+
 protected:
 	void UpdateProfileImage(EJobType JobType);
 
