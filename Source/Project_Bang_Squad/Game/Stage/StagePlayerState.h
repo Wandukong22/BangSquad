@@ -24,6 +24,11 @@ protected:
 	UPROPERTY(Replicated)
 	float RespawnEndTime = 0.f;
 
+	UPROPERTY(Replicated)
+	int32 DeathCount = 0;
+
+	virtual void CopyProperties(APlayerState* PlayerState) override;
+
 public:
 	EJobType GetJob() { return Job; }
 	float GetRespawnEndTime() { return RespawnEndTime; }
@@ -33,10 +38,19 @@ public:
 	//MiniGame용
 	UPROPERTY(Replicated)
 	int32 MiniGameCheckpointIndex = 0;
+	UPROPERTY(Replicated)
+	int32 StageCheckpointIndex = 0;
 
 	//체크포인트 갱신 함수
 	void UpdateMiniGameCheckpoint(int32 NewIndex);
+	void UpdateStageCheckpoint(int32 NewIndex);
 
 	//현재 체크포인트 가져오기
 	int32 GetMiniGameCheckpoint() { return MiniGameCheckpointIndex; }
+	int32 GetStageCheckpoint() { return StageCheckpointIndex; }
+
+	void SetStageCheckpoint(int32 NewIndex) { StageCheckpointIndex = NewIndex; }
+
+	void IncreaseDeathCount() { DeathCount++; }
+	int32 GetDeathCount() const { return DeathCount; }
 };

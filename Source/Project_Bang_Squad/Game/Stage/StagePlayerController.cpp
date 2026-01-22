@@ -143,6 +143,8 @@ void AStagePlayerController::OnInputInteract()
 
 void AStagePlayerController::Server_Interact_Implementation()
 {
+	if (!HasAuthority()) return;
+	
 	APawn* MyPawn = GetPawn();
 	if (!MyPawn) return;
 
@@ -153,6 +155,7 @@ void AStagePlayerController::Server_Interact_Implementation()
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
 
 	TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.Add(MyPawn);

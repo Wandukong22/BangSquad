@@ -4,6 +4,7 @@
 #include "Project_Bang_Squad/Game/Stage/Checkpoint.h"
 
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Project_Bang_Squad/Game/Stage/StagePlayerState.h"
 
 ACheckpoint::ACheckpoint()
@@ -24,6 +25,8 @@ void ACheckpoint::BeginPlay()
 void ACheckpoint::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (!HasAuthority()) return;
+	
 	//플레이어인지 확인
 	APawn* Pawn = Cast<APawn>(OtherActor);
 	if (Pawn && Pawn->GetController())
@@ -31,7 +34,15 @@ void ACheckpoint::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 		AStagePlayerState* PS = Pawn->GetController()->GetPlayerState<AStagePlayerState>();
 		if (PS)
 		{
-			PS->UpdateMiniGameCheckpoint(CheckpointIndex);
+			FString MapName = UGameplayStatics::GetCurrentLevelName(GetWorld());
+			if (MapName.Contains(TEXT("MiniGame")))
+			{
+				PS->UpdateMiniGameCheckpoint(CheckpointIndex);
+			}
+			else
+			{
+				PS->UpdateStageCheckpoint(CheckpointIndex);
+			}
 		}
 	}
 }

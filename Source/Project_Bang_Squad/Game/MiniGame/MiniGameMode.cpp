@@ -15,6 +15,9 @@ AMiniGameMode::AMiniGameMode()
 {
 	//맵 이동 시 끊김 최소화
 	bUseSeamlessTravel = true;
+
+	PlayerStateClass = AStagePlayerState::StaticClass();
+	PlayerControllerClass = AStagePlayerController::StaticClass();
 }
 
 void AMiniGameMode::PostLogin(APlayerController* NewPlayer)

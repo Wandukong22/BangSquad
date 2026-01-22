@@ -20,12 +20,44 @@ void UStageMainWidget::NativeTick(const FGeometry& MyGeometry, float DeltaTime)
 
 	if (AGameStateBase* GS = GetWorld()->GetGameState<AGameStateBase>())
 	{
-		int32 CurrentPlayerCount = GS->PlayerArray.Num();
+		bool bNeedUpdate = false;
 
-		if (CurrentPlayerCount != CachedPlayerCount)
+		if (GS->PlayerArray.Num() != CachedPlayerCount)
+		{
+			bNeedUpdate = true;
+		}
+		else
+		{
+			static float TimeAccumulator = 0.f;
+			TimeAccumulator += DeltaTime;
+			if (TimeAccumulator > 1.f)
+			{
+				TimeAccumulator = 0.f;
+
+				if (PlayerListContainer && PlayerListContainer->GetChildrenCount() != GS->PlayerArray.Num())
+				{
+					bNeedUpdate = true;
+				}
+				else if (PlayerListContainer)
+				{
+					for (int32 i = 0; i < GS->PlayerArray.Num(); ++i)
+					{
+						UPlayerRow* Row = Cast<UPlayerRow>(PlayerListContainer->GetChildAt(i));
+
+						if (!Row || Row->GetTargetPlayerState() != GS->PlayerArray[i])
+						{
+							bNeedUpdate = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		if (bNeedUpdate)
 		{
 			UpdatePartyList();
-			CachedPlayerCount = CurrentPlayerCount;
+			CachedPlayerCount = GS->PlayerArray.Num();
 		}
 	}
 }
