@@ -22,6 +22,9 @@ protected:
 	
 public:
 	UPROPERTY(meta = (BindWidget))
+	UPlayerRow* MyInfoRow;
+	
+	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* PlayerListContainer;
 
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")

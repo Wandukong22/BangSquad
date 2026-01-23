@@ -26,16 +26,24 @@ class PROJECT_BANG_SQUAD_API UPlayerRow : public UUserWidget
 public:
 	UPROPERTY(meta = (BindWidget))
 	UImage* Img_Profile;
+
+	//프로필 테두리
+	UPROPERTY(meta = (BindWidget))
+	UImage* Img_ProfileFrame;
+	
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Txt_Name;
 
-	//    로비 전용
+	//   로비 전용
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Txt_ReadyState;
 
 	//   스테이지 전용
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* PB_HpBar;
+	//HP바 테두리
+	UPROPERTY(meta = (BindWidget, OptionalWidget = true))
+	UImage* Img_HpBarFrame;
 	UPROPERTY(meta = (BindWidget))
 	UOverlay* Overlay_Death;
 	UPROPERTY(meta = (BindWidget))
@@ -44,10 +52,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BS|UI")
 	TMap<EJobType, UTexture2D*> JobIcons;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BS|UI")
+	TMap<EJobType, FLinearColor> JobColors;
+
 public:
 	class APlayerState* GetTargetPlayerState() const { return TargetPlayerState.Get(); }
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
+	virtual void NativeConstruct() override;
+	
 	//모드 설정
 	UFUNCTION(BlueprintCallable)
 	void SetWidgetMode(ERowMode NewMode);
@@ -58,6 +70,7 @@ public:
 	//정보 갱신(로비)
 	void UpdateLobbyInfo(bool bIsReady, EJobType JobType);
 
+	//정보 갱신(스테이지)
 	void UpdateStageInfo();
 
 protected:
@@ -67,5 +80,6 @@ private:
 	ERowMode CurrentMode = ERowMode::Lobby;
 	TWeakObjectPtr<class APlayerState> TargetPlayerState;
 
-	//정보 갱신(스테이지)
+	UPROPERTY()
+	class UMaterialInstanceDynamic* ProfileMaterial;
 };

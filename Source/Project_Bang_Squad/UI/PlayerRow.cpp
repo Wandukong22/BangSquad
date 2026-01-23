@@ -18,6 +18,15 @@ void UPlayerRow::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	}
 }
 
+void UPlayerRow::NativeConstruct()
+{
+	Super::NativeConstruct();
+	if (Img_Profile)
+	{
+		ProfileMaterial = Img_Profile->GetDynamicMaterial();
+	}
+}
+
 void UPlayerRow::SetWidgetMode(ERowMode NewMode)
 {
 	CurrentMode = NewMode;
@@ -28,6 +37,8 @@ void UPlayerRow::SetWidgetMode(ERowMode NewMode)
 			Txt_ReadyState->SetVisibility(ESlateVisibility::Visible);
 		if (PB_HpBar)
 			PB_HpBar->SetVisibility(ESlateVisibility::Collapsed);
+		if (Img_HpBarFrame)
+			Img_HpBarFrame->SetVisibility(ESlateVisibility::Collapsed);
 		if (Overlay_Death)
 			Overlay_Death->SetVisibility(ESlateVisibility::Collapsed);
 	}
@@ -37,6 +48,8 @@ void UPlayerRow::SetWidgetMode(ERowMode NewMode)
 			Txt_ReadyState->SetVisibility(ESlateVisibility::Collapsed);
 		if (PB_HpBar)
 			PB_HpBar->SetVisibility(ESlateVisibility::Visible);
+		if (Img_HpBarFrame)
+			Img_HpBarFrame->SetVisibility(ESlateVisibility::Visible);
 		if (Overlay_Death)
 			Overlay_Death->SetVisibility(ESlateVisibility::Hidden);
 	}
@@ -63,15 +76,26 @@ void UPlayerRow::UpdateLobbyInfo(bool bIsReady, EJobType JobType)
 
 void UPlayerRow::UpdateProfileImage(EJobType JobType)
 {
-	if (!Img_Profile) return;
-
-	//맵에 해당 직업 이미지가 등록되어 있는지 확인
-	if (UTexture2D** FoundTexture = JobIcons.Find(JobType))
+	//직업 아이콘 설정
+	if (ProfileMaterial)
 	{
-		Img_Profile->SetBrushFromTexture(*FoundTexture);
+		if (UTexture2D** FoundTexture = JobIcons.Find(JobType))
+		{
+			ProfileMaterial->SetTextureParameterValue(FName("ProfileImage"), *FoundTexture);
+		}
 	}
-	else
+
+	//직업별 프레임 색상 설정
+	if (Img_ProfileFrame)
 	{
+		if (FLinearColor* FoundColor = JobColors.Find(JobType))
+		{
+			Img_ProfileFrame->SetColorAndOpacity(*FoundColor);
+		}
+		else
+		{
+			Img_ProfileFrame->SetColorAndOpacity(FLinearColor::White);
+		}
 	}
 }
 
@@ -101,10 +125,9 @@ void UPlayerRow::UpdateStageInfo()
 	}
 
 	//부활 시간 & 사망 오버레이
-	AStagePlayerState* StagePS = Cast<AStagePlayerState>(TargetPlayerState.Get());
-	if (StagePS)
+	if (AStagePlayerState* StagePS = Cast<AStagePlayerState>(TargetPlayerState.Get()))
 	{
-		float RemainTime;
+		float RemainTime = 0.f;
 
 		if (GetWorld()->GetGameState())
 		{
