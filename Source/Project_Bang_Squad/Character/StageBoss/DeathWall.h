@@ -25,7 +25,10 @@ public:
     void DeactivateWall();
 
 protected:
-    // [컴포넌트]
+    // [수정] 메쉬를 담을 루트 컴포넌트 추가
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    class USceneComponent* DefaultSceneRoot;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     class UStaticMeshComponent* WallMesh;
 
