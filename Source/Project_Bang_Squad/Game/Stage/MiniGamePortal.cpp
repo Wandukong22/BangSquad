@@ -110,7 +110,7 @@ void AMiniGamePortal::ProcessLevelTransition()
 	{
 		GI->SetbHasVisitedMiniGame(true);
 	}
-	GetWorld()->ServerTravel("/Game/TeamShare/Level/MiniGameMap?listen");
+	GetWorld()->ServerTravel("/Game/TeamShare/Level/Stage1_MiniGame?listen");
 }
 
 void AMiniGamePortal::UpdateCountdownText()
