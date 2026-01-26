@@ -29,7 +29,10 @@ protected:
 
 	virtual void CopyProperties(APlayerState* PlayerState) override;
 
+	virtual void Tick(float DeltaSeconds) override;
 public:
+	AStagePlayerState();
+	
 	EJobType GetJob() { return Job; }
 	float GetRespawnEndTime() { return RespawnEndTime; }
 	void SetRespawnEndTime(float NewTime);
@@ -53,4 +56,17 @@ public:
 
 	void IncreaseDeathCount() { DeathCount++; }
 	int32 GetDeathCount() const { return DeathCount; }
+
+	//순위 고정용 변수
+	UPROPERTY(Replicated)
+	int32 MiniGameRank = 0;
+
+	//순위 설정
+	void SetMiniGameRank(int32 NewRank);
+	
+	UFUNCTION()
+	float GetMiniGameProgressScore() const;
+
+private:
+	float MaxHeightReached = 0.f;
 };

@@ -4,9 +4,11 @@
 #include "Project_Bang_Squad/Game/MiniGame/MiniGameMode.h"
 
 #include "EngineUtils.h"
+#include "MiniGamePlayerController.h"
 #include "GameFramework/Character.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "Project_Bang_Squad/Game/Stage/Checkpoint.h"
+#include "Project_Bang_Squad/Game/Stage/StageGameState.h"
 #include "Project_Bang_Squad/Game/Stage/StagePlayerController.h"
 #include "Project_Bang_Squad/Game/Stage/StagePlayerState.h"
 
@@ -17,7 +19,8 @@ AMiniGameMode::AMiniGameMode()
 	bUseSeamlessTravel = true;
 
 	PlayerStateClass = AStagePlayerState::StaticClass();
-	PlayerControllerClass = AStagePlayerController::StaticClass();
+	PlayerControllerClass = AMiniGamePlayerController::StaticClass();
+	GameStateClass = AStageGameState::StaticClass();
 }
 
 void AMiniGameMode::PostLogin(APlayerController* NewPlayer)
@@ -82,8 +85,14 @@ void AMiniGameMode::OnPlayerReachedGoal(AController* ReachedPlayer)
 	FinishedPlayers.Add(ReachedPlayer);
 	int32 Rank = FinishedPlayers.Num();
 
-	UE_LOG(LogTemp, Warning, TEXT("Running :: Player %s Finished! Rank: %d"), *ReachedPlayer->GetName(), Rank);
-	
+	//PlayerState에 순위 고정
+	if (ReachedPlayer)
+	{
+		if (AStagePlayerState* PS = ReachedPlayer->GetPlayerState<AStagePlayerState>())
+		{
+			PS->SetMiniGameRank(Rank);
+		}
+	}
 	//보상 로직
 	
 	//미니게임 종료
