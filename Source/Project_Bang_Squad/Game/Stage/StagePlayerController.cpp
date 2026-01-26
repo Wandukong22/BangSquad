@@ -34,11 +34,14 @@ void AStagePlayerController::BeginPlay()
 				TargetEmissive = 0.1f;
 			}
 
-			UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), WorldSettingsMPC, TEXT("GlobalCharacterEmissive"), TargetEmissive);
+			UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), WorldSettingsMPC,
+			                                                TEXT("GlobalCharacterEmissive"), TargetEmissive);
 		}
 
 		//UI
-		if (StageMainWidgetClass)
+		CreateGameWidget();
+
+		/*if (StageMainWidgetClass)
 		{
 			StageMainWidget = CreateWidget<UStageMainWidget>(this, StageMainWidgetClass);
 			if (StageMainWidget)
@@ -46,7 +49,7 @@ void AStagePlayerController::BeginPlay()
 				StageMainWidget->SetVisibility(ESlateVisibility::Visible);
 				StageMainWidget->AddToViewport();
 			}
-		}
+		}*/
 
 		FInputModeGameOnly GameInputMode;
 		SetInputMode(GameInputMode);
@@ -85,6 +88,18 @@ void AStagePlayerController::StartSpectating()
 		else if (AMiniGameMode* MiniGM = GetWorld()->GetAuthGameMode<AMiniGameMode>())
 		{
 			MiniGM->RequestRespawn(this);
+		}
+	}
+}
+
+void AStagePlayerController::CreateGameWidget()
+{
+	if (StageMainWidgetClass)
+	{
+		UStageMainWidget* StageWidget = CreateWidget<UStageMainWidget>(this, StageMainWidgetClass);
+		if (StageWidget)
+		{
+			StageWidget->AddToViewport();
 		}
 	}
 }
@@ -159,7 +174,7 @@ void AStagePlayerController::OnInputInteract()
 void AStagePlayerController::Server_Interact_Implementation()
 {
 	if (!HasAuthority()) return;
-	
+
 	APawn* MyPawn = GetPawn();
 	if (!MyPawn) return;
 

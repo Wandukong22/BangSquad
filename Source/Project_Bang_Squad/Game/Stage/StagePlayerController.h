@@ -31,6 +31,8 @@ public:
 	//캐릭터 사망 시 호출
 	void StartSpectating();
 
+	virtual void CreateGameWidget();
+
 protected:
 	virtual void SetupInputComponent() override;
 
