@@ -71,14 +71,15 @@ void UStageMainWidget::UpdatePartyList()
 	}
 
 	// 2. 기존 목록 초기화 (중복 방지)
-	PlayerListContainer->ClearChildren();
+	//PlayerListContainer->ClearChildren();
 
 	// 3. GameState 가져오기
 	AGameStateBase* GS = GetWorld()->GetGameState<AGameStateBase>();
 	if (!GS) return;
-
-	//내 플레이어 스테이트
+	
 	APlayerState* MyPS = GetOwningPlayerState();
+	
+	int32 CurrentChildIndex = 0;
 
 	// 4. 플레이어 목록 순회하며 생성
 	for (APlayerState* PS : GS->PlayerArray)
@@ -94,10 +95,25 @@ void UStageMainWidget::UpdatePartyList()
 				MyInfoRow->UpdateStageInfo();
 				MyInfoRow->SetVisibility(ESlateVisibility::Visible);
 			}
+			continue;
 		}
 		else
 		{
-			UPlayerRow* Row = CreateWidget<UPlayerRow>(this, PlayerRowClass);
+			UPlayerRow* Row = nullptr;
+				//CreateWidget<UPlayerRow>(this, PlayerRowClass);
+			if (CurrentChildIndex < PlayerListContainer->GetChildrenCount())
+			{
+				Row = Cast<UPlayerRow>(PlayerListContainer->GetChildAt(CurrentChildIndex));
+			}
+			if (!Row)
+			{
+				Row = CreateWidget<UPlayerRow>(this, PlayerRowClass);
+				if (Row)
+				{
+					PlayerListContainer->AddChild(Row);
+				}
+			}
+			
 			if (Row)
 			{
 				//누구 정보인지 타겟 설정
@@ -107,9 +123,16 @@ void UStageMainWidget::UpdatePartyList()
 				Row->SetWidgetMode(ERowMode::Stage);
 				//님이 만든 그 정보 갱신 함수 호출 (부활시간, 프로필, HP바 등 한방에 세팅)
 				Row->UpdateStageInfo();
+				CurrentChildIndex++;
+				
 				//컨테이너에 추가
-				PlayerListContainer->AddChild(Row);
+				//PlayerListContainer->AddChild(Row);
 			}
+		}
+
+		while (PlayerListContainer->GetChildrenCount() > CurrentChildIndex)
+		{
+			PlayerListContainer->RemoveChildAt(PlayerListContainer->GetChildrenCount() - 1);
 		}
 	}
 }
