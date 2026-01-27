@@ -14,6 +14,8 @@ ALobbyGameMode::ALobbyGameMode()
 	PlayerStateClass = ALobbyPlayerState::StaticClass();
 	PlayerControllerClass = ALobbyPlayerController::StaticClass();
 	GameStateClass = ALobbyGameState::StaticClass();
+
+	bUseSeamlessTravel = true;
 }
 
 void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
@@ -53,7 +55,7 @@ void ALobbyGameMode::ChangePlayerCharacter(AController* Controller, EJobType New
 	FVector Loc = OldPawn ? OldPawn->GetActorLocation() : FVector::ZeroVector;
 	FRotator Rot = OldPawn ? OldPawn->GetActorRotation() : FRotator::ZeroRotator;
 	if (OldPawn) OldPawn->Destroy();
-
+	
 	if (ACharacter* NewChar = GetWorld()->SpawnActor<ACharacter>(TargetClass, Loc, Rot))
 	{
 		Controller->Possess(NewChar);
