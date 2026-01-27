@@ -46,7 +46,7 @@ void AMiniGameMode::PostLogin(APlayerController* NewPlayer)
 
 void AMiniGameMode::SpawnPlayerCharacter(AController* Controller, EJobType JobType)
 {
-	if (!Controller || !JobCharacterMap.Contains(JobType)) return;
+	if (!Controller) return;
 
 	// 기존 폰 제거
 	if (APawn* OldPawn = Controller->GetPawn())
@@ -57,7 +57,10 @@ void AMiniGameMode::SpawnPlayerCharacter(AController* Controller, EJobType JobTy
 	FTransform SpawnTransform = GetRespawnTransform(Controller);
 
 	// 소환
-	UClass* PawnClass = JobCharacterMap[JobType];
+	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
+	if (!GI) return;
+	
+	UClass* PawnClass = GI->GetCharacterClass(JobType);
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
@@ -158,7 +161,11 @@ void AMiniGameMode::CheckAllPlayersFinished()
 		UWorld* World = GetWorld();
 		if (World)
 		{
-			World->ServerTravel("/Game/TeamShare/Level/Stage1_Demo?listen");
+			if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+			{
+				GI->MoveToStage(EStageIndex::Stage1, EStageSection::Main);
+			}
+			//World->ServerTravel("/Game/TeamShare/Level/Stage1_Demo?listen");
 		}
 	}
 }

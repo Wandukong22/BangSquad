@@ -1,8 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Project_Bang_Squad/UI/PlayerRow.h"
-
+#include "PlayerRow.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
 #include "Project_Bang_Squad/Character/Component/HealthComponent.h"
@@ -79,22 +78,21 @@ void UPlayerRow::UpdateProfileImage(EJobType JobType)
 	//직업 아이콘 설정
 	if (ProfileMaterial)
 	{
-		if (UTexture2D** FoundTexture = JobIcons.Find(JobType))
+		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 		{
-			ProfileMaterial->SetTextureParameterValue(FName("ProfileImage"), *FoundTexture);
+			if (UTexture2D* FoundTexture = GI->GetJobIcon(JobType))
+			{
+				ProfileMaterial->SetTextureParameterValue(FName("ProfileImage"), FoundTexture);
+			}
 		}
 	}
 
 	//직업별 프레임 색상 설정
 	if (Img_ProfileFrame)
 	{
-		if (FLinearColor* FoundColor = JobColors.Find(JobType))
+		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 		{
-			Img_ProfileFrame->SetColorAndOpacity(*FoundColor);
-		}
-		else
-		{
-			Img_ProfileFrame->SetColorAndOpacity(FLinearColor::White);
+			Img_ProfileFrame->SetColorAndOpacity(GI->GetJobColor(JobType));
 		}
 	}
 }

@@ -8,7 +8,7 @@
 #include "Components/Overlay.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
-#include "Lobby/JobSelectWidget.h"
+#include "../Lobby/JobSelectWidget.h"
 #include "PlayerRow.generated.h"
 
 UENUM(BlueprintType)
@@ -48,12 +48,6 @@ public:
 	UOverlay* Overlay_Death;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Txt_RespawnTime;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BS|UI")
-	TMap<EJobType, UTexture2D*> JobIcons;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BS|UI")
-	TMap<EJobType, FLinearColor> JobColors;
 
 public:
 	class APlayerState* GetTargetPlayerState() const { return TargetPlayerState.Get(); }

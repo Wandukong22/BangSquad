@@ -6,7 +6,7 @@
 #include "Components/Button.h"
 #include "Project_Bang_Squad/Game/Lobby/LobbyPlayerController.h"
 #include "Project_Bang_Squad/Game/Lobby/LobbyPlayerState.h"
-#include "Project_Bang_Squad/UI/PlayerRow.h"
+#include "Project_Bang_Squad/UI/Stage/PlayerRow.h"
 
 void ULobbyMainWidget::NativeConstruct()
 {

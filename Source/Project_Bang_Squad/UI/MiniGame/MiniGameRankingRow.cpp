@@ -20,16 +20,13 @@ void UMiniGameRankingRow::UpdateData(int32 Rank, class AStagePlayerState* Player
 		EJobType CurrentJob = PlayerState->GetJob();
 
 		// 맵에 해당 직업 아이콘이 등록되어 있는지 확인
-		if (JobIconMap.Contains(CurrentJob))
+		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 		{
-			// 찾았으면 설정
-			Img_JobIcon->SetBrushFromTexture(JobIconMap[CurrentJob]);
-			Img_JobIcon->SetVisibility(ESlateVisibility::Visible);
-		}
-		else
-		{
-			// 없으면 숨기거나 기본 이미지
-			// Img_JobIcon->SetVisibility(ESlateVisibility::Hidden); 
+			if (UTexture2D* FoundTexture = GI->GetJobIcon(CurrentJob))
+			{
+				Img_JobIcon->SetBrushFromTexture(FoundTexture);
+				Img_JobIcon->SetVisibility(ESlateVisibility::Visible);
+			}
 		}
 	}
 }

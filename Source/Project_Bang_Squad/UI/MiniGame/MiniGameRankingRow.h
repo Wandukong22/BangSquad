@@ -22,9 +22,6 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UImage* Img_JobIcon;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BS|UI")
-	TMap<EJobType, UTexture2D*> JobIconMap;
-
 	//데이터 채우는 함수
 	void UpdateData(int32 Rank, class AStagePlayerState* PlayerState);
 };

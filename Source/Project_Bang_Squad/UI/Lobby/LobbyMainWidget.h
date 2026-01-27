@@ -6,9 +6,9 @@
 #include "Blueprint/UserWidget.h"
 #include "Project_Bang_Squad/UI/Base/BaseMenu.h"
 #include "Components/VerticalBox.h"
+#include "Project_Bang_Squad/Core/BSGameTypes.h"
 #include "LobbyMainWidget.generated.h"
 
-enum class EJobType : uint8;
 class UButton;
 class UTextBlock;
 
