@@ -26,3 +26,8 @@ FLinearColor UBSJobData::GetJobColor(EJobType InJobType) const
 {
 	return GetJobInfo(InJobType).JobColor;
 }
+
+UTexture2D* UBSJobData::GetJobIcon(EJobType InJobType) const
+{
+	return GetJobInfo(InJobType).Icon;
+}

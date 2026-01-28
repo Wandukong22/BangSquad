@@ -48,5 +48,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "BS|Data")
 	FLinearColor GetJobColor(EJobType InJobType) const;
+
+	UFUNCTION(BlueprintCallable, Category = "BS|Data")
+	UTexture2D* GetJobIcon(EJobType InJobType) const;
 	
 };

@@ -56,8 +56,8 @@ private:
 	TSubclassOf<class UUserWidget> LobbyMainWidgetClass;
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
 	TSubclassOf<class UUserWidget> JobSelectWidgetClass;
-	class ULobbyMainWidget* LobbyMainWidget;
-	class UJobSelectWidget* JobSelectWidget;
+	class ULobbyMainWidget* LobbyMainWidget = nullptr;
+	class UJobSelectWidget* JobSelectWidget = nullptr;
 
 	//GameState 초기화 대기용
 	void InitLobbyUI();

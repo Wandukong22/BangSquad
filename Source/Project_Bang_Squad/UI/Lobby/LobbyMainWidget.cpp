@@ -17,6 +17,11 @@ void ULobbyMainWidget::NativeConstruct()
 	if (Btn_SelectMage) Btn_SelectMage->OnClicked.AddDynamic(this, &ULobbyMainWidget::OnBtn_SelectMageClicked);
 	if (Btn_SelectPaladin) Btn_SelectPaladin->OnClicked.AddDynamic(this, &ULobbyMainWidget::OnBtn_SelectPaladinClicked);
 	if (Btn_Ready) Btn_Ready->OnClicked.AddDynamic(this, &ULobbyMainWidget::OnBtn_ReadyClicked);
+
+	SetJobButtonIcon(Btn_SelectTitan, EJobType::Titan);
+	SetJobButtonIcon(Btn_SelectStriker, EJobType::Striker);
+	SetJobButtonIcon(Btn_SelectMage, EJobType::Mage);
+	SetJobButtonIcon(Btn_SelectPaladin, EJobType::Paladin);
 }
 
 void ULobbyMainWidget::UpdatePlayerList()
@@ -118,6 +123,29 @@ void ULobbyMainWidget::SelectJobClickedHelper(EJobType Job)
 {
 	if (auto PC = GetLobbyPC())
 		PC->RequestChangePreviewJob(Job);
+}
+
+void ULobbyMainWidget::SetJobButtonIcon(UButton* Btn, EJobType Job)
+{
+	if (!Btn) return;
+
+	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
+	if (!GI) return;
+
+	UTexture2D* Icon = GI->GetJobIcon(Job);
+	if (!Icon) return;
+
+	FButtonStyle NewStyle = Btn->WidgetStyle;
+
+	FSlateBrush Brush;
+	Brush.SetResourceObject(Icon);
+	Brush.DrawAs = ESlateBrushDrawType::Image;
+
+	NewStyle.SetNormal(Brush);
+	NewStyle.SetHovered(Brush);
+	NewStyle.SetPressed(Brush);
+
+	Btn->SetStyle(NewStyle);
 }
 
 class ALobbyPlayerController* ULobbyMainWidget::GetLobbyPC()

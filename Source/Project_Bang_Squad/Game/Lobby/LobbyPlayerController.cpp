@@ -65,15 +65,14 @@ void ALobbyPlayerController::RefreshLobbyUI()
 	if (GS && GS->CurrentPhase == ELobbyPhase::GameStarting)
 		return;
 	
-	if (LobbyMainWidget && LobbyMainWidget->IsInViewport())
+	if (IsValid(LobbyMainWidget) && LobbyMainWidget->IsInViewport())
 	{
 		LobbyMainWidget->UpdatePlayerList();
 	}
 
-	if (JobSelectWidget && JobSelectWidget->IsInViewport())
+	if (IsValid(JobSelectWidget) && JobSelectWidget->IsInViewport())
 	{
 		JobSelectWidget->UpdateJobAvailAbility();
-		JobSelectWidget->UpdatePlayerList();
 	}
 }
 
@@ -137,7 +136,6 @@ void ALobbyPlayerController::OnLobbyPhaseChanged(ELobbyPhase NewPhase)
 			JobSelectWidget->StartUp();
 
 			JobSelectWidget->UpdateJobAvailAbility();
-			JobSelectWidget->UpdatePlayerList();
 		}
 	}
 }

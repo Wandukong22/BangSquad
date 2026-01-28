@@ -373,7 +373,7 @@ UTexture2D* UBSGameInstance::GetJobIcon(EJobType InJobType) const
 {
 	if (JobDataAsset)
 	{
-		return JobDataAsset->GetJobInfo(InJobType).Icon;
+		return JobDataAsset->GetJobIcon(InJobType);
 	}
 	return nullptr;
 }

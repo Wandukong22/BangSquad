@@ -63,4 +63,6 @@ private:
 	void SelectJobClickedHelper(EJobType Job);
 
 	class ALobbyPlayerController* GetLobbyPC();
+
+	void SetJobButtonIcon(UButton* Btn, EJobType Job);
 };

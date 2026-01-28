@@ -3,8 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
-#include "Components/VerticalBox.h"
+#include "JobButton.h"
 #include "Project_Bang_Squad/UI/Base/BaseMenu.h"
 #include "Project_Bang_Squad/Core/BSGameTypes.h"
 #include "JobSelectWidget.generated.h"
@@ -25,40 +24,24 @@ protected:
 
 public:
 	UPROPERTY(meta = (BindWidget))
-	UVerticalBox* PlayerListContainer;
-
-	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
-	TSubclassOf<UPlayerRow> PlayerRowClass;
-	
+	UJobButton* Btn_SelectTitan;
 	UPROPERTY(meta = (BindWidget))
-	UButton* Btn_SelectTitan;
+	UJobButton* Btn_SelectStriker;
 	UPROPERTY(meta = (BindWidget))
-	UButton* Btn_SelectStriker;
+	UJobButton* Btn_SelectMage;
 	UPROPERTY(meta = (BindWidget))
-	UButton* Btn_SelectMage;
-	UPROPERTY(meta = (BindWidget))
-	UButton* Btn_SelectPaladin;
+	UJobButton* Btn_SelectPaladin;
 	
 	UPROPERTY(meta = (BindWidget))
 	UButton* Btn_Confirm;
 
-	//직업 버튼 상태 업데이트
 	void UpdateJobAvailAbility();
-
-	//PlayerList 갱신 함수
-	void UpdatePlayerList();
-
 private:
 	EJobType PendingJob = EJobType::None;
-
+	
 	UFUNCTION()
-	void OnPickTitan();
-	UFUNCTION()
-	void OnPickStriker();
-	UFUNCTION()
-	void OnPickMage();
-	UFUNCTION()
-	void OnPickPaladin();
+	void OnJobButtonClicked(EJobType SelectedJob);
+	
 	UFUNCTION()
 	void OnConfirmClicked();
 };
