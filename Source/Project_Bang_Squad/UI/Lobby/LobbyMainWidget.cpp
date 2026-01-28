@@ -12,22 +12,17 @@ void ULobbyMainWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (Btn_SelectTitan) Btn_SelectTitan->OnClicked.AddDynamic(this, &ULobbyMainWidget::OnBtn_SelectTitanClicked);
-	if (Btn_SelectStriker) Btn_SelectStriker->OnClicked.AddDynamic(this, &ULobbyMainWidget::OnBtn_SelectStrikerClicked);
-	if (Btn_SelectMage) Btn_SelectMage->OnClicked.AddDynamic(this, &ULobbyMainWidget::OnBtn_SelectMageClicked);
-	if (Btn_SelectPaladin) Btn_SelectPaladin->OnClicked.AddDynamic(this, &ULobbyMainWidget::OnBtn_SelectPaladinClicked);
+	if (Btn_SelectTitan) Btn_SelectTitan->OnJobSelected.AddDynamic(this, &ULobbyMainWidget::OnJobButtonClicked);
+	if (Btn_SelectStriker) Btn_SelectStriker->OnJobSelected.AddDynamic(this, &ULobbyMainWidget::OnJobButtonClicked);
+	if (Btn_SelectMage) Btn_SelectMage->OnJobSelected.AddDynamic(this, &ULobbyMainWidget::OnJobButtonClicked);
+	if (Btn_SelectPaladin) Btn_SelectPaladin->OnJobSelected.AddDynamic(this, &ULobbyMainWidget::OnJobButtonClicked);
 	if (Btn_Ready) Btn_Ready->OnClicked.AddDynamic(this, &ULobbyMainWidget::OnBtn_ReadyClicked);
-
-	SetJobButtonIcon(Btn_SelectTitan, EJobType::Titan);
-	SetJobButtonIcon(Btn_SelectStriker, EJobType::Striker);
-	SetJobButtonIcon(Btn_SelectMage, EJobType::Mage);
-	SetJobButtonIcon(Btn_SelectPaladin, EJobType::Paladin);
 }
 
 void ULobbyMainWidget::UpdatePlayerList()
 {
 	if (!PlayerListContainer || !PlayerRowClass) return;
-
+	
 	PlayerListContainer->ClearChildren();
 
 	ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>();
@@ -81,6 +76,7 @@ void ULobbyMainWidget::UpdatePlayerList()
 			}
 		}
 	}
+	UpdateJobButtonStates();
 }
 
 void ULobbyMainWidget::SetMenuVisibility(bool bVisible)
@@ -91,26 +87,6 @@ void ULobbyMainWidget::SetMenuVisibility(bool bVisible)
 	}
 }
 
-void ULobbyMainWidget::OnBtn_SelectTitanClicked()
-{
-	SelectJobClickedHelper(EJobType::Titan);
-}
-
-void ULobbyMainWidget::OnBtn_SelectStrikerClicked()
-{
-	SelectJobClickedHelper(EJobType::Striker);
-}
-
-void ULobbyMainWidget::OnBtn_SelectMageClicked()
-{
-	SelectJobClickedHelper(EJobType::Mage);
-}
-
-void ULobbyMainWidget::OnBtn_SelectPaladinClicked()
-{
-	SelectJobClickedHelper(EJobType::Paladin);
-}
-
 void ULobbyMainWidget::OnBtn_ReadyClicked()
 {
 	if (auto PC = GetLobbyPC())
@@ -119,33 +95,37 @@ void ULobbyMainWidget::OnBtn_ReadyClicked()
 	}
 }
 
-void ULobbyMainWidget::SelectJobClickedHelper(EJobType Job)
+void ULobbyMainWidget::OnJobButtonClicked(EJobType SelectedJob)
 {
 	if (auto PC = GetLobbyPC())
-		PC->RequestChangePreviewJob(Job);
-}
+		PC->RequestChangePreviewJob(SelectedJob);}
 
-void ULobbyMainWidget::SetJobButtonIcon(UButton* Btn, EJobType Job)
+void ULobbyMainWidget::UpdateJobButtonStates()
 {
-	if (!Btn) return;
+	// 1. 내 플레이어 컨트롤러 & 스테이트 가져오기
+	ALobbyPlayerController* PC = GetLobbyPC();
+	if (!PC) return;
+    
+	ALobbyPlayerState* MyPS = PC->GetPlayerState<ALobbyPlayerState>();
+	if (!MyPS) return;
 
-	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-	if (!GI) return;
+	EJobType MyCurrentJob = MyPS->CurrentJob;
 
-	UTexture2D* Icon = GI->GetJobIcon(Job);
-	if (!Icon) return;
+	// 2. 람다 함수로 중복 제거 (버튼이 유효한지 체크 후 상태 설정)
+	auto SetButtonState = [&](UJobButton* Btn, EJobType TargetJob)
+	{
+		if (Btn)
+		{
+			// 내 직업과 버튼의 직업이 같으면 True(켜짐), 다르면 False(꺼짐)
+			Btn->SetSelectedState(MyCurrentJob == TargetJob);
+		}
+	};
 
-	FButtonStyle NewStyle = Btn->WidgetStyle;
-
-	FSlateBrush Brush;
-	Brush.SetResourceObject(Icon);
-	Brush.DrawAs = ESlateBrushDrawType::Image;
-
-	NewStyle.SetNormal(Brush);
-	NewStyle.SetHovered(Brush);
-	NewStyle.SetPressed(Brush);
-
-	Btn->SetStyle(NewStyle);
+	// 3. 각 버튼에 적용
+	SetButtonState(Btn_SelectTitan, EJobType::Titan);
+	SetButtonState(Btn_SelectStriker, EJobType::Striker);
+	SetButtonState(Btn_SelectMage, EJobType::Mage);
+	SetButtonState(Btn_SelectPaladin, EJobType::Paladin);
 }
 
 class ALobbyPlayerController* ULobbyMainWidget::GetLobbyPC()
