@@ -15,5 +15,6 @@ void AMiniGamePlayerController::CreateGameWidget()
 		{
 			MiniGameWidget->AddToViewport();
 		}
+		RegisterManagedWidget(MiniGameWidget);
 	}
 }

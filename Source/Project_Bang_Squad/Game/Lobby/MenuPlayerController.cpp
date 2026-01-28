@@ -16,15 +16,16 @@ void AMenuPlayerController::BeginPlay()
 		UMainMenu* MainMenuWidget = CreateWidget<UMainMenu>(this, MainMenuWidgetClass);
 		if (MainMenuWidget)
 		{
+			
 			// StartUp()이 AddToViewport + 입력모드 설정을 모두 처리함
 			MainMenuWidget->StartUp();
+			
+			RegisterManagedWidget(MainMenuWidget);
 
-			UGameInstance* GI = GetGameInstance();
-			UBSGameInstance* MyGI = Cast<UBSGameInstance>(GI);
-			if (MyGI)
+			if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 			{
 				// ✨ [핵심] 인스턴스에 위젯 등록
-				MyGI->SetMainMenuWidget(MainMenuWidget);
+				GI->SetMainMenuWidget(MainMenuWidget);
 				UE_LOG(LogTemp, Warning, TEXT("✅ Menu UI -> GameInstance 연결 성공!"));
 			}
 		}

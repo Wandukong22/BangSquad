@@ -109,14 +109,7 @@ void AMapPortal::ProcessLevelTransition()
 	if (GI)
 	{
 		GI->SetbHasVisitedMap(true);
-	}
-
-	FString LevelPath = TargetLevel.GetLongPackageName();
-
-	if (!LevelPath.IsEmpty())
-	{
-		FString FinalPath = LevelPath + TEXT("?listen");
-		GetWorld()->ServerTravel(FinalPath);
+		GI->MoveToStage(TargetStageIndex, TargetSection);
 	}
 }
 

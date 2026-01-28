@@ -5,6 +5,8 @@
 #include "Project_Bang_Squad/UI/Menu/MainMenu.h"
 #include "OnlineSessionSettings.h"
 #include "OnlineSubsystem.h"
+#include "Project_Bang_Squad/Data/DataAsset/BSJobData.h"
+#include "Project_Bang_Squad/Data/DataAsset/BSMapData.h"
 
 const static FName SESSION_NAME = TEXT("GameSession");
 const static FName SESSION_SETTINGS_KEY = TEXT("FREE");
@@ -160,15 +162,9 @@ void UBSGameInstance::OpenMainMenuLevel()
 
 void UBSGameInstance::OnCreateSessionComplete(FName InSessionName, bool IsSuccess)
 {
-	if (!IsSuccess)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Could not Createsession"));
-		return;
-	}
-
-	UWorld* World = GetWorld();
-	if (!World) return;
-	World->ServerTravel("/Game/TeamShare/Level/LobbyMap?listen");
+	if (!IsSuccess) return;
+	
+	MoveToStage(EStageIndex::Lobby, EStageSection::Main);
 }
 
 void UBSGameInstance::OnDestroySessionComplete(FName InSessionName, bool IsSuccess)
@@ -362,4 +358,43 @@ bool UBSGameInstance::IsMonsterDead(uint32 ActorHash) const
 void UBSGameInstance::ClearMonsterData()
 {
 	DeadMonsterIDs.Empty();
+}
+
+TSubclassOf<ACharacter> UBSGameInstance::GetCharacterClass(EJobType InJobType) const
+{
+	if (JobDataAsset)
+	{
+		return JobDataAsset->GetCharacterClass(InJobType);
+	}
+	return nullptr;
+}
+
+UTexture2D* UBSGameInstance::GetJobIcon(EJobType InJobType) const
+{
+	if (JobDataAsset)
+	{
+		return JobDataAsset->GetJobIcon(InJobType);
+	}
+	return nullptr;
+}
+
+FLinearColor UBSGameInstance::GetJobColor(EJobType InJobType) const
+{
+	if (JobDataAsset)
+	{
+		return JobDataAsset->GetJobColor(InJobType);
+	}
+	return FLinearColor::White;
+}
+
+void UBSGameInstance::MoveToStage(EStageIndex InStage, EStageSection InSection)
+{
+	if (!MapDataAsset) return;
+
+	FString Path = MapDataAsset->GetMapPath(InStage, InSection);
+
+	if (!Path.IsEmpty())
+	{
+		GetWorld()->ServerTravel(Path + "?listen");
+	}
 }

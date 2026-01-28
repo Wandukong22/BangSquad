@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Project_Bang_Squad/Core/BSGameTypes.h"
 #include "MapPortal.generated.h"
 
 class UTextRenderComponent;
@@ -32,9 +33,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "BS|Components")
 	TObjectPtr<UTextRenderComponent> CountdownText;
 
-	//맵 경로
 	UPROPERTY(EditAnywhere, Category = "BS|Map")
-	TSoftObjectPtr<UWorld> TargetLevel;
+	EStageIndex TargetStageIndex = EStageIndex::None;
+
+	UPROPERTY(EditAnywhere, Category = "BS|Map")
+	EStageSection TargetSection = EStageSection::Main;
 
 	//Overlap
 	UFUNCTION()

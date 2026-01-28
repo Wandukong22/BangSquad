@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/VerticalBox.h"
-#include "Project_Bang_Squad/UI/PlayerRow.h"
+#include "Project_Bang_Squad/UI/Stage/PlayerRow.h"
 #include "StageMainWidget.generated.h"
 
 /**

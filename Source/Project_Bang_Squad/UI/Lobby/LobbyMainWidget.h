@@ -6,9 +6,10 @@
 #include "Blueprint/UserWidget.h"
 #include "Project_Bang_Squad/UI/Base/BaseMenu.h"
 #include "Components/VerticalBox.h"
+#include "Project_Bang_Squad/Core/BSGameTypes.h"
 #include "LobbyMainWidget.generated.h"
 
-enum class EJobType : uint8;
+class UJobButton;
 class UButton;
 class UTextBlock;
 
@@ -24,13 +25,13 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UWidget* MenuControlArea;
 	UPROPERTY(meta = (BindWidget))
-	UButton* Btn_SelectTitan;
+	UJobButton* Btn_SelectTitan;
 	UPROPERTY(meta = (BindWidget))
-	UButton* Btn_SelectStriker;
+	UJobButton* Btn_SelectStriker;
 	UPROPERTY(meta = (BindWidget))
-	UButton* Btn_SelectMage;
+	UJobButton* Btn_SelectMage;
 	UPROPERTY(meta = (BindWidget))
-	UButton* Btn_SelectPaladin;
+	UJobButton* Btn_SelectPaladin;
 	UPROPERTY(meta = (BindWidget))
 	UButton* Btn_Ready;
 	UPROPERTY(meta = (BindWidget))
@@ -50,17 +51,12 @@ public:
 
 private:
 	UFUNCTION()
-	void OnBtn_SelectTitanClicked();
-	UFUNCTION()
-	void OnBtn_SelectStrikerClicked();
-	UFUNCTION()
-	void OnBtn_SelectMageClicked();
-	UFUNCTION()
-	void OnBtn_SelectPaladinClicked();
-	UFUNCTION()
 	void OnBtn_ReadyClicked();
-
-	void SelectJobClickedHelper(EJobType Job);
-
+	
 	class ALobbyPlayerController* GetLobbyPC();
+
+	UFUNCTION()
+	void OnJobButtonClicked(EJobType SelectedJob);
+
+	void UpdateJobButtonStates();
 };

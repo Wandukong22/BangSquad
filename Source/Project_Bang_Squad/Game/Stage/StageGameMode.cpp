@@ -25,8 +25,14 @@ AStageGameMode::AStageGameMode()
 void AStageGameMode::SpawnPlayerCharacter(AController* Controller, EJobType JobType)
 {
 	//데이터 확인
-	if (!Controller || !JobCharacterMap.Contains(JobType)) return;
+	if (!Controller) return;
 
+	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
+	if (!GI) return;
+
+	TSubclassOf<ACharacter> PawnClass = GI->GetCharacterClass(JobType);
+	if (!PawnClass) return;
+	
 	//기존에 붙어있던 폰이 있다면 제거
 	if (APawn* OldPawn = Controller->GetPawn())
 	{
@@ -70,7 +76,6 @@ void AStageGameMode::SpawnPlayerCharacter(AController* Controller, EJobType JobT
 	FRotator SpawnRotation = SpawnTransform.GetRotation().Rotator();
 
 	// 소환 (충돌 처리 옵션 추가: 겹쳐도 강제 소환)
-	UClass* PawnClass = JobCharacterMap[JobType];
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
@@ -140,16 +145,15 @@ void AStageGameMode::ExecuteRespawn(AController* Controller)
 	SpawnPlayerCharacter(Controller, JobToSpawn);
 }
 
-void AStageGameMode::ClearStageAndMove(FString NextMapName)
+void AStageGameMode::ClearStageAndMove(EStageIndex NextStage, EStageSection NextSection)
 {
 	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 	{
+		//TODO: DeathCount 제거
 		//GI->ResetDeathPenalty();
-	}
 
-	//맵 이동
-	FString Url = "/Game/TeamShare/Level/" + NextMapName + "?listen";
-	GetWorld()->ServerTravel(Url);
+		GI->MoveToStage(NextStage, NextSection);
+	}
 }
 
 bool AStageGameMode::IsMiniGameMap() const

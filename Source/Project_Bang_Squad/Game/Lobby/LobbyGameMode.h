@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "Project_Bang_Squad/Core/BSGameInstance.h"
+#include "Project_Bang_Squad/Core/BSGameTypes.h"
 #include "LobbyGameMode.generated.h"
 
 /**
@@ -17,10 +17,6 @@ class PROJECT_BANG_SQUAD_API ALobbyGameMode : public AGameModeBase
 
 public:
 	ALobbyGameMode();
-
-	//TODO: 바꿀 가능성O / 직업별 캐릭터 BP 설정
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BS|Lobby")
-	TMap<EJobType, TSubclassOf<ACharacter>> JobCharacterMap;
 
 	//캐릭터 교체
 	void ChangePlayerCharacter(AController* Controller, EJobType NewJob);
@@ -37,4 +33,8 @@ public:
 	TSet<EJobType> ConfirmedJobs;
 
 	bool TryConfirmJob(EJobType Job, class ALobbyPlayerState* RequestingPS);
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "BS|Lobby")
+	int32 PlayerCount = 4;
 };

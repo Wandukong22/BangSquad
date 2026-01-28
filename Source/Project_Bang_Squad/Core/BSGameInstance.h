@@ -3,22 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BSGameTypes.h"
 #include "Project_Bang_Squad/Core/SessionInterface.h"
 #include "Engine/GameInstance.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "BSGameInstance.generated.h"
 
+class UBSMapData;
+class UBSJobData;
 class UMainMenu;
-
-UENUM(BlueprintType)
-enum class EJobType : uint8
-{
-	None,
-	Titan,
-	Striker,
-	Mage,
-	Paladin
-};
 
 USTRUCT()
 struct FServerData
@@ -140,5 +133,25 @@ public:
 
 	UFUNCTION()
 	void ClearMonsterData();
+#pragma endregion
+
+#pragma region JobData
+	UPROPERTY(EditDefaultsOnly, Category = "BS|Data")
+	TObjectPtr<UBSJobData> JobDataAsset;
+	UFUNCTION(BlueprintCallable, Category = "BS|Data")
+	TSubclassOf<ACharacter> GetCharacterClass(EJobType InJobType) const;
+	UFUNCTION(BlueprintCallable, Category = "BS|Data")
+	UTexture2D* GetJobIcon(EJobType InJobType) const;
+	UFUNCTION(BlueprintCallable, Category = "BS|Data")
+	FLinearColor GetJobColor(EJobType InJobType) const;
+#pragma endregion
+
+#pragma region Map Data
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "BS|Data")
+	TObjectPtr<UBSMapData> MapDataAsset;
+
+	UFUNCTION()
+	void MoveToStage(EStageIndex InStage, EStageSection InSection);
 #pragma endregion 
 };

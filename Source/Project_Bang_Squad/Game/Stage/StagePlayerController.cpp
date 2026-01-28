@@ -41,16 +41,6 @@ void AStagePlayerController::BeginPlay()
 		//UI
 		CreateGameWidget();
 
-		/*if (StageMainWidgetClass)
-		{
-			StageMainWidget = CreateWidget<UStageMainWidget>(this, StageMainWidgetClass);
-			if (StageMainWidget)
-			{
-				StageMainWidget->SetVisibility(ESlateVisibility::Visible);
-				StageMainWidget->AddToViewport();
-			}
-		}*/
-
 		FInputModeGameOnly GameInputMode;
 		SetInputMode(GameInputMode);
 		bShowMouseCursor = false;
@@ -96,10 +86,12 @@ void AStagePlayerController::CreateGameWidget()
 {
 	if (StageMainWidgetClass)
 	{
-		UStageMainWidget* StageWidget = CreateWidget<UStageMainWidget>(this, StageMainWidgetClass);
-		if (StageWidget)
+		StageMainWidget = CreateWidget<UStageMainWidget>(this, StageMainWidgetClass);
+		if (StageMainWidget)
 		{
-			StageWidget->AddToViewport();
+			StageMainWidget->AddToViewport();
+
+			RegisterManagedWidget(StageMainWidget);
 		}
 	}
 }

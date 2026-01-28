@@ -17,9 +17,6 @@ class PROJECT_BANG_SQUAD_API AMiniGameMode : public AGameModeBase
 
 public:
 	AMiniGameMode();
-	
-	UPROPERTY(EditDefaultsOnly, Category = "BS|Class")
-	TMap<EJobType, TSubclassOf<ACharacter>> JobCharacterMap;
 
 	//접속 시 스폰 처리
 	virtual void PostLogin(APlayerController* NewPlayer) override;

@@ -23,14 +23,15 @@ void ALobbyPlayerController::BeginPlay()
 			if (LobbyMainWidget)
 			{
 				LobbyMainWidget->AddToViewport();
-
-				bShowMouseCursor = true;
-				SetInputMode(FInputModeGameAndUI());
+				RegisterManagedWidget(LobbyMainWidget);
+				
+				SetMenuState(true);
 			}
 		}
 		//GameState 복제 안됐을 수도 있어서 Timer씀
-		GetWorld()->GetTimerManager().SetTimer(InitTimerHandle, this, &ALobbyPlayerController::InitLobbyUI, 0.2f, true);
+		//GetWorld()->GetTimerManager().SetTimer(InitTimerHandle, this, &ALobbyPlayerController::InitLobbyUI, 0.2f, true);
 
+		InitLobbyUI();
 		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 		{
 			if (!GI->UserNickname.IsEmpty())
@@ -61,19 +62,23 @@ void ALobbyPlayerController::RequestConfirmedJob(EJobType FinalJob)
 
 void ALobbyPlayerController::RefreshLobbyUI()
 {
+	/*if (!GetWorld() || GetWorld()->IsInSeamlessTravel())
+	{
+		return; 
+	}*/
+	
 	ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>();
 	if (GS && GS->CurrentPhase == ELobbyPhase::GameStarting)
 		return;
 	
-	if (LobbyMainWidget && LobbyMainWidget->IsInViewport())
+	if (IsValid(LobbyMainWidget) && LobbyMainWidget->IsInViewport())
 	{
 		LobbyMainWidget->UpdatePlayerList();
 	}
 
-	if (JobSelectWidget && JobSelectWidget->IsInViewport())
+	if (IsValid(JobSelectWidget) && JobSelectWidget->IsInViewport())
 	{
 		JobSelectWidget->UpdateJobAvailAbility();
-		JobSelectWidget->UpdatePlayerList();
 	}
 }
 
@@ -137,7 +142,6 @@ void ALobbyPlayerController::OnLobbyPhaseChanged(ELobbyPhase NewPhase)
 			JobSelectWidget->StartUp();
 
 			JobSelectWidget->UpdateJobAvailAbility();
-			JobSelectWidget->UpdatePlayerList();
 		}
 	}
 }
