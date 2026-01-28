@@ -6,13 +6,14 @@
 #include "LobbyGameState.h"
 #include "GameFramework/PlayerController.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
+#include "Project_Bang_Squad/Game/Base/BSPlayerController.h"
 #include "LobbyPlayerController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECT_BANG_SQUAD_API ALobbyPlayerController : public APlayerController
+class PROJECT_BANG_SQUAD_API ALobbyPlayerController : public ABSPlayerController
 {
 	GENERATED_BODY()
 

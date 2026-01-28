@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Project_Bang_Squad/Game/Base/BSPlayerController.h"
 #include "StagePlayerController.generated.h"
 
 class UStageMainWidget;
@@ -12,7 +13,7 @@ enum class EJobType : uint8;
  * 
  */
 UCLASS()
-class PROJECT_BANG_SQUAD_API AStagePlayerController : public APlayerController
+class PROJECT_BANG_SQUAD_API AStagePlayerController : public ABSPlayerController
 {
 	GENERATED_BODY()
 
@@ -72,7 +73,7 @@ private:
 	TSubclassOf<UStageMainWidget> StageMainWidgetClass;
 
 	UPROPERTY()
-	TObjectPtr<UStageMainWidget> StageMainWidget;
+	TObjectPtr<UStageMainWidget> StageMainWidget = nullptr;
 
 	// 에디터에서 생성한 MPC 에셋을 넣을 변수
 	UPROPERTY(EditDefaultsOnly, Category = "BS|Visual")
