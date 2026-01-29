@@ -117,7 +117,7 @@ void ALobbyGameMode::CheckConfirmedJob()
 
 		//상태 동기화 시간 벌기 위해 1초 뒤 이동
 		FTimerHandle TravelTimer;
-		GetWorldTimerManager().SetTimer(TravelTimer, [this]()
+		GetWorldTimerManager().SetTimer(TravelTimer, [this, WeakThis = TWeakObjectPtr<ALobbyGameMode>(this)]()
 		{
 			if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 			{

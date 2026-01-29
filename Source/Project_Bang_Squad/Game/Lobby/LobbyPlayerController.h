@@ -52,12 +52,16 @@ protected:
 	UFUNCTION(Client, Reliable)
 	void Client_JobSelectFailed(EJobType FailedJob);
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
 	TSubclassOf<class UUserWidget> LobbyMainWidgetClass;
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
 	TSubclassOf<class UUserWidget> JobSelectWidgetClass;
+	UPROPERTY()
 	class ULobbyMainWidget* LobbyMainWidget = nullptr;
+	UPROPERTY()
 	class UJobSelectWidget* JobSelectWidget = nullptr;
 
 	//GameState 초기화 대기용
