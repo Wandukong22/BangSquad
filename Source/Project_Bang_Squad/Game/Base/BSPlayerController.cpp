@@ -5,16 +5,11 @@
 
 #include "Blueprint/UserWidget.h"
 
-void ABSPlayerController::RegisterManagedWidget(UUserWidget* InWidget)
+void ABSPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (InWidget)
-		ManagedWidgets.Add(InWidget);
-}
+	Super::EndPlay(EndPlayReason);
 
-void ABSPlayerController::SeamlessTravelFrom(class APlayerController* OldPC)
-{
-	Super::SeamlessTravelFrom(OldPC);
-
+	// 레벨 이동이나 종료 시 관리하던 위젯들을 모두 제거
 	for (UUserWidget* Widget : ManagedWidgets)
 	{
 		if (IsValid(Widget))
@@ -23,4 +18,10 @@ void ABSPlayerController::SeamlessTravelFrom(class APlayerController* OldPC)
 		}
 	}
 	ManagedWidgets.Empty();
+}
+
+void ABSPlayerController::RegisterManagedWidget(UUserWidget* InWidget)
+{
+	if (InWidget)
+		ManagedWidgets.Add(InWidget);
 }

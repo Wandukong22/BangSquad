@@ -19,8 +19,7 @@ protected:
 	UPROPERTY()
 	TArray<UUserWidget*> ManagedWidgets;
 
-	//Seamless Travel 시작 시 호출
-	virtual void SeamlessTravelFrom(class APlayerController* OldPC) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 public:
 	void RegisterManagedWidget(UUserWidget* InWidget);
 };

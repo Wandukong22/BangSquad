@@ -62,10 +62,10 @@ void ALobbyPlayerController::RequestConfirmedJob(EJobType FinalJob)
 
 void ALobbyPlayerController::RefreshLobbyUI()
 {
-	/*if (!GetWorld() || GetWorld()->IsInSeamlessTravel())
+	if (!GetWorld() || GetWorld()->IsInSeamlessTravel())
 	{
 		return; 
-	}*/
+	}
 	
 	ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>();
 	if (GS && GS->CurrentPhase == ELobbyPhase::GameStarting)
@@ -79,6 +79,31 @@ void ALobbyPlayerController::RefreshLobbyUI()
 	if (IsValid(JobSelectWidget) && JobSelectWidget->IsInViewport())
 	{
 		JobSelectWidget->UpdateJobAvailAbility();
+	}
+}
+
+void ALobbyPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	// 1. 월드가 유효한지 먼저 체크! (트래블 중에는 null일 수 있음)
+	// 0x00000000 크래시는 보통 여기서 GetWorld()가 null인데 GetTimerManager()를 불러서 발생함
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(InitTimerHandle);
+	}
+
+	// 2. IsValid로 안전하게 체크 (헤더에 UPROPERTY 없으면 여기서 죽음)
+	if (IsValid(LobbyMainWidget))
+	{
+		LobbyMainWidget->RemoveFromParent();
+		LobbyMainWidget = nullptr;
+	}
+
+	if (IsValid(JobSelectWidget))
+	{
+		JobSelectWidget->RemoveFromParent();
+		JobSelectWidget = nullptr;
 	}
 }
 
