@@ -1,40 +1,32 @@
-#include "StageBossGameMode.h"
-#include "StageBossGameState.h"
-#include "Stage1Boss.h"
-#include "Kismet/GameplayStatics.h"
+#include "Project_Bang_Squad/Character/StageBoss/StageBossGameMode.h"
+#include "Project_Bang_Squad/Character/StageBoss/Stage1Boss.h"
 #include "GameFramework/PlayerController.h"
+#include "TimerManager.h"
+#include "Kismet/GameplayStatics.h"
 
 AStageBossGameMode::AStageBossGameMode()
 {
-	GameStateClass = AStageBossGameState::StaticClass();
-	MaxTeamLives = 10;
+	// 기본값 설정
 }
 
 void AStageBossGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// 게임 시작 시 GameState에 초기 목숨 설정
-	if (AStageBossGameState* GS = GetGameState<AStageBossGameState>())
-	{
-		GS->SetTeamLives(MaxTeamLives);
-	}
 }
 
-// ============================================================================
-// [1] QTE Logic
-// ============================================================================
+// --- [QTE 로직] ---
+
 void AStageBossGameMode::TriggerSpearQTE(AStage1Boss* BossActor)
 {
+	// 권한 확인 및 유효성 검사
+	if (!HasAuthority() || !IsValid(BossActor)) return;
+
 	CurrentBoss = BossActor;
 	AccumulatedInputCount = 0;
 
-	if (AStageBossGameState* GS = GetGameState<AStageBossGameState>())
-		GS->SetQTEStatus(true, GoalQTECount);
-
-	if (CurrentBoss) CurrentBoss->PlayQTEVisuals(QTEDuration);
-
+	// 타이머 시작 (Tick 사용 안함)
 	GetWorldTimerManager().SetTimer(QTETimerHandle, this, &AStageBossGameMode::OnQTETimeout, QTEDuration, false);
+	UE_LOG(LogTemp, Warning, TEXT("[BossGameMode] QTE Started!"));
 }
 
 void AStageBossGameMode::ProcessQTEInput(AController* PlayerController)
@@ -42,121 +34,100 @@ void AStageBossGameMode::ProcessQTEInput(AController* PlayerController)
 	if (!GetWorldTimerManager().IsTimerActive(QTETimerHandle)) return;
 
 	AccumulatedInputCount++;
-	if (AStageBossGameState* GS = GetGameState<AStageBossGameState>())
-		GS->UpdateQTECount(AccumulatedInputCount);
 
-	if (AccumulatedInputCount >= GoalQTECount) EndSpearQTE(true);
+	// 목표치 달성 시 성공 처리
+	if (AccumulatedInputCount >= GoalQTECount)
+	{
+		EndSpearQTE(true);
+	}
 }
 
-void AStageBossGameMode::OnQTETimeout() { EndSpearQTE(false); }
+void AStageBossGameMode::OnQTETimeout()
+{
+	EndSpearQTE(false);
+}
 
 void AStageBossGameMode::EndSpearQTE(bool bSuccess)
 {
 	GetWorldTimerManager().ClearTimer(QTETimerHandle);
-	if (AStageBossGameState* GS = GetGameState<AStageBossGameState>())
-		GS->SetQTEStatus(false, GoalQTECount);
 
-	if (CurrentBoss) CurrentBoss->HandleQTEResult(bSuccess);
+	if (IsValid(CurrentBoss))
+	{
+		// 보스에게 결과 전달 (보스 클래스에 해당 함수가 없다면 주석 처리하거나 추가 구현 필요)
+		// CurrentBoss->OnQTEFinished(bSuccess);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("QTE Finished. Success: %d"), bSuccess);
 }
 
-// ============================================================================
-// [2] Death & Respawn Logic
-// ============================================================================
+// --- [부활 및 전멸 시스템] ---
 
 void AStageBossGameMode::OnPlayerDied(AController* DeadController)
 {
-	if (!DeadController) return;
-
-	// 현재 목숨 확인 (GameState에서 가져옴)
-	int32 CurrentLives = 0;
-	if (AStageBossGameState* GS = GetGameState<AStageBossGameState>())
-	{
-		CurrentLives = GS->TeamLives;
-	}
-
-	// 목숨이 없으면 전멸 체크 후 리턴
-	if (CurrentLives <= 0)
-	{
-		CheckPartyWipe();
-		return;
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Player Died. Respawn in %.1f sec"), RespawnDelay);
-
-	// 타이머 설정 (AttemptRespawn 호출)
-	FTimerHandle RespawnTimer;
-	FTimerDelegate RespawnDelegate;
-	RespawnDelegate.BindUObject(this, &AStageBossGameMode::AttemptRespawn, DeadController);
-	GetWorldTimerManager().SetTimer(RespawnTimer, RespawnDelegate, RespawnDelay, false);
+	// RequestRespawn으로 로직 일원화
+	RequestRespawn(DeadController);
 }
 
-void AStageBossGameMode::AttemptRespawn(AController* ControllerToRespawn)
+void AStageBossGameMode::RequestRespawn(AController* Controller)
 {
-	AStageBossGameState* GS = GetGameState<AStageBossGameState>();
-	if (!GS) return;
+	if (!Controller) return;
 
-	if (GS->TeamLives > 0)
+	// 팀 목숨 차감 로직
+	if (MaxTeamLives > 0)
 	{
-		// 1. 목숨 차감 (GameState 업데이트)
-		GS->SetTeamLives(GS->TeamLives - 1);
+		MaxTeamLives--;
+		UE_LOG(LogTemp, Warning, TEXT("Team Life Used. Remaining: %d"), MaxTeamLives);
 
-		// 2. 부모 클래스의 스폰 함수 혹은 기본 RestartPlayer 사용
-		// AStageGameMode::SpawnPlayerCharacter를 사용하는 것이 직업 유지에 유리함
-		// ExecuteRespawn(ControllerToRespawn); // 부모 클래스 함수 활용 권장
-		RestartPlayer(ControllerToRespawn); // 혹은 기본 부활
-
-		UE_LOG(LogTemp, Log, TEXT("Player Respawned. Lives Left: %d"), GS->TeamLives);
+		// [중요] 부모 클래스(AStageGameMode)의 리스폰 로직(위치 계산, 스폰 등)을 그대로 사용
+		Super::RequestRespawn(Controller);
 	}
 	else
 	{
+		UE_LOG(LogTemp, Error, TEXT("No Lives Left. Checking Wipe..."));
 		CheckPartyWipe();
 	}
 }
 
 void AStageBossGameMode::CheckPartyWipe()
 {
-	AStageBossGameState* GS = GetGameState<AStageBossGameState>();
-	if (GS && GS->TeamLives > 0) return; // 목숨 남았으면 전멸 아님
+	bool bAnyAlive = false;
 
-	// 살아있는 플레이어 Pawn 확인
-	bool bAnySurvivor = false;
+	// 서버에 있는 모든 플레이어 컨트롤러 검사
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
 		if (APlayerController* PC = It->Get())
 		{
-			if (PC->GetPawn() && !PC->GetPawn()->IsHidden())
+			// 폰이 살아있다면 전멸 아님
+			if (PC->GetPawn())
 			{
-				bAnySurvivor = true;
+				bAnyAlive = true;
 				break;
 			}
 		}
 	}
 
-	if (!bAnySurvivor)
+	if (!bAnyAlive)
 	{
-		UE_LOG(LogTemp, Error, TEXT(">>> GAME OVER: PARTY WIPE <<<"));
-		EndStage(false);
+		EndStage(false); // 패배
 	}
 }
 
 void AStageBossGameMode::OnBossKilled()
 {
-	UE_LOG(LogTemp, Warning, TEXT(">>> VICTORY: BOSS KILLED <<<"));
-	EndStage(true);
+	EndStage(true); // 승리
 }
 
 void AStageBossGameMode::EndStage(bool bIsVictory)
 {
-	// TODO: 결과창 UI 띄우기, 로비로 이동 등
-	if (!bIsVictory)
+	if (bIsVictory)
 	{
-		// 5초 뒤 재시작
-		FTimerHandle RestartTimer;
-		GetWorldTimerManager().SetTimer(RestartTimer, this, &AStageBossGameMode::RestartStage, 5.0f, false);
+		UE_LOG(LogTemp, Warning, TEXT("Boss Cleared! Victory!"));
+		// 승리 시 부모의 스테이지 이동 로직 활용 가능
+		// ClearStageAndMove(EStageIndex::Stage2); 
 	}
-}
-
-void AStageBossGameMode::RestartStage()
-{
-	GetWorld()->ServerTravel("?Restart", false);
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Mission Failed."));
+		// 패배 처리 (게임 오버 UI 등)
+	}
 }
