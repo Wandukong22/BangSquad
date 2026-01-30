@@ -156,7 +156,7 @@ void AMiniGameMode::CheckAllPlayersFinished()
 	int32 TotalPlayers = GetNumPlayers();
 	if (TotalPlayers <= 0) return;
 
-	if (FinishedPlayers.Num() >= 1)
+	if (FinishedPlayers.Num() >= TotalPlayers)
 	{
 		UWorld* World = GetWorld();
 		if (World)
