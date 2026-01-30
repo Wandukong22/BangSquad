@@ -7,7 +7,7 @@ AStageBossBase::AStageBossBase()
 {
     // 멀티플레이어 설정
     bReplicates = true;
-    NetUpdateFrequency = 100.f; // 보스는 움직임과 상태 변화가 중요하므로 빈도를 높게 유지
+    SetNetUpdateFrequency(100.0f); // 보스는 움직임과 상태 변화가 중요하므로 빈도를 높게 유지
 }
 
 void AStageBossBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

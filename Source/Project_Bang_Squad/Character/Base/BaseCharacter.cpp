@@ -53,8 +53,8 @@ ABaseCharacter::ABaseCharacter()
 	//복제 설정
 	bReplicates = true;
 	SetReplicateMovement(true);
-	NetUpdateFrequency = 100.0f;     // 1초에 100번 상태 갱신 시도 (서버 -> 클라)
-	MinNetUpdateFrequency = 66.0f;   // 최소 66번은 보장 (프레임 방어)
+	SetNetUpdateFrequency(100.0f);     // 1초에 100번 상태 갱신 시도 (서버 -> 클라)
+	SetMinNetUpdateFrequency(66.0f);   // 최소 66번은 보장 (프레임 방어)
 }
 
 void ABaseCharacter::BeginPlay()
