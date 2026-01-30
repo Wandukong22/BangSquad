@@ -26,7 +26,7 @@ ABaseCharacter::ABaseCharacter()
 		bUseControllerRotationPitch = false;
 		bUseControllerRotationYaw = true;
 		bUseControllerRotationRoll = false;
-
+		
 		UCharacterMovementComponent* MoveComp = GetCharacterMovement();
 		MoveComp->bOrientRotationToMovement = true;
 		MoveComp->RotationRate = FRotator(0.f, 720.f, 0.f);
