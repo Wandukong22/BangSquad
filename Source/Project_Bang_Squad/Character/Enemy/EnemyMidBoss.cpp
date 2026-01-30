@@ -12,7 +12,12 @@
 
 AEnemyMidBoss::AEnemyMidBoss()
 {
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	// CDO 체크 추가
+	if (!HasAnyFlags(RF_ClassDefaultObject))
+	{
+		GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	}
+	
 	CurrentPhase = EMidBossPhase::Normal;
 	bReplicates = true;
 
@@ -61,9 +66,13 @@ void AEnemyMidBoss::OnConstruction(const FTransform& Transform)
 		{
 			GetMesh()->SetAnimInstanceClass(BossData->AnimClass);
 		}
-		if (GetCharacterMovement())
+		// CDO 체크 추가
+		if (!HasAnyFlags(RF_ClassDefaultObject))
 		{
-			GetCharacterMovement()->MaxWalkSpeed = BossData->WalkSpeed;
+			if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+			{
+				MoveComp->MaxWalkSpeed = BossData->WalkSpeed;
+			}
 		}
 	}
 }

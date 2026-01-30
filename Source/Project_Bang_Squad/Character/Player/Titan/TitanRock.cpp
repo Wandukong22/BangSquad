@@ -12,8 +12,13 @@ ATitanRock::ATitanRock()
 	// 1. 충돌체 생성
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(40.0f);
-	CollisionComp->SetCollisionProfileName(TEXT("BlockAllDynamic"));
-	CollisionComp->SetNotifyRigidBodyCollision(true); // Hit 이벤트 필수
+	
+	// CDO ?? ??
+	if (!HasAnyFlags(RF_ClassDefaultObject))
+	{
+		CollisionComp->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+		CollisionComp->SetNotifyRigidBodyCollision(true); // Hit 이벤트 필수
+	}
 
 	RootComponent = CollisionComp;
 
