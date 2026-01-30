@@ -1,55 +1,51 @@
-#include "Project_Bang_Squad/Character/Player/Titan/TitanRock.h" // °æ·Î°¡ ¸Â´ÂÁö È®ÀÎ!
+#include "Project_Bang_Squad/Character/Player/Titan/TitanRock.h" // ï¿½ï¿½Î°ï¿½ ï¿½Â´ï¿½ï¿½ï¿½ È®ï¿½ï¿½!
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetSystemLibrary.h" // SphereOverlapActors¿ë
-#include "GameFramework/Character.h"    // LaunchCharacter¿ë
+#include "Kismet/KismetSystemLibrary.h" // SphereOverlapActorsï¿½ï¿½
+#include "GameFramework/Character.h"    // LaunchCharacterï¿½ï¿½
 
 ATitanRock::ATitanRock()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	// 1. Ãæµ¹Ã¼ »ý¼º
+	// 1. ï¿½æµ¹Ã¼ ï¿½ï¿½ï¿½ï¿½
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(40.0f);
 	
-	// CDO ?? ??
-	if (!HasAnyFlags(RF_ClassDefaultObject))
-	{
-		CollisionComp->SetCollisionProfileName(TEXT("BlockAllDynamic"));
-		CollisionComp->SetNotifyRigidBodyCollision(true); // Hit ÀÌº¥Æ® ÇÊ¼ö
-	}
+	CollisionComp->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+	CollisionComp->SetNotifyRigidBodyCollision(true); // Hit ï¿½Ìºï¿½Æ® ï¿½Ê¼ï¿½
 
 	RootComponent = CollisionComp;
 
-	// 2. ¹ÙÀ§ ¸Þ½Ã »ý¼º
+	// 2. ï¿½ï¿½ï¿½ï¿½ ï¿½Þ½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	RockMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RockMesh"));
 	RockMesh->SetupAttachment(RootComponent);
 	RockMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	// Ãæµ¹ ÀÌº¥Æ® ¹ÙÀÎµù
+	// ï¿½æµ¹ ï¿½Ìºï¿½Æ® ï¿½ï¿½ï¿½Îµï¿½
 	CollisionComp->OnComponentHit.AddDynamic(this, &ATitanRock::OnHit);
 }
 
 void ATitanRock::BeginPlay()
 {
 	Super::BeginPlay();
-	SetLifeSpan(5.0f); // 5ÃÊ µÚ ÀÚµ¿ »èÁ¦
+	SetLifeSpan(5.0f); // 5ï¿½ï¿½ ï¿½ï¿½ ï¿½Úµï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 void ATitanRock::InitializeRock(float InDamage, AActor* InOwner)
 {
 	Damage = InDamage;
 	OwnerCharacter = InOwner;
-	SetOwner(InOwner); // ÁÖÀÎ ¼³Á¤
+	SetOwner(InOwner); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 void ATitanRock::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	// ³ª¸¦ ´øÁø ÁÖÀÎ°ú ¹Ù·Î ºÎµúÈ÷´Â °Í ¹æÁö
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î°ï¿½ ï¿½Ù·ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	if (OtherActor == OwnerCharacter) return;
 
-	// ¹«¾ùÀÌµç ºÎµúÈ÷¸é Æø¹ß
+	// ï¿½ï¿½ï¿½ï¿½ï¿½Ìµï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	Explode();
 }
 
@@ -57,10 +53,10 @@ void ATitanRock::Explode()
 {
 	FVector ExplosionLocation = GetActorLocation();
 
-	// [·Î±×] Æø¹ß È®ÀÎ¿ë
+	// [ï¿½Î±ï¿½] ï¿½ï¿½ï¿½ï¿½ È®ï¿½Î¿ï¿½
 	// UE_LOG(LogTemp, Warning, TEXT("TitanRock Exploded!"));
 
-	// 1. ¹üÀ§ ³» ¾×ÅÍ Ã£±â
+	// 1. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½
 	TArray<AActor*> OverlappedActors;
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
@@ -68,7 +64,7 @@ void ATitanRock::Explode()
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
 
 	TArray<AActor*> IgnoreActors;
-	IgnoreActors.Add(this); // ³ª ÀÚ½Å Á¦¿Ü
+	IgnoreActors.Add(this); // ï¿½ï¿½ ï¿½Ú½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 	UKismetSystemLibrary::SphereOverlapActors(
 		GetWorld(),
@@ -80,15 +76,15 @@ void ATitanRock::Explode()
 		OverlappedActors
 	);
 
-	// 2. µ¥¹ÌÁö ¹× ³Ë¹é Ã³¸®
+	// 2. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ë¹ï¿½ Ã³ï¿½ï¿½
 	for (AActor* Victim : OverlappedActors)
 	{
 		if (!Victim || !Victim->IsValidLowLevel()) continue;
 
-		// ¾Æ±º È®ÀÎ ("Player" ÅÂ±×)
+		// ï¿½Æ±ï¿½ È®ï¿½ï¿½ ("Player" ï¿½Â±ï¿½)
 		bool bIsAlly = Victim->ActorHasTag("Player");
 
-		// Àû±º¿¡°Ô¸¸ µ¥¹ÌÁö
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if (!bIsAlly)
 		{
 			UGameplayStatics::ApplyDamage(
@@ -100,9 +96,9 @@ void ATitanRock::Explode()
 			);
 		}
 
-		// ³Ë¹é (¸ðµÎ Àû¿ë)
+		// ï¿½Ë¹ï¿½ (ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 		FVector LaunchDir = (Victim->GetActorLocation() - ExplosionLocation).GetSafeNormal();
-		LaunchDir.Z = 0.6f; // À§·Î ¶ç¿ì±â
+		LaunchDir.Z = 0.6f; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		LaunchDir.Normalize();
 
 		if (ACharacter* VictimChar = Cast<ACharacter>(Victim))
@@ -118,6 +114,6 @@ void ATitanRock::Explode()
 		}
 	}
 
-	// 3. ÆÄ±«
+	// 3. ï¿½Ä±ï¿½
 	Destroy();
 }
