@@ -27,9 +27,16 @@ AMageCharacter::AMageCharacter()
     bUseControllerRotationPitch = false;
     bUseControllerRotationRoll = false;
     
-    GetCharacterMovement()->MaxWalkSpeed = 550.f;
-    GetCharacterMovement()->bOrientRotationToMovement = false;
-    GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
+    // CDO 체크 추가
+    if (!HasAnyFlags(RF_ClassDefaultObject))
+    {
+        if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+        {
+            MoveComp->MaxWalkSpeed = 550.f;
+            MoveComp->bOrientRotationToMovement = false;
+            MoveComp->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
+        }
+    }
     
     AttackCooldownTime = 1.f;
     UnlockedStageLevel = 1;

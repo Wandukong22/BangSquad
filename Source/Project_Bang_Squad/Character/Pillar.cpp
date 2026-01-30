@@ -14,11 +14,15 @@ APillar::APillar()
     PillarMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PillarMesh"));
     RootComponent = PillarMesh;
 
-    PillarMesh->SetSimulatePhysics(false); 
-    PillarMesh->SetNotifyRigidBodyCollision(true);
-    
-    // 멀티플레이에서 끊김 없이 움직이게 하려면 Collision 설정이 중요함
-    PillarMesh->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+    // CDO 체크 추가
+    if (!HasAnyFlags(RF_ClassDefaultObject))
+    {
+        PillarMesh->SetSimulatePhysics(false); 
+        PillarMesh->SetNotifyRigidBodyCollision(true);
+        
+        // 멀티플레이에서 끊김 없이 움직이게 하려면 Collision 설정이 중요함
+        PillarMesh->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+    }
 }
 
 // 동기화 규칙 설정 

@@ -10,10 +10,14 @@ AMagicBoat::AMagicBoat()
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	RootComponent = MeshComp;
 	
-	// 물리 설정
-	MeshComp->SetSimulatePhysics(true);
-	MeshComp->SetLinearDamping(5.0f); // 미끄러짐 방지
-	MeshComp->SetAngularDamping(2.0f); // 회전 저항
+	// CDO 체크 추가
+	if (!HasAnyFlags(RF_ClassDefaultObject))
+	{
+		// 물리 설정
+		MeshComp->SetSimulatePhysics(true);
+		MeshComp->SetLinearDamping(5.0f); // 미끄러짐 방지
+		MeshComp->SetAngularDamping(2.0f); // 회전 저항
+	}
 	
 	// 아웃라인 준비 (CustomDepth)
 	MeshComp->SetRenderCustomDepth(false);

@@ -30,9 +30,17 @@ APaladinCharacter::APaladinCharacter()
     bUseControllerRotationPitch = false;
     bUseControllerRotationRoll = false;
     
-    GetCharacterMovement()->MaxWalkSpeed = 550.f;
-    GetCharacterMovement()->bOrientRotationToMovement = false;
-    GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
+    // CDO 체크 추가
+    if (!HasAnyFlags(RF_ClassDefaultObject))
+    {
+        // CharacterMovement 컴포넌트 설정 (한 번만 가져와서 사용)
+        if (UCharacterMovementComponent* CharMove = GetCharacterMovement())
+        {
+            CharMove->MaxWalkSpeed = 550.f;
+            CharMove->bOrientRotationToMovement = false;
+            CharMove->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
+        }
+    }
     
     // 2. 카메라 설정
     if (SpringArm) 
@@ -388,16 +396,17 @@ void APaladinCharacter::ProcessSkill(FName SkillRowName)
                 float JumpDuration = CurrentActionDelay;
                 if (JumpDuration <= 0.0f) JumpDuration = 1.0f;
 
-                float Gravity = 980.0f; 
-                if (GetCharacterMovement()) Gravity *= GetCharacterMovement()->GravityScale;
+                float Gravity = 980.0f;
+                UCharacterMovementComponent* CharMove = GetCharacterMovement();
+                if (CharMove) Gravity *= CharMove->GravityScale;
                 float RequiredLaunchZ = (JumpDuration * Gravity) / 2.0f;
 
                 // 2. 캐릭터 발사
                 FVector LaunchDir = (GetActorForwardVector() * 800.0f) + (FVector::UpVector * RequiredLaunchZ);
                 //무조건 날아가게 하기
-                if (GetCharacterMovement())
+                if (CharMove)
                 {
-                    GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+                    CharMove->SetMovementMode(MOVE_Falling);
                 }
                 // 그 후에 발사
                 LaunchCharacter(LaunchDir, true, true);

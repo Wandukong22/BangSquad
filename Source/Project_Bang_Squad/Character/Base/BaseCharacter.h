@@ -27,7 +27,7 @@ public:
 	FName SkillName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-	float Damage = 0.0f;
+	float Damage = 0.f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	class UAnimMontage* SkillMontage = nullptr;
@@ -36,7 +36,7 @@ public:
 	float Cooldown = 0.0f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-	TSubclassOf<class AActor> ProjectileClass;
+	TSubclassOf<class AActor> ProjectileClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	int32 RequiredStage = 0;
