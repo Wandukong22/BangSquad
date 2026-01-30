@@ -15,8 +15,6 @@
 
 ABaseCharacter::ABaseCharacter()
 {
-	if (!HasAnyFlags(RF_ClassDefaultObject))
-	{
 		// 플레이어 태그 등록
 		Tags.Add(TEXT("Player"));
 
@@ -57,7 +55,6 @@ ABaseCharacter::ABaseCharacter()
 		SetReplicateMovement(true);
 		SetNetUpdateFrequency(100.0f);     // 1초에 100번 상태 갱신 시도 (서버 -> 클라)
 		SetMinNetUpdateFrequency(66.0f);   // 최소 66번은 보장 (프레임 방어)
-	}
 }
 
 void ABaseCharacter::BeginPlay()

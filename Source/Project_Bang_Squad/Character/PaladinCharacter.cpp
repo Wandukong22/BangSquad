@@ -30,9 +30,6 @@ APaladinCharacter::APaladinCharacter()
     bUseControllerRotationPitch = false;
     bUseControllerRotationRoll = false;
     
-    // CDO 체크 추가
-    if (!HasAnyFlags(RF_ClassDefaultObject))
-    {
         // CharacterMovement 컴포넌트 설정 (한 번만 가져와서 사용)
         if (UCharacterMovementComponent* CharMove = GetCharacterMovement())
         {
@@ -40,7 +37,6 @@ APaladinCharacter::APaladinCharacter()
             CharMove->bOrientRotationToMovement = false;
             CharMove->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
         }
-    }
     
     // 2. 카메라 설정
     if (SpringArm) 
