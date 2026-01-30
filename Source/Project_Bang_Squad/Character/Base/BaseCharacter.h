@@ -27,10 +27,10 @@ public:
 	FName SkillName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-	float Damage;
+	float Damage = 0.0f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-	class UAnimMontage* SkillMontage;
+	class UAnimMontage* SkillMontage = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	float Cooldown = 0.0f;

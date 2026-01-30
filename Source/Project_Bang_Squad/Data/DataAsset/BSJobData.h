@@ -19,7 +19,7 @@ struct FJobInfo
 	FText DisplayName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UTexture2D* Icon;
+	UTexture2D* Icon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FLinearColor JobColor;

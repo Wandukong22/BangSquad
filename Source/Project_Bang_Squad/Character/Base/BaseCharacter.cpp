@@ -15,46 +15,49 @@
 
 ABaseCharacter::ABaseCharacter()
 {
-	// 플레이어 태그 등록
-	Tags.Add(TEXT("Player"));
-	
-	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
-	PrimaryActorTick.bCanEverTick = true;
+	if (!HasAnyFlags(RF_ClassDefaultObject))
+	{
+		// 플레이어 태그 등록
+		Tags.Add(TEXT("Player"));
 
-	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = true;
-	bUseControllerRotationRoll = false;
+		HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+		PrimaryActorTick.bCanEverTick = true;
 
-	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
-	MoveComp->bOrientRotationToMovement = true;
-	MoveComp->RotationRate = FRotator(0.f, 720.f, 0.f);
-	MoveComp->MaxWalkSpeed = 550.f;
-	MoveComp->JumpZVelocity = 500.f;
-	MoveComp->AirControl = 0.5f;
-	MoveComp->SetWalkableFloorAngle(60.f);
-	MoveComp->LedgeCheckThreshold = 4.f;
-	MoveComp->bMaintainHorizontalGroundVelocity = true;
-	
-	JumpCooldownTimer = 1.2f;
+		bUseControllerRotationPitch = false;
+		bUseControllerRotationYaw = true;
+		bUseControllerRotationRoll = false;
 
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	SpringArm->SetupAttachment(GetRootComponent());
-	SpringArm->TargetArmLength = 450.f;
-	SpringArm->bUsePawnControlRotation = true;
-	SpringArm->bEnableCameraLag = true;
-	SpringArm->CameraLagSpeed = 10.f;
+		UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+		MoveComp->bOrientRotationToMovement = true;
+		MoveComp->RotationRate = FRotator(0.f, 720.f, 0.f);
+		MoveComp->MaxWalkSpeed = 550.f;
+		MoveComp->JumpZVelocity = 500.f;
+		MoveComp->AirControl = 0.5f;
+		MoveComp->SetWalkableFloorAngle(60.f);
+		MoveComp->LedgeCheckThreshold = 4.f;
+		MoveComp->bMaintainHorizontalGroundVelocity = true;
 
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	Camera->SetupAttachment(SpringArm);
-	Camera->bUsePawnControlRotation = false;
+		JumpCooldownTimer = 1.2f;
 
-	UnlockedStageLevel = 1;
+		SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+		SpringArm->SetupAttachment(GetRootComponent());
+		SpringArm->TargetArmLength = 450.f;
+		SpringArm->bUsePawnControlRotation = true;
+		SpringArm->bEnableCameraLag = true;
+		SpringArm->CameraLagSpeed = 10.f;
 
-	//복제 설정
-	bReplicates = true;
-	SetReplicateMovement(true);
-	SetNetUpdateFrequency(100.0f);     // 1초에 100번 상태 갱신 시도 (서버 -> 클라)
-	SetMinNetUpdateFrequency(66.0f);   // 최소 66번은 보장 (프레임 방어)
+		Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+		Camera->SetupAttachment(SpringArm);
+		Camera->bUsePawnControlRotation = false;
+
+		UnlockedStageLevel = 1;
+
+		//복제 설정
+		bReplicates = true;
+		SetReplicateMovement(true);
+		SetNetUpdateFrequency(100.0f);     // 1초에 100번 상태 갱신 시도 (서버 -> 클라)
+		SetMinNetUpdateFrequency(66.0f);   // 최소 66번은 보장 (프레임 방어)
+	}
 }
 
 void ABaseCharacter::BeginPlay()
