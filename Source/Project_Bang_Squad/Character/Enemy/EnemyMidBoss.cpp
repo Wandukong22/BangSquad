@@ -12,11 +12,7 @@
 
 AEnemyMidBoss::AEnemyMidBoss()
 {
-	// CDO 체크 추가
-	if (!HasAnyFlags(RF_ClassDefaultObject))
-	{
-		GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-	}
+	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	
 	CurrentPhase = EMidBossPhase::Normal;
 	bReplicates = true;

@@ -15,15 +15,11 @@ AStrikerCharacter::AStrikerCharacter()
 	// 스트라이커 판정 박스 크기
 	HitBoxSize = FVector(40.0f, 40.0f, 40.0f);
 	
-	// CDO 체크 추가
-	if (!HasAnyFlags(RF_ClassDefaultObject))
-	{
 		// 속도 기본값
 		if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
 		{
 			MoveComp->MaxWalkSpeed = 660.f;
 		}
-	}
 }
 
 void AStrikerCharacter::BeginPlay()

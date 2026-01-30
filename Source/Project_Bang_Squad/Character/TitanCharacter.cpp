@@ -26,15 +26,11 @@ ATitanCharacter::ATitanCharacter()
     PrimaryActorTick.bCanEverTick = true;
     bReplicates = true;
 
-    // CDO 체크 추가
-    if (!HasAnyFlags(RF_ClassDefaultObject))
-    {
         // 이동 속도 설정
         if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
         {
             MoveComp->MaxWalkSpeed = 495.f;
         }
-    }
     
     // 투사체 생성 위치 컴포넌트
     ThrowSpawnPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("ThrowSpawnPoint"));
