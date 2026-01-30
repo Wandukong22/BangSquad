@@ -16,19 +16,19 @@ struct FJobInfo
 	EJobType JobType = EJobType::None;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FText DisplayName;
+	FText DisplayName = FText();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UTexture2D* Icon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FLinearColor JobColor;
+	FLinearColor JobColor = FLinearColor::White;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<ACharacter> CharacterClass;
+	TSubclassOf<ACharacter> CharacterClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (MultiLine = true))
-	FText Description;
+	FText Description = FText();
 };
 
 UCLASS()

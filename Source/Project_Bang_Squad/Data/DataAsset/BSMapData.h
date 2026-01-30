@@ -18,11 +18,11 @@ struct FMapInfo
 	EStageSection Section = EStageSection::Unknown;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSoftObjectPtr<UWorld> Level;
+	TSoftObjectPtr<UWorld> Level = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FText DisplayName;
+	FText DisplayName = FText();
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UTexture2D* LoadingImage;
+	UTexture2D* LoadingImage = nullptr;
 };
 
 UCLASS()
