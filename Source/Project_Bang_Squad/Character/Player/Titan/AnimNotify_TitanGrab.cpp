@@ -1,9 +1,8 @@
 #include "AnimNotify_TitanGrab.h"
 #include "Project_Bang_Squad/Character/TitanCharacter.h" // 타이탄 헤더 경로 확인하세요!
 
-void UAnimNotify_TitanGrab::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
-{
-	Super::Notify(MeshComp, Animation);
+void UAnimNotify_TitanGrab::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) {
+	Super::Notify(MeshComp, Animation, EventReference);
 
 	if (MeshComp && MeshComp->GetOwner())
 	{

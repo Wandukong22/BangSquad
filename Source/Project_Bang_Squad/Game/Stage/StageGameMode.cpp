@@ -3,7 +3,10 @@
 
 #include "Project_Bang_Squad/Game/Stage/StageGameMode.h"
 
+#if WITH_EDITOR
 #include "BlueprintCompiledStatement.h"
+#endif
+
 #include "StagePlayerController.h"
 #include "StagePlayerState.h"
 #include "GameFramework/Character.h"
