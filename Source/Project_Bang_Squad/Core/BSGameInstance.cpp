@@ -398,3 +398,21 @@ void UBSGameInstance::MoveToStage(EStageIndex InStage, EStageSection InSection)
 		GetWorld()->ServerTravel(Path + "?listen");
 	}
 }
+
+void UBSGameInstance::MarkStageAsVisited(EStageIndex Stage, EStageSection Section)
+{
+	uint32 Key = GetStageKey(Stage, Section);
+	VisitedStageKeys.Add(Key);
+}
+
+bool UBSGameInstance::HasVisitedStage(EStageIndex Stage, EStageSection Section) const
+{
+	uint32 Key = GetStageKey(Stage, Section);
+	return VisitedStageKeys.Contains(Key);
+}
+
+uint32 UBSGameInstance::GetStageKey(EStageIndex Stage, EStageSection Section) const
+{
+	//비트 연산으로 두 값 섞어서 고유 ID 생성
+	return ((uint32)Stage << 16) | (uint32)Section;
+}

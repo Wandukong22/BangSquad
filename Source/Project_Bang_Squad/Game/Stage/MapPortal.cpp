@@ -38,7 +38,7 @@ void AMapPortal::BeginPlay()
 	if (HasAuthority())
 	{
 		UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-		if (GI && GI->GetbHasVisitedMap())
+		if (GI && GI->HasVisitedStage(TargetStageIndex, TargetSection))
 		{
 			Destroy();
 			return;
@@ -108,7 +108,7 @@ void AMapPortal::ProcessLevelTransition()
 	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
 	if (GI)
 	{
-		GI->SetbHasVisitedMap(true);
+		GI->MarkStageAsVisited(TargetStageIndex, TargetSection);
 		GI->MoveToStage(TargetStageIndex, TargetSection);
 	}
 }
