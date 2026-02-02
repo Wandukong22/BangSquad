@@ -220,8 +220,4 @@ void AStagePlayerController::ServerRequestSpawn_Implementation(EJobType MyJob)
 	{
 		StageGM->SpawnPlayerCharacter(this, MyJob);
 	}
-	else if (AMiniGameMode* MiniGM = Cast<AMiniGameMode>(AutoGM))
-	{
-		MiniGM->SpawnPlayerCharacter(this, MyJob);
-	}
 }

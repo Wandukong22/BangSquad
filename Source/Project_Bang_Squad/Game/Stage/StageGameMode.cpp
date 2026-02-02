@@ -16,6 +16,7 @@
 #include "Project_Bang_Squad/UI/Lobby/JobSelectWidget.h"
 #include "EngineUtils.h" //TActorIterator 사용을 위함
 #include "Checkpoint.h"
+#include "StageGameState.h"
 
 AStageGameMode::AStageGameMode()
 {
@@ -35,7 +36,7 @@ void AStageGameMode::SpawnPlayerCharacter(AController* Controller, EJobType JobT
 
 	TSubclassOf<ACharacter> PawnClass = GI->GetCharacterClass(JobType);
 	if (!PawnClass) return;
-	
+
 	//기존에 붙어있던 폰이 있다면 제거
 	if (APawn* OldPawn = Controller->GetPawn())
 	{
@@ -49,9 +50,9 @@ void AStageGameMode::SpawnPlayerCharacter(AController* Controller, EJobType JobT
 	{
 		bool bShouldUsePlayerStart = true;
 
-		if (AStagePlayerState* PS = Controller->GetPlayerState<AStagePlayerState>())
+		if (AStageGameState* GS = GetWorld()->GetGameState<AStageGameState>())
 		{
-			if (!IsMiniGameMap() && PS->GetStageCheckpoint() > 0)
+			if (GS->GetStageCheckpointIndex() > 0)
 			{
 				bShouldUsePlayerStart = false;
 			}
@@ -92,40 +93,26 @@ void AStageGameMode::RequestRespawn(AController* Controller)
 {
 	if (!Controller) return;
 
-	if (IsMiniGameMap())
+	float WaitTime = 3.f;
+
+	if (AStagePlayerState* PS = Controller->GetPlayerState<AStagePlayerState>())
 	{
-		float WaitTime = 5.f;
+		float CalculatedTime = 3.f + (PS->GetDeathCount() * 2.f);
+		WaitTime = FMath::Min(CalculatedTime, 15.f);
+		PS->IncreaseDeathCount();
 
-		//리스폰 타이머 설정
-		FTimerDelegate TimerDelegate;
-		TimerDelegate.BindUObject(this, &AStageGameMode::RespawnPlayerElapsed, Controller);
-
-		FTimerHandle TimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, WaitTime, false);
-	}
-	else
-	{
-		float WaitTime = 3.f;
-
-		if (AStagePlayerState* PS = Controller->GetPlayerState<AStagePlayerState>())
+		if (AGameStateBase* GS = GetGameState<AGameStateBase>())
 		{
-			float CalculatedTime = 3.f + (PS->GetDeathCount() * 2.f);
-			WaitTime = FMath::Min(CalculatedTime, 15.f);
-			PS->IncreaseDeathCount();
-
-			if (AGameStateBase* GS = GetGameState<AGameStateBase>())
-			{
-				PS->SetRespawnEndTime(GS->GetServerWorldTimeSeconds() + WaitTime);
-			}
+			PS->SetRespawnEndTime(GS->GetServerWorldTimeSeconds() + WaitTime);
 		}
-
-		FTimerDelegate TimerDelegate;
-		TimerDelegate.BindUObject(this, &AStageGameMode::RespawnPlayerElapsed, Controller);
-
-		FTimerHandle TimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, WaitTime, false);
-		UE_LOG(LogTemp, Warning, TEXT("[GameMode] 플레이어 사망! %f초 뒤 부활"), WaitTime);
 	}
+
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindUObject(this, &AStageGameMode::RespawnPlayerElapsed, Controller);
+
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, WaitTime, false);
+	UE_LOG(LogTemp, Warning, TEXT("[GameMode] 플레이어 사망! %f초 뒤 부활"), WaitTime);
 }
 
 void AStageGameMode::ExecuteRespawn(AController* Controller)
@@ -159,18 +146,6 @@ void AStageGameMode::ClearStageAndMove(EStageIndex NextStage, EStageSection Next
 	}
 }
 
-bool AStageGameMode::IsMiniGameMap() const
-{
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		//접두사 제거한 Map이름
-		FString MapName = UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
-		return MapName.Contains(TEXT("MiniGame"));
-	}
-	return false;
-}
-
 void AStageGameMode::RespawnPlayerElapsed(AController* DeadController)
 {
 	if (!DeadController) return;
@@ -189,8 +164,8 @@ FTransform AStageGameMode::GetRespawnTransform(AController* Controller)
 	UWorld* World = GetWorld();
 	if (!World) return FTransform::Identity;
 
-	//일반 스테이지
-	if (!IsMiniGameMap())
+	//팀원 근처 부활 제거
+	/*if (!IsMiniGameMap())
 	{
 		//살아있는 아군 목록 생성
 		TArray<AActor*> AllCharacters;
@@ -239,33 +214,22 @@ FTransform AStageGameMode::GetRespawnTransform(AController* Controller)
 				return FTransform(FRotator::ZeroRotator, TargetLocation + FVector(0, 0, 300.f));
 			}
 		}
-	}
+	}*/
 
-	//미니게임 / 스테이지(팀원 다 죽은 상황)에서의 체크포인트 확인
-	if (Controller)
+	//스테이지에서의 체크포인트 확인
+	AStageGameState* GS = World->GetGameState<AStageGameState>();
+	if (!GS) return FindPlayerStart(Controller)->GetActorTransform();
+	
+	int32 TargetIndex = GS->GetStageCheckpointIndex();
+
+	if (TargetIndex > 0)
 	{
-		AStagePlayerState* PS = Controller->GetPlayerState<AStagePlayerState>();
-
-		int32 TargetIndex = 0;
-		if (IsMiniGameMap())
+		if (GS->CheckpointMap.Contains(TargetIndex))
 		{
-			TargetIndex = PS->GetMiniGameCheckpoint();
-		}
-		else
-		{
-			TargetIndex = PS->GetStageCheckpoint();
-		}
-
-		if (PS && TargetIndex > 0)
-		{
-			//월드에 있는 체크포인트 액터 중 내 인덱스와 같은 것 검색
-			for (TActorIterator<ACheckpoint> It(World); It; ++It)
+			ACheckpoint* CP = GS->CheckpointMap[TargetIndex];
+			if (IsValid(CP))
 			{
-				ACheckpoint* Checkpoint = *It;
-				if (Checkpoint && Checkpoint->GetCheckpointIndex() == TargetIndex)
-				{
-					return Checkpoint->GetActorTransform();
-				}
+				return CP->GetActorTransform();
 			}
 		}
 	}
@@ -283,8 +247,8 @@ void AStageGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 
-	AStagePlayerState* PS = NewPlayer->GetPlayerState<AStagePlayerState>();
-	if (PS && PS->StageCheckpointIndex > 0)
+	AStageGameState* GS = GetWorld()->GetGameState<AStageGameState>();
+	if (GS && GS->GetStageCheckpointIndex() > 0)
 	{
 		//체크포인트 위치 찾기..
 	}
