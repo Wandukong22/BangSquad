@@ -3,7 +3,22 @@
 
 #include "Project_Bang_Squad/Game/Stage/StageGameState.h"
 
+void AStageGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AStageGameState, CurrentStageCheckpointIndex);
+}
+
 void AStageGameState::RegisterCheckpoint(int32 Index, ACheckpoint* Checkpoint)
 {
 	CheckpointMap.Add(Index, Checkpoint);
+}
+
+void AStageGameState::UpdateStageCheckpoint(int32 NewIndex)
+{
+	if (NewIndex > CurrentStageCheckpointIndex)
+	{
+		CurrentStageCheckpointIndex = NewIndex;
+	}
 }

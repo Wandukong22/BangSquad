@@ -23,15 +23,13 @@ public:
 	//실제 소환
 	void SpawnPlayerCharacter(AController* Controller, EJobType MyJob);
 
-	void RequestRespawn(AController* Controller);
+	virtual void RequestRespawn(AController* Controller);
 
 	void ExecuteRespawn(AController* Controller);
 
 	//스테이지 이동 함수
 	UFUNCTION(BlueprintCallable, Category = "BS|Stage")
 	void ClearStageAndMove(EStageIndex NextStage, EStageSection NextSection = EStageSection::Main);
-
-	bool IsMiniGameMap() const;
 
 protected:
 	void RespawnPlayerElapsed(AController* DeadController);

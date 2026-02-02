@@ -47,7 +47,10 @@ void ACheckpoint::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 			}
 			else
 			{
-				PS->UpdateStageCheckpoint(CheckpointIndex);
+				if (AStageGameState* GS = GetWorld()->GetGameState<AStageGameState>())
+				{
+					GS->UpdateStageCheckpoint(CheckpointIndex);
+				}
 			}
 		}
 	}
