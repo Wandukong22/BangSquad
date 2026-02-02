@@ -26,9 +26,7 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_UpdateUI, BlueprintReadOnly)
 	bool bIsReady = false;
 
-	//픽 확정 여부
-	UPROPERTY(ReplicatedUsing = OnRep_UpdateUI, BlueprintReadOnly)
-	bool bIsConfirmedJob = false;
+	bool GetIsConfirmedJob() const { return bIsConfirmedJob; }
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnLobbyDataChanged OnLobbyDataChanged;
@@ -47,4 +45,8 @@ protected:
 
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
+
+	//픽 확정 여부
+	UPROPERTY(ReplicatedUsing = OnRep_UpdateUI, BlueprintReadOnly)
+	bool bIsConfirmedJob = false;
 };

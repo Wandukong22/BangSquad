@@ -115,9 +115,6 @@ public:
 	UPROPERTY()
 	FString UserNickname;
 
-	bool GetbHasVisitedMap() const { return bHasVisitedMap; }
-	void SetbHasVisitedMap(bool bNew) { bHasVisitedMap = bNew; }
-
 #pragma region Stage Data Save
 public:
 	//죽은 몬스터의 고유 해시값(ID) 저장
@@ -153,5 +150,24 @@ public:
 
 	UFUNCTION()
 	void MoveToStage(EStageIndex InStage, EStageSection InSection);
+#pragma endregion
+
+#pragma region Portal
+public:
+	UPROPERTY()
+	TSet<uint32> VisitedStageKeys;
+
+	//방문한 거 표시
+	UFUNCTION()
+	void MarkStageAsVisited(EStageIndex Stage, EStageSection Section);
+
+	//방문 했는지 확인
+	UFUNCTION()
+	bool HasVisitedStage(EStageIndex Stage, EStageSection Section) const;
+
+private:
+	uint32 GetStageKey(EStageIndex Stage, EStageSection Section) const;
 #pragma endregion 
+
+	
 };
