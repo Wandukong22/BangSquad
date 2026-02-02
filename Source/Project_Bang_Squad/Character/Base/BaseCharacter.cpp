@@ -449,6 +449,8 @@ void ABaseCharacter::Look(const FInputActionValue& Value)
   
 void ABaseCharacter::Jump()
 {
+	if (bJumpRestricted) return;
+	
 	if (bCanJump && !GetCharacterMovement()->IsFalling())
 	{
 		Super::Jump();
@@ -634,6 +636,16 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ABaseCharacter, bIsWindFloating);
 	
 }
+
+void ABaseCharacter::SetJumpRestricted(bool bRestricted)
+ {
+	bJumpRestricted = bRestricted;
+
+	if (bRestricted)
+	{
+		StopJumping();
+	}
+ }
 
 void ABaseCharacter::OnRep_WindFloating()
 {
