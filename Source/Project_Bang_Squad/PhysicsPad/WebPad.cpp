@@ -7,110 +7,71 @@
 
 AWebPad::AWebPad()
 {
-    PrimaryActorTick.bCanEverTick = false;
-    bReplicates = true; // 멀티플레이어 동기화 활성화
-
-    // 1. 루트 컴포넌트 설정
     CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
     RootComponent = CollisionBox;
-    CollisionBox->SetBoxExtent(FVector(200.f, 200.f, 50.f));
+
     CollisionBox->SetCollisionProfileName(TEXT("Trigger"));
+    //CollisionBox->SetCollisionResponseToAllChannels(ECR_Block);
+    //CollisionBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
-    // 1. 데칼 대신 스태틱 메쉬 생성
-    WebMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WebMeshComp"));
+    CollisionBox->SetGenerateOverlapEvents(true);
+	
+    WebMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
     WebMeshComp->SetupAttachment(RootComponent);
-
-    // 2. 메쉬 자체의 충돌은 끈다 (박스만 트리거로 사용)
     WebMeshComp->SetCollisionProfileName(TEXT("NoCollision"));
-}
 
-void AWebPad::BeginPlay()
-{
-    Super::BeginPlay();
-
-    // 서버에서만 물리 로직(속도 조절)을 수행합니다.
-    if (HasAuthority())
-    {
-        CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AWebPad::OnOverlapBegin);
-        CollisionBox->OnComponentEndOverlap.AddDynamic(this, &AWebPad::OnOverlapEnd);
-    }
+    CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AWebPad::OnOverlapBegin);
+    CollisionBox->OnComponentEndOverlap.AddDynamic(this, &AWebPad::OnOverlapEnd);
 }
 
 void AWebPad::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
     int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    if (OtherActor) {
-        GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow,
-            FString::Printf(TEXT("WebPad Overlap: %s"), *OtherActor->GetName()));
-    }
-
-    if (!HasAuthority() || !OtherActor) return;
-
-    // A. 플레이어 감속
-    if (ABaseCharacter* Player = Cast<ABaseCharacter>(OtherActor))
+    ABaseCharacter* Character = Cast<ABaseCharacter>(OtherActor);
+    if (Character && Character->GetCharacterMovement())
     {
-        if (!AffectedPlayers.Contains(Player))
-        {
-            Player->ApplySlowDebuff(true, SlowPercentage);
-            AffectedPlayers.Add(Player);
-        }
-        return;
-    }
+        //이속 감소
+        Character->ApplySlowDebuff(true, SpeedMultiplier);
 
-    // B. 일반 몬스터 감속
-    if (ACharacter* Enemy = Cast<ACharacter>(OtherActor))
-    {
-        if (EnemyOriginalSpeeds.Contains(Enemy)) return;
+        //중력 감소
+        Character->GetCharacterMovement()->GravityScale = WebGravityScale;
 
-        if (UCharacterMovementComponent* MoveComp = Enemy->GetCharacterMovement())
-        {
-            EnemyOriginalSpeeds.Add(Enemy, MoveComp->MaxWalkSpeed);
-            MoveComp->MaxWalkSpeed *= SlowPercentage;
-        }
+        //점프 봉인
+        Character->SetJumpRestricted(true);
+
+        Character->GetCharacterMovement()->Velocity *= 0.05f;
+
+        //공중 마찰력
+        Character->GetCharacterMovement()->FallingLateralFriction = 100.f;
+		
     }
 }
 
 void AWebPad::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
     int32 OtherBodyIndex)
 {
-    // A. 플레이어 속도 복구
-    if (ABaseCharacter* Player = Cast<ABaseCharacter>(OtherActor))
+    ABaseCharacter* Character = Cast<ABaseCharacter>(OtherActor);
+    if (Character && Character->GetCharacterMovement())
     {
-        if (AffectedPlayers.Contains(Player))
-        {
-            Player->ApplySlowDebuff(false, SlowPercentage);
-            AffectedPlayers.Remove(Player);
-        }
-        return;
-    }
+        Character->ApplySlowDebuff(false, 1.f);
 
-    // B. 일반 몬스터 속도 복구
-    if (ACharacter* Enemy = Cast<ACharacter>(OtherActor))
-    {
-        if (EnemyOriginalSpeeds.Contains(Enemy))
-        {
-            if (Enemy->GetCharacterMovement())
-            {
-                Enemy->GetCharacterMovement()->MaxWalkSpeed = EnemyOriginalSpeeds[Enemy];
-            }
-            EnemyOriginalSpeeds.Remove(Enemy);
-        }
+        Character->GetCharacterMovement()->GravityScale = 1.0f;
+
+        //점프력 복구
+        Character->SetJumpRestricted(false);
+
+        Character->GetCharacterMovement()->FallingLateralFriction = 0.f;
     }
 }
 
-void AWebPad::EndPlay(const EEndPlayReason::Type EndPlayReason)
+float AWebPad::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+    class AController* EventInstigator, AActor* DamageCauser)
 {
-    // 혹시라도 장판이 삭제될 때 밟고 있던 대상들 속도를 원복시킴 (안전장치)
-    for (ABaseCharacter* Player : AffectedPlayers)
+    if (!bDestroyAvailable) return 0.f;
+    
+    if (DamageAmount > 0.f)
     {
-        if (IsValid(Player)) Player->ApplySlowDebuff(false, SlowPercentage);
+        Destroy();
     }
-    for (auto& Elem : EnemyOriginalSpeeds)
-    {
-        if (IsValid(Elem.Key) && Elem.Key->GetCharacterMovement())
-        {
-            Elem.Key->GetCharacterMovement()->MaxWalkSpeed = Elem.Value;
-        }
-    }
-    Super::EndPlay(EndPlayReason);
+    return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }

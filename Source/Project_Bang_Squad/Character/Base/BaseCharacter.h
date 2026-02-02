@@ -101,6 +101,8 @@ public:
 	void OnRep_WindFloating();
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	void SetJumpRestricted(bool bRestricted);
 protected:
 	virtual void BeginPlay() override;
 	
@@ -244,7 +246,7 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_SetMaxWalkSpeed(float NewSpeed);
 
-
+bool bJumpRestricted = false;
 	
 private:
 	// 원래 브레이크 수치 저장용

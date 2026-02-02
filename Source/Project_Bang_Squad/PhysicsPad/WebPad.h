@@ -16,9 +16,9 @@ public:
     AWebPad();
 
 protected:
-    virtual void BeginPlay() override;
-    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
+    UPROPERTY(EditAnywhere, Category = "BS|Web")
+    bool bDestroyAvailable = false;
+    
     /** 영역 감지용 박스 */
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     UBoxComponent* CollisionBox;
@@ -28,8 +28,11 @@ protected:
     UStaticMeshComponent* WebMeshComp;
 
     /** 감속 비율 (0.3f면 원래 속도의 30%로 감소) */
-    UPROPERTY(EditAnywhere, Category = "Balance")
-    float SlowPercentage = 0.7f;
+    UPROPERTY(EditAnywhere, Category = "BS|Web", meta = (ClampMin = "0.1", ClampMax = "1.0"))
+	float SpeedMultiplier = 0.2f;
+    
+    UPROPERTY(EditAnywhere, Category = "BS|Web")
+    float WebGravityScale = 0.1f;
 
     UFUNCTION()
     void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -39,10 +42,5 @@ protected:
     void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-    /** 현재 밟고 있는 대상 관리용 명단 */
-    UPROPERTY()
-    TArray<class ABaseCharacter*> AffectedPlayers;
-
-    UPROPERTY()
-    TMap<class ACharacter*, float> EnemyOriginalSpeeds;
+    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 };
