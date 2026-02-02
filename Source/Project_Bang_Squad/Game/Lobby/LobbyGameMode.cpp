@@ -29,6 +29,11 @@ bool ALobbyGameMode::TryConfirmJob(EJobType Job, class ALobbyPlayerState* Reques
 {
 	if (ConfirmedJobs.Contains(Job)) return false;
 
+	if (RequestingPS->GetIsConfirmedJob())
+	{
+		return false;
+	}
+	
 	//플레이어 상태 업데이트
 	RequestingPS->SetJob(Job);
 	RequestingPS->SetIsConfirmedJob(true);
@@ -102,7 +107,7 @@ void ALobbyGameMode::CheckConfirmedJob()
 	for (APlayerState* PS : GS->PlayerArray)
 	{
 		ALobbyPlayerState* LobbyPS = Cast<ALobbyPlayerState>(PS);
-		if (LobbyPS && LobbyPS->bIsConfirmedJob)
+		if (LobbyPS && LobbyPS->GetIsConfirmedJob())
 		{
 			ConfirmedCount++;
 		}
