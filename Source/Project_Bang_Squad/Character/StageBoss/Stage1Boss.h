@@ -9,12 +9,12 @@
 #include "Engine/TargetPoint.h"
 #include "AITypes.h"
 #include "Navigation/PathFollowingComponent.h"
-// [°æ·Î ¼öÁ¤]
+// [ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½]
 #include "Project_Bang_Squad/BossPattern/Boss1_Rampart.h" 
 #include "AQTEObject.h" 
 #include "Stage1Boss.generated.h"
 
-// Àü¹æ ¼±¾ð
+// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 class AJobCrystal;
 class ASlashProjectile;
 class UAnimMontage;
@@ -37,75 +37,75 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	// [Server-Only] µ¥¹ÌÁö °è»ê ¹× ±â¹Í Æ®¸®°Å Ã¼Å© (±ÇÇÑ ÇÊ¼ö)
+	// [Server-Only] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½ Ã¼Å© (ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¼ï¿½)
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-	// ÆäÀÌÁî »óÅÂ º¯°æ ½Ã ·ÎÁ÷ (Replicated)
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (Replicated)
 	virtual void OnPhaseChanged(EBossPhase NewPhase) override;
 
 	virtual void OnDeathStarted() override;
 	virtual void OnGimmickResolved(int32 GimmickID) override;
 
-	// º¯¼ö º¹Á¦
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
-	// º¸½º µ¥ÀÌÅÍ ¿¡¼Â (¾Ö´Ï¸ÞÀÌ¼Ç, ½ºÅÈ µî)
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Boss|Data")
 	TObjectPtr<UEnemyBossData> BossData;
 
-	// Ã¼·Â º¯°æ µ¨¸®°ÔÀÌÆ® (¼­¹ö Àü¿ë)
+	// Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 	UFUNCTION()
 	void OnHealthChanged(float CurrentHealth, float MaxHealth);
 
 
 	// ==============================================================================
-	// [1] ±â¹Í ¹ßµ¿ ÇÃ·¡±× (100% / 50% / 0% QTE)
+	// [1] ï¿½ï¿½ï¿½ ï¿½ßµï¿½ ï¿½Ã·ï¿½ï¿½ï¿½ (100% / 50% / 0% QTE)
 	// ==============================================================================
 protected:
-	// 1. Á¶¿ì ½Ã(100%) Å©¸®½ºÅ» ±â¹Í ¹ßµ¿ ¿©ºÎ
+	// 1. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½(100%) Å©ï¿½ï¿½ï¿½ï¿½Å» ï¿½ï¿½ï¿½ ï¿½ßµï¿½ ï¿½ï¿½ï¿½ï¿½
 	bool bHasTriggeredCrystal_100 = false;
 
-	// 2. Áß°£ ´Ü°è(50%) Å©¸®½ºÅ» ±â¹Í ¹ßµ¿ ¿©ºÎ
+	// 2. ï¿½ß°ï¿½ ï¿½Ü°ï¿½(50%) Å©ï¿½ï¿½ï¿½ï¿½Å» ï¿½ï¿½ï¿½ ï¿½ßµï¿½ ï¿½ï¿½ï¿½ï¿½
 	bool bHasTriggeredCrystal_50 = false;
 
-	// 3. QTE(0%) ¹ßµ¿ ¿©ºÎ
+	// 3. QTE(0%) ï¿½ßµï¿½ ï¿½ï¿½ï¿½ï¿½
 	UPROPERTY(Replicated)
 	bool bHasTriggeredQTE_10 = false;
 
 
 	// ==============================================================================
-	// [2] QTE ½Ã½ºÅÛ (ÇÇ´Ï½Ã ¿¬Ãâ)
+	// [2] QTE ï¿½Ã½ï¿½ï¿½ï¿½ (ï¿½Ç´Ï½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 	// ==============================================================================
 public:
-	// GameMode ¸í·É ¼ö½Å: ºñÁÖ¾ó ¿¬Ãâ ½ÃÀÛ
+	// GameMode ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½Ö¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	void PlayQTEVisuals(float Duration);
 
-	// GameMode ¸í·É ¼ö½Å: °á°ú Ã³¸®
+	// GameMode ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
 	void HandleQTEResult(bool bSuccess);
 
 protected:
-	// QTE ¾×ÅÍ (Ã¢/¿î¼®) Å¬·¡½º
+	// QTE ï¿½ï¿½ï¿½ï¿½ (Ã¢/ï¿½î¼®) Å¬ï¿½ï¿½ï¿½ï¿½
 	UPROPERTY(EditAnywhere, Category = "Boss|Gimmick")
 	TSubclassOf<class AQTEObject> QTEObjectClass;
 
-	// »ý¼ºµÈ QTE ¿ÀºêÁ§Æ® ÂüÁ¶
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ QTE ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
 	UPROPERTY()
 	TObjectPtr<class AQTEObject> ActiveQTEObject;
 
-	// QTE ÁøÀÔ ½Ã ¾Ö´Ï¸ÞÀÌ¼Ç ¸ØÃã Ã³¸®
+	// QTE ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_FreezeAnimation(bool bFreeze);
 
 
 	// ==============================================================================
-	// [3] ÀÏ¹Ý °ø°Ý (Combat)
+	// [3] ï¿½Ï¹ï¿½ ï¿½ï¿½ï¿½ï¿½ (Combat)
 	// ==============================================================================
 public:
 	UPROPERTY(EditAnywhere, Category = "Boss|Combat")
 	float MeleeDamageAmount = 30.0f;
 
-	// Ä® Å¸°Ý ÆÇÁ¤ ¹Ú½º
+	// Ä® Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ú½ï¿½
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Boss|Combat")
 	TObjectPtr<UBoxComponent> MeleeCollisionBox;
 
@@ -137,7 +137,7 @@ protected:
 
 
 	// ==============================================================================
-	// [4] Æ¯¼ö ±â¹Í (Death Wall & Job Crystals)
+	// [4] Æ¯ï¿½ï¿½ ï¿½ï¿½ï¿½ (Death Wall & Job Crystals)
 	// ==============================================================================
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|Gimmick")
@@ -177,7 +177,7 @@ protected:
 
 
 	// ==============================================================================
-	// [5] ÆäÀÌÁî °ü¸® ¹× ±âÅ¸ ½ºÅ³
+	// [5] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Å¸ ï¿½ï¿½Å³
 	// ==============================================================================
 protected:
 	bool bPhase2Started = false;
