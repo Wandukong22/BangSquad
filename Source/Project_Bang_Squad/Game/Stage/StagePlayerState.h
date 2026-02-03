@@ -7,9 +7,8 @@
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "StagePlayerState.generated.h"
 
-/**
- * 
- */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRespawnTimeChanged, float, NewRespawnTime);
+
 UCLASS()
 class PROJECT_BANG_SQUAD_API AStagePlayerState : public APlayerState
 {
@@ -20,9 +19,6 @@ protected:
 
 	UPROPERTY(Replicated)
 	EJobType Job = EJobType::None;
-
-	UPROPERTY(Replicated)
-	float RespawnEndTime = 0.f;
 
 	UPROPERTY(Replicated)
 	int32 DeathCount = 0;
@@ -66,6 +62,17 @@ public:
 	
 	UFUNCTION()
 	float GetMiniGameProgressScore() const;
+
+	// 2. 델리게이트 변수 추가
+	UPROPERTY(BlueprintAssignable)
+	FOnRespawnTimeChanged OnRespawnTimeChanged;
+
+	// 3. ReplicatedUsing 추가 (서버에서 변수 바뀌면 클라 함수 실행)
+	UPROPERTY(ReplicatedUsing = OnRep_RespawnEndTime)
+	float RespawnEndTime = 0.f;
+
+	UFUNCTION()
+	void OnRep_RespawnEndTime();
 
 private:
 	float MaxHeightReached = 0.f;

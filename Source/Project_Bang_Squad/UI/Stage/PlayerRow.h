@@ -11,6 +11,8 @@
 #include "../Lobby/JobSelectWidget.h"
 #include "PlayerRow.generated.h"
 
+class UQTEWidget;
+
 UENUM(BlueprintType)
 enum class ERowMode : uint8
 {
@@ -49,6 +51,9 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Txt_RespawnTime;
 
+	UPROPERTY(meta = (BindWidget))
+	UQTEWidget* QTEWidget;
+
 public:
 	class APlayerState* GetTargetPlayerState() const { return TargetPlayerState.Get(); }
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
@@ -65,7 +70,7 @@ public:
 	void UpdateLobbyInfo(bool bIsReady, EJobType JobType);
 
 	//정보 갱신(스테이지)
-	void UpdateStageInfo();
+	//void UpdateStageInfo();
 
 protected:
 	void UpdateProfileImage(EJobType JobType);
@@ -76,4 +81,24 @@ private:
 
 	UPROPERTY()
 	class UMaterialInstanceDynamic* ProfileMaterial;
+
+	//폰이 새로 생겼을 때
+	UFUNCTION()
+	void OnPawnSet(APlayerState* Player, APawn* NewPawn, APawn* OldPawn);
+
+	//체력 변경 시
+	UFUNCTION()
+	void UpdateHealthUI(float CurrentHealth, float MaxHealth);
+
+	//부활 시간 변경 시
+	UFUNCTION()
+	void UpdateDeathState(float NewRespawnTime);
+
+	UFUNCTION()
+	void HandleOnDead();
+
+	//1초마다 남은 시간 숫자만 줄여줌
+	void RefreshRespawnTimer();
+
+	FTimerHandle RespawnTimerHandle;
 };

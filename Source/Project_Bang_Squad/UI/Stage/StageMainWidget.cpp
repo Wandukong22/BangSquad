@@ -94,7 +94,7 @@ void UStageMainWidget::UpdatePartyList()
 			{
 				MyInfoRow->SetTargetPlayerState(PS);
 				MyInfoRow->SetWidgetMode(ERowMode::Stage);
-				MyInfoRow->UpdateStageInfo();
+				//MyInfoRow->UpdateStageInfo();
 				MyInfoRow->SetVisibility(ESlateVisibility::Visible);
 			}
 			continue;
@@ -122,7 +122,7 @@ void UStageMainWidget::UpdatePartyList()
 			//모드 설정 (Stage 모드로 변경 -> HP바 켜짐 등)
 			Row->SetWidgetMode(ERowMode::Stage);
 			//님이 만든 그 정보 갱신 함수 호출 (부활시간, 프로필, HP바 등 한방에 세팅)
-			Row->UpdateStageInfo();
+			//Row->UpdateStageInfo();
 			CurrentChildIndex++;
 
 		}

@@ -10,14 +10,14 @@ AStageBossGameState::AStageBossGameState()
 	bIsQTEActive = false;
 	CurrentQTECount = 0;
 	TargetQTECount = 50;
-	TeamLives = 10; // ±âº» ¸ñ¼û
+	TeamLives = 10; // ï¿½âº» ï¿½ï¿½ï¿½
 }
 
 void AStageBossGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	// º¯¼ö º¹Á¦ µî·Ï
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 	DOREPLIFETIME(AStageBossGameState, BossCurrentHealth);
 	DOREPLIFETIME(AStageBossGameState, BossMaxHealth);
 	DOREPLIFETIME(AStageBossGameState, bIsQTEActive);
@@ -26,30 +26,35 @@ void AStageBossGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(AStageBossGameState, TeamLives);
 }
 
-// [1] º¸½º Ã¼·Â ¾÷µ¥ÀÌÆ® (¼­¹ö -> Å¬¶óÀÌ¾ðÆ® ÀüÆÄ)
+void AStageBossGameState::SetQTEActive(bool bActive)
+{
+	SetQTEStatus(bActive, TargetQTECount);
+}
+
+// [1] ï¿½ï¿½ï¿½ï¿½ Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® (ï¿½ï¿½ï¿½ï¿½ -> Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ® ï¿½ï¿½ï¿½ï¿½)
 void AStageBossGameState::UpdateBossHealth(float NewCurrent, float NewMax)
 {
 	if (HasAuthority())
 	{
 		BossCurrentHealth = NewCurrent;
 		BossMaxHealth = NewMax;
-		OnRep_BossHealth(); // ¼­¹ö(Host)¿¡¼­µµ Áï½Ã ¹Ý¿µ
+		OnRep_BossHealth(); // ï¿½ï¿½ï¿½ï¿½(Host)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ý¿ï¿½
 	}
 }
 
-// [2] QTE »óÅÂ ¼³Á¤ (¼­¹ö -> Å¬¶óÀÌ¾ðÆ® ÀüÆÄ)
+// [2] QTE ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ -> Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ® ï¿½ï¿½ï¿½ï¿½)
 void AStageBossGameState::SetQTEStatus(bool bActive, int32 InTarget)
 {
 	if (HasAuthority())
 	{
 		bIsQTEActive = bActive;
 		TargetQTECount = InTarget;
-		CurrentQTECount = 0; // ½ÃÀÛ ½Ã ÃÊ±âÈ­
+		CurrentQTECount = 0; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ê±ï¿½È­
 		OnRep_IsQTEActive();
 	}
 }
 
-// [3] QTE Ä«¿îÆ® ¾÷µ¥ÀÌÆ® (¼­¹ö -> Å¬¶óÀÌ¾ðÆ® ÀüÆÄ)
+// [3] QTE Ä«ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® (ï¿½ï¿½ï¿½ï¿½ -> Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ® ï¿½ï¿½ï¿½ï¿½)
 void AStageBossGameState::UpdateQTECount(int32 NewCount)
 {
 	if (HasAuthority())
@@ -59,7 +64,7 @@ void AStageBossGameState::UpdateQTECount(int32 NewCount)
 	}
 }
 
-// [4] ÆÀ ¸ñ¼û ¼³Á¤ (¼­¹ö -> Å¬¶óÀÌ¾ðÆ® ÀüÆÄ)
+// [4] ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ -> Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ® ï¿½ï¿½ï¿½ï¿½)
 void AStageBossGameState::SetTeamLives(int32 NewLives)
 {
 	if (HasAuthority())
@@ -69,7 +74,7 @@ void AStageBossGameState::SetTeamLives(int32 NewLives)
 	}
 }
 
-// --- [OnRep ÇÔ¼öµé: Å¬¶óÀÌ¾ðÆ® UI °»½Å¿ë] ---
+// --- [OnRep ï¿½Ô¼ï¿½ï¿½ï¿½: Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ® UI ï¿½ï¿½ï¿½Å¿ï¿½] ---
 
 void AStageBossGameState::OnRep_BossHealth()
 {
