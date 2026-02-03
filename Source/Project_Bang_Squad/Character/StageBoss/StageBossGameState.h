@@ -7,7 +7,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBossHealthChanged, float, CurrentHP, float, MaxHP);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQTEStateChanged, bool, bIsActive);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnQTECountUpdated, int32, Current, int32, Target);
-// [½Å±Ô] ¸ñ¼û º¯°æ µ¨¸®°ÔÀÌÆ®
+// [ï¿½Å±ï¿½] ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTeamLivesChanged, int32, NewLives);
 
 UCLASS()
@@ -19,7 +19,7 @@ public:
 	AStageBossGameState();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	// --- [1] º¸½º Ã¼·Â ---
+	// --- [1] ï¿½ï¿½ï¿½ï¿½ Ã¼ï¿½ï¿½ ---
 	UPROPERTY(ReplicatedUsing = OnRep_BossHealth, BlueprintReadOnly, Category = "Boss|State")
 	float BossCurrentHealth;
 
@@ -29,7 +29,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Boss|Events")
 	FOnBossHealthChanged OnBossHealthChanged;
 
-	// --- [2] QTE ±â¹Í ---
+	// --- [2] QTE ï¿½ï¿½ï¿½ ---
 	UPROPERTY(ReplicatedUsing = OnRep_IsQTEActive, BlueprintReadOnly, Category = "Boss|QTE")
 	bool bIsQTEActive;
 
@@ -45,22 +45,25 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Boss|Events")
 	FOnQTECountUpdated OnQTECountUpdated;
 
-	// --- [3] ÆÀ °øÀ¯ ¸ñ¼û (½Å±Ô Ãß°¡) ---
+	// --- [3] ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ (ï¿½Å±ï¿½ ï¿½ß°ï¿½) ---
 	UPROPERTY(ReplicatedUsing = OnRep_TeamLives, BlueprintReadOnly, Category = "Boss|Rules")
 	int32 TeamLives;
 
 	UPROPERTY(BlueprintAssignable, Category = "Boss|Events")
 	FOnTeamLivesChanged OnTeamLivesChanged;
 
-	// --- [¼­¹ö ÇÔ¼ö] ---
+	UFUNCTION()
+	void SetQTEActive(bool bActive);
+
+	// --- [ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½] ---
 	void UpdateBossHealth(float NewCurrent, float NewMax);
 	void SetQTEStatus(bool bActive, int32 InTarget);
 	void UpdateQTECount(int32 NewCount);
-	void SetTeamLives(int32 NewLives); // GameMode°¡ È£Ãâ
+	void SetTeamLives(int32 NewLives); // GameModeï¿½ï¿½ È£ï¿½ï¿½
 
 protected:
 	UFUNCTION() void OnRep_BossHealth();
 	UFUNCTION() void OnRep_IsQTEActive();
 	UFUNCTION() void OnRep_QTECounts();
-	UFUNCTION() void OnRep_TeamLives(); // UI °»½Å¿ë
+	UFUNCTION() void OnRep_TeamLives(); // UI ï¿½ï¿½ï¿½Å¿ï¿½
 };

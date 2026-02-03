@@ -49,6 +49,7 @@ AStagePlayerState::AStagePlayerState()
 void AStagePlayerState::SetRespawnEndTime(float NewTime)
 {
 	RespawnEndTime = NewTime;
+	OnRep_RespawnEndTime();
 }
 
 void AStagePlayerState::SetJob(EJobType NewJob)
@@ -114,4 +115,9 @@ float AStagePlayerState::GetMiniGameProgressScore() const
 		TotalScore += DistanceScore;
 	}
 	return TotalScore;
+}
+
+void AStagePlayerState::OnRep_RespawnEndTime()
+{
+	OnRespawnTimeChanged.Broadcast(RespawnEndTime);
 }

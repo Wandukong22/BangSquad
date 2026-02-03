@@ -33,5 +33,4 @@ public:
 
 	//체크포인트 갱신 함수
 	void UpdateStageCheckpoint(int32 NewIndex);
-	
 };
