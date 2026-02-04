@@ -181,6 +181,17 @@ void AStageBossGameMode::OnBossKilled()
 	EndStage(true); // �¸�
 }
 
+void AStageBossGameMode::DebugStartQTE()
+{
+	// 월드에서 보스 액터를 찾습니다.
+	AActor* FoundActor = UGameplayStatics::GetActorOfClass(GetWorld(), AStage1Boss::StaticClass());
+	if (AStage1Boss* Boss = Cast<AStage1Boss>(FoundActor))
+	{
+		// 기존에 만들어진 QTE 실행 함수 호출
+		TriggerSpearQTE(Boss);
+	}
+}
+
 void AStageBossGameMode::EndStage(bool bIsVictory)
 {
 	if (bIsVictory)
