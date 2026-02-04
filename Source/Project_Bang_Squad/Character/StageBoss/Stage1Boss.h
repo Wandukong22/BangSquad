@@ -205,4 +205,8 @@ protected:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_PlaySpellMontage();
+
+public:
+	UPROPERTY(EditInstanceOnly, Category = "BS|Boss")
+	TObjectPtr<class AMapPortal> TargetPortal;
 };

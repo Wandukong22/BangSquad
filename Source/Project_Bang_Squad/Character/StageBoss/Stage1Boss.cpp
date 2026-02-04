@@ -24,6 +24,7 @@
 #include "AIController.h"
 #include "BrainComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Project_Bang_Squad/Game/Stage/MapPortal.h"
 
 AStage1Boss::AStage1Boss()
 {
@@ -642,8 +643,14 @@ void AStage1Boss::OnDeathStarted()
 {
 	Super::OnDeathStarted();
 	if (!HasAuthority()) return;
+	if (TargetPortal)
+	{
+		TargetPortal->ActivatePortal();
+	}
+	
 	if (BossData && BossData->DeathMontage) Multicast_PlayAttackMontage(BossData->DeathMontage);
 
+	
 	// �� ���� �ߴ�
 	TArray<AActor*> Walls; UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADeathWall::StaticClass(), Walls);
 	for (AActor* W : Walls) W->SetActorTickEnabled(false);

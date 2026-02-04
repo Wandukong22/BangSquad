@@ -31,6 +31,13 @@ AMapPortal::AMapPortal()
 	CountdownText->SetRelativeLocation(FVector(0.f, 0.f, 150.f));
 }
 
+void AMapPortal::ActivatePortal()
+{
+	SetActorHiddenInGame(false);
+	SetActorEnableCollision(true);
+	if (TriggerSphere) TriggerSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
 void AMapPortal::BeginPlay()
 {
 	Super::BeginPlay();
@@ -46,6 +53,13 @@ void AMapPortal::BeginPlay()
 		
 		TriggerSphere->OnComponentBeginOverlap.AddDynamic(this, &AMapPortal::OnOverlapBegin);
 		TriggerSphere->OnComponentEndOverlap.AddDynamic(this, &AMapPortal::OnOverlapEnd);
+	}
+
+	if (!bIsStartActive)
+	{
+		SetActorHiddenInGame(true);
+		SetActorEnableCollision(false);
+		if (TriggerSphere) TriggerSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 }
 
