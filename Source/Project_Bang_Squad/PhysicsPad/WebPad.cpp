@@ -7,6 +7,8 @@
 
 AWebPad::AWebPad()
 {
+    bReplicates = true;
+
     CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
     RootComponent = CollisionBox;
 
