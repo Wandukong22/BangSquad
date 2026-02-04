@@ -18,7 +18,7 @@ class PROJECT_BANG_SQUAD_API UQTEWidget : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	//virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UFUNCTION()
 	void UpdateKeyCount(int32 KeyCount);
@@ -33,17 +33,20 @@ public:
 	
 	UFUNCTION()
 	void HandleQTEStateChanged(bool bIsActive);
-	
+
+
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> KeyCountText;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayComboAnimation();
 private:
-	bool bIsAnimating = false;
-	float CurrentAnimTime = 0.f;
-
-	const float AnimDuration = 0.2f;
-	const float MaxScale = 1.5f;
+	//bool bIsAnimating = false;
+	//float CurrentAnimTime = 0.f;
+	//
+	//const float AnimDuration = 0.2f;
+	//const float MaxScale = 1.5f;
 
 	bool bIsInitialized = false;
 

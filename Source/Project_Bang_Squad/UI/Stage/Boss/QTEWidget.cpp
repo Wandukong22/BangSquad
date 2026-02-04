@@ -33,31 +33,31 @@ void UQTEWidget::NativeConstruct()
 	}
 }
 
-void UQTEWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-
-	if (bIsAnimating && KeyCountText)
-	{
-		CurrentAnimTime += InDeltaTime;
-
-		//진행도
-		float Alpha = FMath::Clamp(CurrentAnimTime / AnimDuration, 0.f, 1.f);
-
-		//Sin(0~PI): 0->1->0 부드럽게 변함
-		float ScaleValue = 1.f + (MaxScale - 1.f) * FMath::Sin(Alpha * PI);
-
-		//실제 UI에 적용
-		KeyCountText->SetRenderScale(FVector2D(ScaleValue, ScaleValue));
-
-		//끝났으면 종료
-		if (Alpha >= 1.f)
-		{
-			bIsAnimating = false;
-			KeyCountText->SetRenderScale(FVector2D(1.f, 1.f));
-		}
-	}
-}
+//void UQTEWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+//{
+//	Super::NativeTick(MyGeometry, InDeltaTime);
+//
+//	if (bIsAnimating && KeyCountText)
+//	{
+//		CurrentAnimTime += InDeltaTime;
+//
+//		//진행도
+//		float Alpha = FMath::Clamp(CurrentAnimTime / AnimDuration, 0.f, 1.f);
+//
+//		//Sin(0~PI): 0->1->0 부드럽게 변함
+//		float ScaleValue = 1.f + (MaxScale - 1.f) * FMath::Sin(Alpha * PI);
+//
+//		//실제 UI에 적용
+//		KeyCountText->SetRenderScale(FVector2D(ScaleValue, ScaleValue));
+//
+//		//끝났으면 종료
+//		if (Alpha >= 1.f)
+//		{
+//			bIsAnimating = false;
+//			KeyCountText->SetRenderScale(FVector2D(1.f, 1.f));
+//		}
+//	}
+//}
 
 void UQTEWidget::UpdateKeyCount(int32 KeyCount)
 {
@@ -70,8 +70,9 @@ void UQTEWidget::UpdateKeyCount(int32 KeyCount)
 			if (KeyCount > 0)
 			{
 				ShowWidget();
-				CurrentAnimTime = 0.f;
-				bIsAnimating = true;
+				//CurrentAnimTime = 0.f;
+				//bIsAnimating = true;
+				PlayComboAnimation();
 			}
 			else
 			{
