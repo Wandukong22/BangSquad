@@ -18,9 +18,16 @@ class PROJECT_BANG_SQUAD_API AMapPortal : public AActor
 public:
 	AMapPortal();
 
+	UFUNCTION()
+	void ActivatePortal();
+
 protected:
 	virtual void BeginPlay() override;
 
+	//처음부터 활성화인지
+	UPROPERTY(EditAnywhere, Category = "BS|Map")
+	bool bIsStartActive = true;
+	
 	//원형 구역
 	UPROPERTY(EditAnywhere, Category = "BS|Components")
 	TObjectPtr<USphereComponent> TriggerSphere;
