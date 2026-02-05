@@ -21,7 +21,7 @@
 AStageGameMode::AStageGameMode()
 {
 	bUseSeamlessTravel = true;
-
+	
 	PlayerStateClass = AStagePlayerState::StaticClass();
 	PlayerControllerClass = AStagePlayerController::StaticClass();
 }
@@ -33,10 +33,15 @@ void AStageGameMode::SpawnPlayerCharacter(AController* Controller, EJobType JobT
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
 	if (!GI) return;
-
+	
+	UE_LOG(LogTemp, Warning, TEXT("[SpawnDebug] 요청된 직업: %d"), (int32)JobType);
+	
 	TSubclassOf<ACharacter> PawnClass = GI->GetCharacterClass(JobType);
-	if (!PawnClass) return;
-
+	if (!PawnClass) {UE_LOG(LogTemp, Error, TEXT("[SpawnDebug] PawnClass가 Null입니다! 데이터 에셋을 확인하세요."));return;}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[SpawnDebug] 스폰할 클래스 이름: %s"), *PawnClass->GetName());
+	}
 	//기존에 붙어있던 폰이 있다면 제거
 	if (APawn* OldPawn = Controller->GetPawn())
 	{
@@ -119,17 +124,16 @@ void AStageGameMode::ExecuteRespawn(AController* Controller)
 {
 	if (!Controller) return;
 
-	//컨트롤러에서 저장해둔 직업 정보를 가져옴
-	EJobType JobToSpawn = EJobType::Titan;
-	if (AStagePlayerController* StagePC = Cast<AStagePlayerController>(Controller))
+	EJobType JobToSpawn = EJobType::None;
+
+	if (ABSPlayerState* PS = Controller->GetPlayerState<ABSPlayerState>())
 	{
-		if (StagePC->SavedJobType != EJobType::None)
-			JobToSpawn = StagePC->SavedJobType;
+		JobToSpawn = PS->GetJob();
 	}
 
 	if (JobToSpawn == EJobType::None)
 	{
-		return;
+		JobToSpawn = EJobType::Titan;
 	}
 
 	SpawnPlayerCharacter(Controller, JobToSpawn);

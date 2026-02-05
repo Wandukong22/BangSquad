@@ -56,7 +56,7 @@ void UJobSelectWidget::UpdateJobAvailAbility()
 		ALobbyPlayerState* LobbyPS = Cast<ALobbyPlayerState>(PS);
 		if (LobbyPS && LobbyPS->GetIsConfirmedJob() && PS != GetOwningPlayerState())
 		{
-			TakenJobs.Add(LobbyPS->CurrentJob);
+			TakenJobs.Add(LobbyPS->GetJob());
 		}
 	}
 

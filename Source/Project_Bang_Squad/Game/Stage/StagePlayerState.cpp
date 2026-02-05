@@ -12,7 +12,6 @@ void AStagePlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimePropert
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AStagePlayerState, Job);
 	DOREPLIFETIME(AStagePlayerState, RespawnEndTime);
 	DOREPLIFETIME(AStagePlayerState, MiniGameCheckpointIndex);
 	DOREPLIFETIME(AStagePlayerState, StageCheckpointIndex);
@@ -27,7 +26,6 @@ void AStagePlayerState::CopyProperties(APlayerState* PlayerState)
 	AStagePlayerState* PS = Cast<AStagePlayerState>(PlayerState);
 	if (PS)
 	{
-		PS->Job = Job;
 		PS->RespawnEndTime = RespawnEndTime;
 		PS->StageCheckpointIndex = StageCheckpointIndex;
 		PS->DeathCount = DeathCount;
@@ -50,11 +48,6 @@ void AStagePlayerState::SetRespawnEndTime(float NewTime)
 {
 	RespawnEndTime = NewTime;
 	OnRep_RespawnEndTime();
-}
-
-void AStagePlayerState::SetJob(EJobType NewJob)
-{
-	Job = NewJob;
 }
 
 void AStagePlayerState::UpdateMiniGameCheckpoint(int32 NewIndex)

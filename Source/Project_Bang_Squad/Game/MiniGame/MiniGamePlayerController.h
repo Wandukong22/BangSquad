@@ -15,6 +15,7 @@ class PROJECT_BANG_SQUAD_API AMiniGamePlayerController : public AStagePlayerCont
 	GENERATED_BODY()
 
 public:
+	virtual void BeginPlay() override;
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
 	TSubclassOf<class UMiniGameWidget> MiniGameWidgetClass;
 

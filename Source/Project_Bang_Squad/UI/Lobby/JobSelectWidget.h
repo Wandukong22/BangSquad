@@ -9,7 +9,6 @@
 #include "JobSelectWidget.generated.h"
 
 class UPlayerRow;
-enum class EJobType : uint8;
 class UButton;
 
 

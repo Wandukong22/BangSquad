@@ -6,6 +6,11 @@
 #include "Blueprint/UserWidget.h"
 #include "Project_Bang_Squad/UI/MiniGame/MiniGameWidget.h"
 
+void AMiniGamePlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
 void AMiniGamePlayerController::CreateGameWidget()
 {
 	if (MiniGameWidgetClass)

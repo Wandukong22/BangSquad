@@ -23,6 +23,14 @@ void AStagePlayerController::BeginPlay()
 	//Local인 경우에만
 	if (IsLocalPlayerController())
 	{
+		EJobType MyJob = EJobType::None;
+		if (UBSGameInstance* GI = GetGameInstance<UBSGameInstance>())
+		{
+			MyJob = GI->GetPlayerJob();
+		}
+		ServerRequestSpawn(MyJob);
+		CreateGameWidget();
+		
 		// 캐릭터 밝기 조절
 		if (WorldSettingsMPC)
 		{
@@ -37,31 +45,20 @@ void AStagePlayerController::BeginPlay()
 			UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), WorldSettingsMPC,
 			                                                TEXT("GlobalCharacterEmissive"), TargetEmissive);
 		}
-
-		//UI
-		CreateGameWidget();
-
+		
 		FInputModeGameOnly GameInputMode;
 		SetInputMode(GameInputMode);
 		bShowMouseCursor = false;
-
-		//GameInstance에서 내가 고른 직업 꺼내오기
-		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
-		{
-			ServerSetNickName(GI->UserNickname);
-			//서버에게 소환 요청
-			ServerRequestSpawn(GI->GetMyJob());
-		}
 	}
 }
 
-void AStagePlayerController::ServerSetNickName_Implementation(const FString& InNickName)
+/*void AStagePlayerController::ServerSetNickName_Implementation(const FString& InNickName)
 {
 	if (PlayerState)
 	{
 		PlayerState->SetPlayerName(InNickName);
 	}
-}
+}*/
 
 void AStagePlayerController::StartSpectating()
 {
@@ -205,19 +202,36 @@ void AStagePlayerController::Server_Interact_Implementation()
 	}
 }
 
-void AStagePlayerController::ServerRequestSpawn_Implementation(EJobType MyJob)
+void AStagePlayerController::ServerRequestSpawn_Implementation(EJobType Job)
 {
-	SavedJobType = MyJob;
-
-	if (AStagePlayerState* PS = GetPlayerState<AStagePlayerState>())
+	EJobType FinalJob = EJobType::None;
+	ABSPlayerState* PS = GetPlayerState<ABSPlayerState>();
+	if (PS)
 	{
-		PS->SetJob(MyJob);
+		FinalJob = PS->GetJob();
 	}
-	AGameModeBase* AutoGM = GetWorld()->GetAuthGameMode();
 
-	//서버에서 게임모드를 찾아 실제 소환명령
-	if (AStageGameMode* StageGM = Cast<AStageGameMode>(AutoGM))
+	if (FinalJob == EJobType::None)
 	{
-		StageGM->SpawnPlayerCharacter(this, MyJob);
+		FinalJob = Job;
+		if (PS)
+		{
+			PS->Server_SetJob(FinalJob);
+		}
+	}
+	
+	if (HasAuthority())
+	{
+		AGameModeBase* GM = GetWorld()->GetAuthGameMode();
+	
+		//서버에서 게임모드를 찾아 실제 소환명령
+		if (AStageGameMode* StageGM = Cast<AStageGameMode>(GM))
+		{
+			StageGM->SpawnPlayerCharacter(this, FinalJob);
+		}
+		else if (AMiniGameMode* MiniGM = Cast<AMiniGameMode>(GM))
+		{
+			MiniGM->SpawnPlayerCharacter(this, FinalJob);
+		}
 	}
 }

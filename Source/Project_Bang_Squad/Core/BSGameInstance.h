@@ -58,9 +58,6 @@ public:
 	bool bIsGoingToHost = false;
 
 public:
-	// 내가 고른 캐릭터 ID 저장
-	UPROPERTY(BlueprintReadWrite)
-	int32 MyCharacterID = 1;
 
 	// ✅ 로비에서 사용할 방 이름 (Select UI 표시용)
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Lobby")
@@ -101,15 +98,12 @@ private:
 
 	//최종 선택된 직업
 	UPROPERTY()
-	EJobType MyJob = EJobType::None;
+	EJobType PlayerJob = EJobType::None;
 
-	//미니게임 방문 여부
-	UPROPERTY()
-	bool bHasVisitedMap = false;
 
 public:
-	FORCEINLINE EJobType GetMyJob() const { return MyJob; }
-	void SetMyJob(EJobType NewJob) { MyJob = NewJob; }
+	FORCEINLINE EJobType GetPlayerJob() const { return PlayerJob; }
+	void SetPlayerJob(EJobType NewJob) { PlayerJob = NewJob; }
 
 	//닉네임 저장
 	UPROPERTY()

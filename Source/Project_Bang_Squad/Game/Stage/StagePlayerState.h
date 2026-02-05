@@ -3,22 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/PlayerState.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
+#include "Project_Bang_Squad/Game/Base/BSPlayerState.h"
 #include "StagePlayerState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRespawnTimeChanged, float, NewRespawnTime);
 
 UCLASS()
-class PROJECT_BANG_SQUAD_API AStagePlayerState : public APlayerState
+class PROJECT_BANG_SQUAD_API AStagePlayerState : public ABSPlayerState
 {
 	GENERATED_BODY()
 
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
-
-	UPROPERTY(Replicated)
-	EJobType Job = EJobType::None;
 
 	UPROPERTY(Replicated)
 	int32 DeathCount = 0;
@@ -29,10 +26,8 @@ protected:
 public:
 	AStagePlayerState();
 	
-	EJobType GetJob() { return Job; }
 	float GetRespawnEndTime() { return RespawnEndTime; }
 	void SetRespawnEndTime(float NewTime);
-	void SetJob(EJobType NewJob);
 
 	//MiniGame용
 	UPROPERTY(Replicated)

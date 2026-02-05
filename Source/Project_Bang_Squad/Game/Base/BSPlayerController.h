@@ -19,7 +19,11 @@ protected:
 	UPROPERTY()
 	TArray<UUserWidget*> ManagedWidgets;
 
+	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetNickName(const FString& NewName);
 public:
 	void RegisterManagedWidget(UUserWidget* InWidget);
 };

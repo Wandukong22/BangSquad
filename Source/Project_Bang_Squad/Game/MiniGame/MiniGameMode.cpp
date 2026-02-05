@@ -26,22 +26,6 @@ AMiniGameMode::AMiniGameMode()
 void AMiniGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-
-	EJobType MyJob = EJobType::Titan;
-
-	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
-	{
-		MyJob = GI->GetMyJob();
-	}
-
-	//컨트롤러에 직업 저장
-	if (AStagePlayerController* StagePC = Cast<AStagePlayerController>(NewPlayer))
-	{
-		StagePC->SavedJobType = MyJob;
-	}
-
-	//캐릭터 소환
-	SpawnPlayerCharacter(NewPlayer, MyJob);
 }
 
 void AMiniGameMode::SpawnPlayerCharacter(AController* Controller, EJobType JobType)
@@ -106,14 +90,18 @@ void AMiniGameMode::ExecuteRespawn(AController* Controller)
 {
 	if (!Controller) return;
 
-	EJobType JobToSpawn = EJobType::Titan;
-	if (AStagePlayerController* StagePC = Cast<AStagePlayerController>(Controller))
+	EJobType JobToSpawn = EJobType::None;
+
+	if (ABSPlayerState* PS = Controller->GetPlayerState<ABSPlayerState>())
 	{
-		if (StagePC->SavedJobType != EJobType::None)
-		{
-			JobToSpawn = StagePC->SavedJobType;
-		}
+		JobToSpawn = PS->GetJob();
 	}
+
+	if (JobToSpawn == EJobType::None)
+	{
+		JobToSpawn = EJobType::Titan;
+	}
+	
 	SpawnPlayerCharacter(Controller, JobToSpawn);
 }
 

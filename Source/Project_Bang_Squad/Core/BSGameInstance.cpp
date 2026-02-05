@@ -128,11 +128,6 @@ void UBSGameInstance::RefreshServerList()
 	SessionSearch = MakeShareable(new FOnlineSessionSearch());
 	if (SessionSearch.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Finding Session..."));
-
-		//if (GEngine)
-		//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, TEXT("🔍 세션 검색 시작... (Searching...)"));
-	
 		SessionSearch->MaxSearchResults = 100;
 
 		FString SubsystemName = IOnlineSubsystem::Get()->GetSubsystemName().ToString();
@@ -156,8 +151,9 @@ void UBSGameInstance::RefreshServerList()
 void UBSGameInstance::OpenMainMenuLevel()
 {
 	APlayerController* PC = GetFirstLocalPlayerController();
+	FString Path = MapDataAsset->GetMapPath(EStageIndex::Lobby, EStageSection::Menu);
 	if (!PC) return;
-	PC->ClientTravel("/Game/Maps/MenuMap", ETravelType::TRAVEL_Absolute);
+	PC->ClientTravel(Path, ETravelType::TRAVEL_Absolute);
 }
 
 void UBSGameInstance::OnCreateSessionComplete(FName InSessionName, bool IsSuccess)
@@ -186,16 +182,6 @@ void UBSGameInstance::OnFindSessionComplete(bool IsSuccess)
 
 	if (IsSuccess && SessionSearch.IsValid())
 	{
-		// 📢 [추가] 찾은 개수 화면에 띄우기 (빨간색/초록색 글씨)
-		//int32 Count = SessionSearch->SearchResults.Num();
-		//FString Msg = FString::Printf(TEXT("✅ 검색 완료! 찾은 방 개수: %d 개"), Count);
-		//
-		//if (GEngine)
-		//{
-		//	FColor MsgColor = (Count > 0) ? FColor::Green : FColor::Red;
-		//	GEngine->AddOnScreenDebugMessage(-1, 10.f, MsgColor, Msg);
-		//}
-	
 		TArray<FServerData> ServerNames;
 		for (const FOnlineSessionSearchResult& SearchResult : SessionSearch->SearchResults)
 		{
@@ -281,19 +267,7 @@ void UBSGameInstance::OnJoinSessionComplete(FName InSessionName, EOnJoinSessionC
 void UBSGameInstance::OnNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType,
 	const FString& ErrorString)
 {
-	UE_LOG(LogTemp, Error, TEXT("네트워크 오류 발생: %s"), *ErrorString);
-
-	/*if (MainMenu)
-	{
-		MainMenu->Shutdown();
-		MainMenu = nullptr;
-	}*/
-
-	APlayerController* PC = GetFirstLocalPlayerController();
-	if (PC)
-	{
-		PC->ClientTravel("/Game/Maps/MenuMap", ETravelType::TRAVEL_Absolute);
-	}
+	OpenMainMenuLevel();
 }
 
 void UBSGameInstance::CreateSession()
