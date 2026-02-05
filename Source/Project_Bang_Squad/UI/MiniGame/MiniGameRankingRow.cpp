@@ -5,9 +5,10 @@
 
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.h"
 #include "Project_Bang_Squad/Game/Stage/StagePlayerState.h"
 
-void UMiniGameRankingRow::UpdateData(int32 Rank, class AStagePlayerState* PlayerState)
+void UMiniGameRankingRow::UpdateData(int32 Rank, class AMiniGamePlayerState* PlayerState)
 {
 	if (!PlayerState) return;
 

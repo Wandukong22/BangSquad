@@ -5,6 +5,7 @@
 
 #include "EngineUtils.h"
 #include "MiniGamePlayerController.h"
+#include "MiniGamePlayerState.h"
 #include "GameFramework/Character.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "Project_Bang_Squad/Game/Stage/Checkpoint.h"
@@ -18,7 +19,7 @@ AMiniGameMode::AMiniGameMode()
 	//맵 이동 시 끊김 최소화
 	bUseSeamlessTravel = true;
 
-	PlayerStateClass = AStagePlayerState::StaticClass();
+	PlayerStateClass = AMiniGamePlayerState::StaticClass();
 	PlayerControllerClass = AMiniGamePlayerController::StaticClass();
 	GameStateClass = AStageGameState::StaticClass();
 }
@@ -75,7 +76,7 @@ void AMiniGameMode::OnPlayerReachedGoal(AController* ReachedPlayer)
 	//PlayerState에 순위 고정
 	if (ReachedPlayer)
 	{
-		if (AStagePlayerState* PS = ReachedPlayer->GetPlayerState<AStagePlayerState>())
+		if (AMiniGamePlayerState* PS = ReachedPlayer->GetPlayerState<AMiniGamePlayerState>())
 		{
 			PS->SetMiniGameRank(Rank);
 		}
@@ -112,7 +113,7 @@ FTransform AMiniGameMode::GetRespawnTransform(AController* Controller)
 
 	if (Controller)
 	{
-		AStagePlayerState* PS = Controller->GetPlayerState<AStagePlayerState>();
+		AMiniGamePlayerState* PS = Controller->GetPlayerState<AMiniGamePlayerState>();
 		// 체크포인트 인덱스가 0보다 크면 해당 체크포인트를 찾음
 		if (PS && PS->GetMiniGameCheckpoint() > 0)
 		{

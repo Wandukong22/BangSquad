@@ -6,6 +6,7 @@
 #include "StageGameState.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.h"
 #include "Project_Bang_Squad/Game/Stage/StagePlayerState.h"
 
 ACheckpoint::ACheckpoint()
@@ -37,20 +38,16 @@ void ACheckpoint::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	APawn* Pawn = Cast<APawn>(OtherActor);
 	if (Pawn && Pawn->GetController())
 	{
-		AStagePlayerState* PS = Pawn->GetController()->GetPlayerState<AStagePlayerState>();
-		if (PS)
+		APlayerState* PS = Pawn->GetController()->PlayerState;
+		if (AMiniGamePlayerState* MiniPS = Cast<AMiniGamePlayerState>(PS))
 		{
-			FString MapName = UGameplayStatics::GetCurrentLevelName(GetWorld());
-			if (MapName.Contains(TEXT("MiniGame")))
+			MiniPS->UpdateMiniGameCheckpoint(CheckpointIndex);
+		}
+		else if (Cast<AStagePlayerState>(PS))
+		{
+			if (AStageGameState* GS = GetWorld()->GetGameState<AStageGameState>())
 			{
-				PS->UpdateMiniGameCheckpoint(CheckpointIndex);
-			}
-			else
-			{
-				if (AStageGameState* GS = GetWorld()->GetGameState<AStageGameState>())
-				{
-					GS->UpdateStageCheckpoint(CheckpointIndex);
-				}
+				GS->UpdateStageCheckpoint(CheckpointIndex);
 			}
 		}
 	}
