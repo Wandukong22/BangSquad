@@ -31,10 +31,10 @@ void AStagePlayerState::CopyProperties(APlayerState* PlayerState)
 void AStagePlayerState::SetRespawnEndTime(float NewTime)
 {
 	RespawnEndTime = NewTime;
-	OnRep_RespawnEndTime();
+	//OnRep_RespawnEndTime();
 }
 
-void AStagePlayerState::OnRep_RespawnEndTime()
-{
-	OnRespawnTimeChanged.Broadcast(RespawnEndTime);
-}
+//void AStagePlayerState::OnRep_RespawnEndTime()
+//{
+//	OnRespawnTimeChanged.Broadcast(RespawnEndTime);
+//}

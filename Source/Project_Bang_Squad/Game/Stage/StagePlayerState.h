@@ -20,15 +20,15 @@ public:
 	int32 GetDeathCount() const { return DeathCount; }
 
 	// 부활 타이머
-	UPROPERTY(ReplicatedUsing = OnRep_RespawnEndTime)
+	UPROPERTY(Replicated/*Using = OnRep_RespawnEndTime*/)
 	float RespawnEndTime = 0.f;
 	UPROPERTY(BlueprintAssignable)
 	FOnRespawnTimeChanged OnRespawnTimeChanged;
 	float GetRespawnEndTime() { return RespawnEndTime; }
 	void SetRespawnEndTime(float NewTime);
 
-	UFUNCTION()
-	void OnRep_RespawnEndTime();
+	//UFUNCTION()
+	//void OnRep_RespawnEndTime();
 	
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;

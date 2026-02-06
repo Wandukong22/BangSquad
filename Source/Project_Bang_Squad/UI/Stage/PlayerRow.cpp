@@ -14,10 +14,8 @@
 void UPlayerRow::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-	//if (CurrentMode == ERowMode::Stage && TargetPlayerState.IsValid())
-	//{
-	//	UpdateStageInfo();
-	//}
+
+	RefreshTimeUI();
 }
 
 void UPlayerRow::NativeConstruct()
@@ -67,9 +65,9 @@ void UPlayerRow::SetTargetPlayerState(class APlayerState* InPlayerState)
 			StagePS->OnRespawnTimeChanged.RemoveDynamic(this, &UPlayerRow::UpdateDeathState);
 		}
 	}
-	
+
 	TargetPlayerState = InPlayerState;
-	if (TargetPlayerState.IsValid() )
+	if (TargetPlayerState.IsValid())
 	{
 		if (Txt_Name)
 			Txt_Name->SetText(FText::FromString(TargetPlayerState->GetPlayerName()));
@@ -96,7 +94,6 @@ void UPlayerRow::SetTargetPlayerState(class APlayerState* InPlayerState)
 			OnPawnSet(TargetPlayerState.Get(), TargetPlayerState->GetPawn(), nullptr);
 		}
 	}
-
 }
 
 void UPlayerRow::UpdateLobbyInfo(bool bIsReady, EJobType JobType)
@@ -140,10 +137,10 @@ void UPlayerRow::OnPawnSet(APlayerState* Player, APawn* NewPawn, APawn* OldPawn)
 		if (UHealthComponent* HPComp = NewPawn->FindComponentByClass<UHealthComponent>())
 		{
 			HPComp->OnHealthChanged.RemoveDynamic(this, &UPlayerRow::UpdateHealthUI);
-			HPComp->OnDead.RemoveDynamic(this, &UPlayerRow::HandleOnDead);
+			//HPComp->OnDead.RemoveDynamic(this, &UPlayerRow::HandleOnDead);
 
 			HPComp->OnHealthChanged.AddDynamic(this, &UPlayerRow::UpdateHealthUI);
-			HPComp->OnDead.AddDynamic(this, &UPlayerRow::HandleOnDead);
+			//HPComp->OnDead.AddDynamic(this, &UPlayerRow::HandleOnDead);
 
 			UpdateHealthUI(HPComp->CurrentHealth, HPComp->MaxHealth);
 		}
@@ -163,49 +160,63 @@ void UPlayerRow::UpdateDeathState(float NewRespawnTime)
 {
 	if (!GetWorld()->GetGameState()) return;
 
-	float RemainTime = NewRespawnTime - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+	float ServerTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+	float RemainTime = NewRespawnTime - ServerTime;
 
 	if (RemainTime > 0.f) // 죽음 상태 진입
 	{
-		HandleOnDead(); // UI 어둡게
-		
-		// 1초마다 텍스트 갱신하는 타이머 시작
-		GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, this, &UPlayerRow::RefreshRespawnTimer, 1.0f, true);
-		RefreshRespawnTimer(); // 즉시 1회 실행해서 텍스트 맞춤
+		if (Overlay_Death) Overlay_Death->SetVisibility(ESlateVisibility::Visible);
+		if (Img_Profile) Img_Profile->SetColorAndOpacity(FLinearColor(0.2f, 0.2f, 0.2f, 1.f)); // 어둡게	}
+
+		RefreshTimeUI();
 	}
 	else // 부활
 	{
 		if (Overlay_Death) Overlay_Death->SetVisibility(ESlateVisibility::Hidden);
 		if (Img_Profile) Img_Profile->SetColorAndOpacity(FLinearColor::White);
-		
-		// 타이머 정지
-		GetWorld()->GetTimerManager().ClearTimer(RespawnTimerHandle);
 	}
 }
 
-void UPlayerRow::HandleOnDead()
+void UPlayerRow::RefreshTimeUI()
 {
-	if (Overlay_Death) Overlay_Death->SetVisibility(ESlateVisibility::Visible);
-	if (Img_Profile) Img_Profile->SetColorAndOpacity(FLinearColor(0.2f, 0.2f, 0.2f, 1.f));
-}
+	// 1. 방어 코드: UI가 꺼져있거나 타겟이 없으면 계산 X
+	if (!TargetPlayerState.IsValid() || !Overlay_Death) return;
 
-void UPlayerRow::RefreshRespawnTimer()
-{
-	if (!TargetPlayerState.IsValid()) return;
+	AStagePlayerState* StagePS = Cast<AStagePlayerState>(TargetPlayerState.Get());
+	AGameStateBase* GS = GetWorld()->GetGameState();
 
-	if (AStagePlayerState* StagePS = Cast<AStagePlayerState>(TargetPlayerState.Get()))
+	if (StagePS && GS)
 	{
-		float RemainTime = StagePS->GetRespawnEndTime() - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
-		
-		if (RemainTime <= 0.f)
-		{
-			UpdateDeathState(0.f); // 시간 끝났으면 부활 처리
-			return;
-		}
+		// 2. 시간 계산
+		float RemainTime = StagePS->GetRespawnEndTime() - GS->GetServerWorldTimeSeconds();
 
-		if (Txt_RespawnTime)
+		// 3. 텍스트 설정
+		if (RemainTime > 0.f)
 		{
-			Txt_RespawnTime->SetText(FText::AsNumber(FMath::CeilToInt(RemainTime)));
+			// 오버레이가 꺼져있다면 켭니다! (이게 없어서 안 떴던 것)
+			if (Overlay_Death->GetVisibility() != ESlateVisibility::Visible)
+			{
+				Overlay_Death->SetVisibility(ESlateVisibility::Visible);
+				if (Img_Profile) Img_Profile->SetColorAndOpacity(FLinearColor(0.2f, 0.2f, 0.2f, 1.f)); // 어둡게
+			}
+
+			//텍스트 갱신
+			int32 CeilTime = FMath::CeilToInt(RemainTime);
+			if (Txt_RespawnTime)
+			{
+				// 혹시 숨겨져 있을 수 있으니 확실하게 켜기
+				Txt_RespawnTime->SetVisibility(ESlateVisibility::HitTestInvisible);
+				Txt_RespawnTime->SetText(FText::AsNumber(CeilTime));
+			}
+			UE_LOG(LogTemp, Log, TEXT("부활 대기 중... 남은 시간: %f"), RemainTime);
+		}
+		else
+		{
+			if (Overlay_Death->GetVisibility() != ESlateVisibility::Hidden)
+			{
+				Overlay_Death->SetVisibility(ESlateVisibility::Hidden);
+				if (Img_Profile) Img_Profile->SetColorAndOpacity(FLinearColor::White); // 밝게
+			}
 		}
 	}
 }
