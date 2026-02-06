@@ -152,6 +152,9 @@ public:
 	UPROPERTY()
 	TSet<uint32> VisitedStageKeys;
 
+	UPROPERTY()
+	EStageIndex CurrentStage = EStageIndex::None;
+
 	//방문한 거 표시
 	UFUNCTION()
 	void MarkStageAsVisited(EStageIndex Stage, EStageSection Section);

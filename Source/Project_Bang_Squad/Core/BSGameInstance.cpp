@@ -365,6 +365,13 @@ void UBSGameInstance::MoveToStage(EStageIndex InStage, EStageSection InSection)
 {
 	if (!MapDataAsset) return;
 
+	if (CurrentStage != InStage)
+	{
+		InitSavedCheckpointIndex();
+		CurrentStage = InStage;
+		ClearMonsterData();
+	}
+
 	FString Path = MapDataAsset->GetMapPath(InStage, InSection);
 
 	if (!Path.IsEmpty())
