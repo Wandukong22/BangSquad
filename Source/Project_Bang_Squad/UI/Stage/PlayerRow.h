@@ -95,10 +95,5 @@ private:
 	void UpdateDeathState(float NewRespawnTime);
 
 	UFUNCTION()
-	void HandleOnDead();
-
-	//1초마다 남은 시간 숫자만 줄여줌
-	void RefreshRespawnTimer();
-
-	FTimerHandle RespawnTimerHandle;
+	void RefreshTimeUI();
 };
