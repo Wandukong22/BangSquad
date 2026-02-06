@@ -11,13 +11,6 @@ void UJobSelectWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	UE_LOG(LogTemp, Warning, TEXT("=== JobSelectWidget 초기화 ==="));
-	UE_LOG(LogTemp, Warning, TEXT("Btn_SelectTitan: %s"), Btn_SelectTitan ? TEXT("✅") : TEXT("❌"));
-	UE_LOG(LogTemp, Warning, TEXT("Btn_SelectStriker: %s"), Btn_SelectStriker ? TEXT("✅") : TEXT("❌"));
-	UE_LOG(LogTemp, Warning, TEXT("Btn_SelectMage: %s"), Btn_SelectMage ? TEXT("✅") : TEXT("❌"));
-	UE_LOG(LogTemp, Warning, TEXT("Btn_SelectPaladin: %s"), Btn_SelectPaladin ? TEXT("✅") : TEXT("❌"));
-
-
 	if (Btn_SelectTitan)
 	{
 		Btn_SelectTitan->OnJobSelected.AddDynamic(this, &UJobSelectWidget::OnJobButtonClicked);
@@ -42,24 +35,17 @@ void UJobSelectWidget::NativeConstruct()
 	}
 	if (Btn_Confirm) Btn_Confirm->OnClicked.AddDynamic(this, &UJobSelectWidget::OnConfirmClicked);
 
-	UpdateJobAvailAbility();
+	if (ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>())
+	{
+		GS->OnTakenJobsChanged.RemoveDynamic(this, &UJobSelectWidget::HandleTakenJobsChanged);
+		GS->OnTakenJobsChanged.AddDynamic(this, &UJobSelectWidget::HandleTakenJobsChanged);
+
+		UpdateJobAvailability(GS->GetTakenJobs());
+	}
 }
 
-void UJobSelectWidget::UpdateJobAvailAbility()
+void UJobSelectWidget::UpdateJobAvailability(const TArray<EJobType>& TakenJobs)
 {
-	ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>();
-	if (!GS) return;
-
-	TSet<EJobType> TakenJobs;
-	for (APlayerState* PS : GS->PlayerArray)
-	{
-		ALobbyPlayerState* LobbyPS = Cast<ALobbyPlayerState>(PS);
-		if (LobbyPS && LobbyPS->GetIsConfirmedJob() && PS != GetOwningPlayerState())
-		{
-			TakenJobs.Add(LobbyPS->GetJob());
-		}
-	}
-
 	auto UpdateButtonState = [&](UJobButton* Btn, EJobType JobType)
 	{
 		if (!Btn) return;
@@ -69,14 +55,15 @@ void UJobSelectWidget::UpdateJobAvailAbility()
 
 		if (bIsTaken)
 		{
-			Btn->SetSelectedState(false);
 			if (PendingJob == JobType)
 			{
 				PendingJob = EJobType::None;
 			}
+			Btn->SetSelectedState(false);
 		}
 		else
 		{
+			//하이라이트
 			Btn->SetSelectedState(PendingJob == JobType);
 		}
 	};
@@ -96,7 +83,9 @@ void UJobSelectWidget::UpdateJobAvailAbility()
 void UJobSelectWidget::OnJobButtonClicked(EJobType SelectedJob)
 {
 	PendingJob = SelectedJob;
-	UpdateJobAvailAbility();
+
+	if (ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>())
+		UpdateJobAvailability(GS->GetTakenJobs());
 }
 
 void UJobSelectWidget::OnConfirmClicked()
@@ -108,4 +97,9 @@ void UJobSelectWidget::OnConfirmClicked()
 	{
 		PC->RequestConfirmedJob(PendingJob);
 	}
+}
+
+void UJobSelectWidget::HandleTakenJobsChanged(const TArray<EJobType>& NewTakenJobs)
+{
+	UpdateJobAvailability(NewTakenJobs);
 }

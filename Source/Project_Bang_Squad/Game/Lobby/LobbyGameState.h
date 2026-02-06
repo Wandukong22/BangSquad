@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
+#include "Project_Bang_Squad/Core/BSGameTypes.h"
 #include "LobbyGameState.generated.h"
 
 UENUM(BlueprintType)
@@ -15,6 +16,7 @@ enum class ELobbyPhase : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLobbyPhaseChanged, ELobbyPhase, NewPhase);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTakenJobsChanged, const TArray<EJobType>&, TakenJobs);
 
 UCLASS()
 class PROJECT_BANG_SQUAD_API ALobbyGameState : public AGameStateBase
@@ -34,7 +36,28 @@ public:
 
 	void SetLobbyPhase(ELobbyPhase NewPhase);
 
+	//직업이 선택 가능한지 확인
+	bool IsJobAvailable(EJobType JobType) const ;
+
+	//직업을 목록에 추가
+	void AddTakenJob(EJobType JobType);
+	
+	//직업을 목록에서 제거
+	void RemoveTakenJob(EJobType JobType);
+	TArray<EJobType> GetTakenJobs() const { return TakenJobs; }
+
+	UPROPERTY(BlueprintAssignable)
+	FOnTakenJobsChanged OnTakenJobsChanged;
 protected:
 	UFUNCTION()
 	void OnRep_CurrentPhase();
+
+	UFUNCTION()
+	void OnRep_TakenJobs();
+	
+	//현재 선점된 직업 목록
+	UPROPERTY(ReplicatedUsing = OnRep_TakenJobs)
+	TArray<EJobType> TakenJobs;
+
+
 };

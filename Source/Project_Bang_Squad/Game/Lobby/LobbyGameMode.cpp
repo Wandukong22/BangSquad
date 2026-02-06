@@ -27,19 +27,31 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 
 bool ALobbyGameMode::TryConfirmJob(EJobType Job, class ALobbyPlayerState* RequestingPS)
 {
-	if (ConfirmedJobs.Contains(Job)) return false;
+	ALobbyGameState* GS = GetGameState<ALobbyGameState>();
+	if (!GS || !RequestingPS) return false;
 
 	if (RequestingPS->GetIsConfirmedJob())
 	{
+		EJobType OldJob = RequestingPS->GetJob();
+
+		if (OldJob == Job) return true;
+
+		if (OldJob != EJobType::None) GS->RemoveTakenJob(OldJob);
+	}
+	
+	if (!GS->IsJobAvailable(Job))
+	{
 		return false;
 	}
+	//성공
+	GS->AddTakenJob(Job);
 	
 	//플레이어 상태 업데이트
 	RequestingPS->SetJob(Job);
 	RequestingPS->SetIsConfirmedJob(true);
 
 	//목록에 등록
-	ConfirmedJobs.Add(Job);
+	//ConfirmedJobs.Add(Job);
 
 	CheckConfirmedJob();
 
