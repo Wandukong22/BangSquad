@@ -34,7 +34,7 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UButton* Btn_Confirm;
 
-	void UpdateJobAvailAbility();
+	void UpdateJobAvailability(const TArray<EJobType>& TakenJobs);
 private:
 	EJobType PendingJob = EJobType::None;
 	
@@ -43,4 +43,7 @@ private:
 	
 	UFUNCTION()
 	void OnConfirmClicked();
+
+	UFUNCTION()
+	void HandleTakenJobsChanged(const TArray<EJobType>& NewTakenJobs);
 };

@@ -79,7 +79,7 @@ void ALobbyPlayerController::RefreshLobbyUI()
 
 	if (IsValid(JobSelectWidget) && JobSelectWidget->IsInViewport())
 	{
-		JobSelectWidget->UpdateJobAvailAbility();
+		JobSelectWidget->UpdateJobAvailability(GS->GetTakenJobs());
 	}
 }
 
@@ -98,7 +98,10 @@ void ALobbyPlayerController::Client_JobSelectFailed_Implementation(EJobType Fail
 {
 	if (JobSelectWidget)
 	{
-		JobSelectWidget->UpdateJobAvailAbility();
+		if (ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>())
+		{
+			JobSelectWidget->UpdateJobAvailability(GS->GetTakenJobs());
+		}
 	}
 }
 
@@ -153,7 +156,8 @@ void ALobbyPlayerController::OnLobbyPhaseChanged(ELobbyPhase NewPhase)
 			JobSelectWidget->SetVisibility(ESlateVisibility::Visible);
 			JobSelectWidget->StartUp();
 
-			JobSelectWidget->UpdateJobAvailAbility();
+			if (ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>())
+				JobSelectWidget->UpdateJobAvailability(GS->GetTakenJobs());
 		}
 	}
 }

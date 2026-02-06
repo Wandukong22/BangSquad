@@ -44,31 +44,14 @@ void UJobButton::OnButtonClicked()
 
 void UJobButton::UpdateButtonIcon()
 {
-	if (!Img_JobIcon)
-	{
-		UE_LOG(LogTemp, Error, TEXT("❌ Img_JobIcon이 nullptr입니다! 블루프린트에서 이름 확인 필요!"));
-		return;
-	}
-	if (AssignedJob == EJobType::None)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("⚠️ AssignedJob이 None입니다!"));
-		return;
-	}
+	if (!Img_JobIcon) return;
+	if (AssignedJob == EJobType::None) return;
 
 	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 	{
 		if (UTexture2D* FoundTexture = GI->GetJobIcon(AssignedJob))
 		{
 			Img_JobIcon->SetBrushFromTexture(FoundTexture);
-			UE_LOG(LogTemp, Log, TEXT("✅ 아이콘 설정 성공: %s"), *UEnum::GetValueAsString(AssignedJob));
 		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("❌ JobDataAsset에서 아이콘을 찾을 수 없음: %s"), *UEnum::GetValueAsString(AssignedJob));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("❌ GameInstance를 찾을 수 없음!"));
 	}
 }
