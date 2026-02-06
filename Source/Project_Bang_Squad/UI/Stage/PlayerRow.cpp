@@ -14,21 +14,10 @@
 void UPlayerRow::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-
-	if (bIsDead && TargetPlayerState.IsValid())
-	{
-		if (!GetWorld()->GetGameState()) return;
-
-		float RemainTime = CachedRespawnTime - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
-		if (RemainTime <= 0.f)
-		{
-			UpdateDeathState(0.f);
-		}
-		else
-		{
-			if (Txt_RespawnTime) Txt_RespawnTime->SetText(FText::AsNumber(FMath::CeilToInt(RemainTime)));
-		}
-	}
+	//if (CurrentMode == ERowMode::Stage && TargetPlayerState.IsValid())
+	//{
+	//	UpdateStageInfo();
+	//}
 }
 
 void UPlayerRow::NativeConstruct()
@@ -173,28 +162,24 @@ void UPlayerRow::UpdateHealthUI(float CurrentHealth, float MaxHealth)
 void UPlayerRow::UpdateDeathState(float NewRespawnTime)
 {
 	if (!GetWorld()->GetGameState()) return;
-	if (FMath::IsNearlyEqual(CachedRespawnTime, NewRespawnTime)) return;
 
-	CachedRespawnTime = NewRespawnTime;
-	
 	float RemainTime = NewRespawnTime - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 
 	if (RemainTime > 0.f) // 죽음 상태 진입
 	{
-		bIsDead = true;
-		CachedRespawnTime = NewRespawnTime;
-		
 		HandleOnDead(); // UI 어둡게
 		
-		if (Txt_RespawnTime) Txt_RespawnTime->SetText(FText::AsNumber(FMath::CeilToInt(RemainTime)));
+		// 1초마다 텍스트 갱신하는 타이머 시작
+		GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, this, &UPlayerRow::RefreshRespawnTimer, 1.0f, true);
+		RefreshRespawnTimer(); // 즉시 1회 실행해서 텍스트 맞춤
 	}
 	else // 부활
 	{
-		bIsDead = false;
-		CachedRespawnTime = 0.f;
 		if (Overlay_Death) Overlay_Death->SetVisibility(ESlateVisibility::Hidden);
 		if (Img_Profile) Img_Profile->SetColorAndOpacity(FLinearColor::White);
 		
+		// 타이머 정지
+		GetWorld()->GetTimerManager().ClearTimer(RespawnTimerHandle);
 	}
 }
 
@@ -202,6 +187,27 @@ void UPlayerRow::HandleOnDead()
 {
 	if (Overlay_Death) Overlay_Death->SetVisibility(ESlateVisibility::Visible);
 	if (Img_Profile) Img_Profile->SetColorAndOpacity(FLinearColor(0.2f, 0.2f, 0.2f, 1.f));
+}
+
+void UPlayerRow::RefreshRespawnTimer()
+{
+	if (!TargetPlayerState.IsValid()) return;
+
+	if (AStagePlayerState* StagePS = Cast<AStagePlayerState>(TargetPlayerState.Get()))
+	{
+		float RemainTime = StagePS->GetRespawnEndTime() - GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+		
+		if (RemainTime <= 0.f)
+		{
+			UpdateDeathState(0.f); // 시간 끝났으면 부활 처리
+			return;
+		}
+
+		if (Txt_RespawnTime)
+		{
+			Txt_RespawnTime->SetText(FText::AsNumber(FMath::CeilToInt(RemainTime)));
+		}
+	}
 }
 
 /*
