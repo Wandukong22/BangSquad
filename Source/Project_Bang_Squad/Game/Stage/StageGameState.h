@@ -22,6 +22,8 @@ protected:
 	//현재 스테이지 체크포인트 인덱스 (공유 체크포인트)
 	UPROPERTY(Replicated)
 	int32 CurrentStageCheckpointIndex = 0;
+
+	virtual void BeginPlay() override;
 public:
 	UPROPERTY()
 	TMap<int32, ACheckpoint*> CheckpointMap;

@@ -5,6 +5,7 @@
 
 #include "EngineUtils.h"
 #include "MiniGamePlayerController.h"
+#include "MiniGamePlayerState.h"
 #include "GameFramework/Character.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "Project_Bang_Squad/Game/Stage/Checkpoint.h"
@@ -18,7 +19,7 @@ AMiniGameMode::AMiniGameMode()
 	//맵 이동 시 끊김 최소화
 	bUseSeamlessTravel = true;
 
-	PlayerStateClass = AStagePlayerState::StaticClass();
+	PlayerStateClass = AMiniGamePlayerState::StaticClass();
 	PlayerControllerClass = AMiniGamePlayerController::StaticClass();
 	GameStateClass = AStageGameState::StaticClass();
 }
@@ -26,22 +27,6 @@ AMiniGameMode::AMiniGameMode()
 void AMiniGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-
-	EJobType MyJob = EJobType::Titan;
-
-	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
-	{
-		MyJob = GI->GetMyJob();
-	}
-
-	//컨트롤러에 직업 저장
-	if (AStagePlayerController* StagePC = Cast<AStagePlayerController>(NewPlayer))
-	{
-		StagePC->SavedJobType = MyJob;
-	}
-
-	//캐릭터 소환
-	SpawnPlayerCharacter(NewPlayer, MyJob);
 }
 
 void AMiniGameMode::SpawnPlayerCharacter(AController* Controller, EJobType JobType)
@@ -91,7 +76,7 @@ void AMiniGameMode::OnPlayerReachedGoal(AController* ReachedPlayer)
 	//PlayerState에 순위 고정
 	if (ReachedPlayer)
 	{
-		if (AStagePlayerState* PS = ReachedPlayer->GetPlayerState<AStagePlayerState>())
+		if (AMiniGamePlayerState* PS = ReachedPlayer->GetPlayerState<AMiniGamePlayerState>())
 		{
 			PS->SetMiniGameRank(Rank);
 		}
@@ -106,14 +91,18 @@ void AMiniGameMode::ExecuteRespawn(AController* Controller)
 {
 	if (!Controller) return;
 
-	EJobType JobToSpawn = EJobType::Titan;
-	if (AStagePlayerController* StagePC = Cast<AStagePlayerController>(Controller))
+	EJobType JobToSpawn = EJobType::None;
+
+	if (ABSPlayerState* PS = Controller->GetPlayerState<ABSPlayerState>())
 	{
-		if (StagePC->SavedJobType != EJobType::None)
-		{
-			JobToSpawn = StagePC->SavedJobType;
-		}
+		JobToSpawn = PS->GetJob();
 	}
+
+	if (JobToSpawn == EJobType::None)
+	{
+		JobToSpawn = EJobType::Titan;
+	}
+	
 	SpawnPlayerCharacter(Controller, JobToSpawn);
 }
 
@@ -124,7 +113,7 @@ FTransform AMiniGameMode::GetRespawnTransform(AController* Controller)
 
 	if (Controller)
 	{
-		AStagePlayerState* PS = Controller->GetPlayerState<AStagePlayerState>();
+		AMiniGamePlayerState* PS = Controller->GetPlayerState<AMiniGamePlayerState>();
 		// 체크포인트 인덱스가 0보다 크면 해당 체크포인트를 찾음
 		if (PS && PS->GetMiniGameCheckpoint() > 0)
 		{

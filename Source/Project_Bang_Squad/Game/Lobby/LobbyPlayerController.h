@@ -33,8 +33,8 @@ public:
 	void RequestConfirmedJob(EJobType FinalJob);
 
 	//닉네임 변경 요청
-	UFUNCTION(Server, Reliable)
-	void ServerSetNickname(const FString& NewName);
+	//UFUNCTION(Server, Reliable)
+	//void ServerSetNickname(const FString& NewName);
 
 	//UI 갱신 요청
 	void RefreshLobbyUI();

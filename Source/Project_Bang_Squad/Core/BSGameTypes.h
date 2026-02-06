@@ -29,6 +29,7 @@ UENUM(BlueprintType)
 enum class EStageSection : uint8
 {
 	Unknown,
+	Menu,
 	Main,
 	MiniGame,
 	Boss

@@ -58,10 +58,6 @@ public:
 	bool bIsGoingToHost = false;
 
 public:
-	// 내가 고른 캐릭터 ID 저장
-	UPROPERTY(BlueprintReadWrite)
-	int32 MyCharacterID = 1;
-
 	// ✅ 로비에서 사용할 방 이름 (Select UI 표시용)
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Lobby")
 	FString LobbyRoomName;
@@ -101,21 +97,18 @@ private:
 
 	//최종 선택된 직업
 	UPROPERTY()
-	EJobType MyJob = EJobType::None;
-
-	//미니게임 방문 여부
-	UPROPERTY()
-	bool bHasVisitedMap = false;
+	EJobType PlayerJob = EJobType::None;
 
 public:
-	FORCEINLINE EJobType GetMyJob() const { return MyJob; }
-	void SetMyJob(EJobType NewJob) { MyJob = NewJob; }
+	FORCEINLINE EJobType GetPlayerJob() const { return PlayerJob; }
+	void SetPlayerJob(EJobType NewJob) { PlayerJob = NewJob; }
 
 	//닉네임 저장
 	UPROPERTY()
 	FString UserNickname;
 
 #pragma region Stage Data Save
+
 public:
 	//죽은 몬스터의 고유 해시값(ID) 저장
 	UPROPERTY()
@@ -144,6 +137,7 @@ public:
 #pragma endregion
 
 #pragma region Map Data
+
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "BS|Data")
 	TObjectPtr<UBSMapData> MapDataAsset;
@@ -153,6 +147,7 @@ public:
 #pragma endregion
 
 #pragma region Portal
+
 public:
 	UPROPERTY()
 	TSet<uint32> VisitedStageKeys;
@@ -167,7 +162,17 @@ public:
 
 private:
 	uint32 GetStageKey(EStageIndex Stage, EStageSection Section) const;
-#pragma endregion 
+#pragma endregion
 
-	
+#pragma region Checkpoint
+
+public:
+	int32 GetSavedCheckpointIndex() const { return SavedCheckpointIndex; }
+	void SetSavedCheckpointIndex(int32 NewIndex) { SavedCheckpointIndex = NewIndex; }
+	void InitSavedCheckpointIndex() { SavedCheckpointIndex = 0; }
+
+private:
+	UPROPERTY()
+	int32 SavedCheckpointIndex = 0;
+#pragma endregion
 };

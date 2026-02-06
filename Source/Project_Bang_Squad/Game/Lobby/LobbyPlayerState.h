@@ -3,24 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/PlayerState.h"
-#include "Project_Bang_Squad/Core/BSGameInstance.h"
+#include "Project_Bang_Squad/Game/Base/BSPlayerState.h"
 #include "LobbyPlayerState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLobbyDataChanged);
 
 UCLASS()
-class PROJECT_BANG_SQUAD_API ALobbyPlayerState : public APlayerState
+class PROJECT_BANG_SQUAD_API ALobbyPlayerState : public ABSPlayerState
 {
 	GENERATED_BODY()
 
 public:
 	ALobbyPlayerState();
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
-
-	//현재 선택한 직업
-	UPROPERTY(ReplicatedUsing = OnRep_UpdateUI, BlueprintReadOnly)
-	EJobType CurrentJob = EJobType::None;
 
 	//준비 완료 여부
 	UPROPERTY(ReplicatedUsing = OnRep_UpdateUI, BlueprintReadOnly)
@@ -49,4 +44,6 @@ protected:
 	//픽 확정 여부
 	UPROPERTY(ReplicatedUsing = OnRep_UpdateUI, BlueprintReadOnly)
 	bool bIsConfirmedJob = false;
+
+	virtual void OnRep_JobType() override; 
 };

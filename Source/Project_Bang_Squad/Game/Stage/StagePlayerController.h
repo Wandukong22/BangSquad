@@ -23,11 +23,11 @@ protected:
 public:
 	//서버에게 소환해달라고 요청하는 함수
 	UFUNCTION(Server, Reliable)
-	void ServerRequestSpawn(EJobType MyJob);
+	void ServerRequestSpawn(EJobType Job);
 
 	//서버에게 닉네임 알리기
-	UFUNCTION(Server, Reliable)
-	void ServerSetNickName(const FString& InNickName);
+	//UFUNCTION(Server, Reliable)
+	//void ServerSetNickName(const FString& InNickName);
 
 	//캐릭터 사망 시 호출
 	void StartSpectating();
@@ -58,16 +58,10 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	EJobType SavedJobType;
 
-	FORCEINLINE int32 GetDeathCount() const { return DeathCount; };
-
-	void IncreaseDeathCount() { DeathCount++; }
-
 	//첫 스폰 여부
 	bool bHasSpawnedOnce = false;
 
 private:
-	UPROPERTY()
-	int32 DeathCount = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
 	TSubclassOf<UStageMainWidget> StageMainWidgetClass;

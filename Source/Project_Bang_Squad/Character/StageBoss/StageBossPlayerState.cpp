@@ -20,7 +20,6 @@ void AStageBossPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AStageBossPlayerState, PersonalQTECount);
-	DOREPLIFETIME(AStageBossPlayerState, Job);
 }
 
 void AStageBossPlayerState::OnRep_PersonalQTECount()

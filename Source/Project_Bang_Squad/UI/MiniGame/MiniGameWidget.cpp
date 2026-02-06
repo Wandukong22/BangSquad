@@ -6,6 +6,7 @@
 #include "MiniGameRankingRow.h"
 #include "Components/VerticalBox.h"
 #include "GameFramework/GameStateBase.h"
+#include "Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.h"
 #include "Project_Bang_Squad/Game/Stage/StagePlayerState.h"
 
 void UMiniGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -22,16 +23,16 @@ void UMiniGameWidget::UpdateRanking()
 	AGameStateBase* GS = GetWorld()->GetGameState<AGameStateBase>();
 	if (!GS) return;
 
-	TArray<AStagePlayerState*> SortedPlayers;
+	TArray<AMiniGamePlayerState*> SortedPlayers;
 	for (APlayerState* PS : GS->PlayerArray)
 	{
-		if (AStagePlayerState* StagePS = Cast<AStagePlayerState>(PS))
+		if (AMiniGamePlayerState* MiniPS = Cast<AMiniGamePlayerState>(PS))
 		{
-			SortedPlayers.Add(StagePS);
+			SortedPlayers.Add(MiniPS);
 		}
 	}
 
-	SortedPlayers.Sort([](const AStagePlayerState& A, const AStagePlayerState& B)
+	SortedPlayers.Sort([](const AMiniGamePlayerState& A, const AMiniGamePlayerState& B)
 	{
 		return A.GetMiniGameProgressScore() > B.GetMiniGameProgressScore();
 	});

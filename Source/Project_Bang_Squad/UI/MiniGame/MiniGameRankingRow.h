@@ -23,5 +23,5 @@ public:
 	class UImage* Img_JobIcon;
 
 	//데이터 채우는 함수
-	void UpdateData(int32 Rank, class AStagePlayerState* PlayerState);
+	void UpdateData(int32 Rank, class AMiniGamePlayerState* PlayerState);
 };
