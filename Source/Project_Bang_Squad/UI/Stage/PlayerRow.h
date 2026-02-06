@@ -89,16 +89,13 @@ private:
 	//체력 변경 시
 	UFUNCTION()
 	void UpdateHealthUI(float CurrentHealth, float MaxHealth);
-
-	//부활 시간 변경 시
+	
 	UFUNCTION()
 	void UpdateDeathState(float NewRespawnTime);
 
 	UFUNCTION()
 	void HandleOnDead();
 
-	//1초마다 남은 시간 숫자만 줄여줌
-	void RefreshRespawnTimer();
-
-	FTimerHandle RespawnTimerHandle;
+	float CachedRespawnTime = 0.f;
+	bool bIsDead = false;
 };
