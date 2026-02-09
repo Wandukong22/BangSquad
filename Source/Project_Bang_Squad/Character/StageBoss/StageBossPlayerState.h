@@ -28,4 +28,7 @@ protected:
 
 	UFUNCTION()
 	void OnRep_PersonalQTECount();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_UpdateQTEUI(int32 NewCount);
 };

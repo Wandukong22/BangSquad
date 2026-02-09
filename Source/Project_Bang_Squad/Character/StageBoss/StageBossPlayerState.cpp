@@ -11,7 +11,8 @@ void AStageBossPlayerState::AddQTECount()
 
 	if (HasAuthority())
 	{
-		OnPersonalQTEChanged.Broadcast(PersonalQTECount);
+		Multicast_UpdateQTEUI(PersonalQTECount);
+		//OnPersonalQTEChanged.Broadcast(PersonalQTECount);
 	}
 }
 
@@ -25,4 +26,9 @@ void AStageBossPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 void AStageBossPlayerState::OnRep_PersonalQTECount()
 {
 	OnPersonalQTEChanged.Broadcast(PersonalQTECount);
+}
+
+void AStageBossPlayerState::Multicast_UpdateQTEUI_Implementation(int32 NewCount)
+{
+	OnPersonalQTEChanged.Broadcast(NewCount);
 }
