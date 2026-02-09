@@ -29,25 +29,40 @@ bool ALobbyGameMode::TryConfirmJob(EJobType Job, class ALobbyPlayerState* Reques
 {
 	ALobbyGameState* GS = GetGameState<ALobbyGameState>();
 	if (!GS || !RequestingPS) return false;
-
-	if (RequestingPS->GetIsConfirmedJob())
+	bool bIsMyConfirmedJob = (RequestingPS->GetIsConfirmedJob() && RequestingPS->GetSavedJobType() == Job);
+	if (!bIsMyConfirmedJob)
 	{
-		EJobType OldJob = RequestingPS->GetJob();
-
-		if (OldJob == Job) return true;
-
-		if (OldJob != EJobType::None) GS->RemoveTakenJob(OldJob);
+		// 내 직업이 아니라면, 빈자리인지 철저히 검사
+		if (!GS->IsJobAvailable(Job))
+		{
+			return false; // 누군가 이미 가져갔음 -> 실패
+		}
 	}
 	
-	if (!GS->IsJobAvailable(Job))
+	if (RequestingPS->GetIsConfirmedJob())
 	{
-		return false;
+		//EJobType OldJob = RequestingPS->GetJob();
+		EJobType OldJob = RequestingPS->GetSavedJobType();
+
+		if (OldJob != Job && OldJob != EJobType::None)
+		{
+			GS->RemoveTakenJob(OldJob);
+		}
+		/*if (OldJob == Job) return true;
+		if (!GS->IsJobAvailable(OldJob)) return false;
+		if (OldJob != EJobType::None) GS->RemoveTakenJob(OldJob);*/
 	}
+	//else
+	//{
+	//	if (!GS->IsJobAvailable(Job)) return false;
+	//}
+	
 	//성공
 	GS->AddTakenJob(Job);
 	
 	//플레이어 상태 업데이트
 	RequestingPS->SetJob(Job);
+	RequestingPS->SetSavedJobType(Job);
 	RequestingPS->SetIsConfirmedJob(true);
 
 	//목록에 등록

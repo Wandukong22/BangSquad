@@ -59,5 +59,5 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_TakenJobs)
 	TArray<EJobType> TakenJobs;
 
-
+	bool TryAddTakenJob(EJobType JobType);
 };

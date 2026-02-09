@@ -30,6 +30,9 @@ public:
 	void SetIsReady(bool NewIsReady);
 	void SetIsConfirmedJob(bool NewIsConfirmedJob);
 
+	EJobType GetSavedJobType() const { return SavedConfirmedJob; }
+	void SetSavedJobType(EJobType NewJobType) { SavedConfirmedJob = NewJobType; }
+
 protected:
 	UFUNCTION()
 	void OnRep_UpdateUI();
@@ -45,5 +48,8 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_UpdateUI, BlueprintReadOnly)
 	bool bIsConfirmedJob = false;
 
-	virtual void OnRep_JobType() override; 
+	virtual void OnRep_JobType() override;
+
+private:
+	EJobType SavedConfirmedJob = EJobType::None;
 };

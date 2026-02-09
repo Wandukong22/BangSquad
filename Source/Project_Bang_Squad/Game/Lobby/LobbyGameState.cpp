@@ -56,6 +56,16 @@ void ALobbyGameState::OnRep_TakenJobs()
 	OnTakenJobsChanged.Broadcast(TakenJobs);
 }
 
+bool ALobbyGameState::TryAddTakenJob(EJobType JobType)
+{
+	if (!HasAuthority()) return false;
+	if (TakenJobs.Contains(JobType)) return false;
+
+	TakenJobs.Add(JobType);
+	OnRep_TakenJobs();
+	return true;
+}
+
 void ALobbyGameState::OnRep_CurrentPhase()
 {
 	//모든 클라이언트(UI)에게 알림
