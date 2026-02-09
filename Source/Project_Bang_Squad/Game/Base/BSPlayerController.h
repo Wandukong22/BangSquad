@@ -26,4 +26,12 @@ protected:
 	void ServerSetNickName(const FString& NewName);
 public:
 	void RegisterManagedWidget(UUserWidget* InWidget);
+
+#pragma region Development Codes
+	virtual void SetupInputComponent() override;
+
+	UFUNCTION(Server, Reliable)
+	void ServerDebugMoveToStage1Boss();
+#pragma endregion
+
 };

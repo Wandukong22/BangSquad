@@ -55,3 +55,18 @@ void ABSPlayerController::RegisterManagedWidget(UUserWidget* InWidget)
 	if (InWidget)
 		ManagedWidgets.Add(InWidget);
 }
+
+void ABSPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	InputComponent->BindKey(EKeys::F1, IE_Pressed, this, &ABSPlayerController::ServerDebugMoveToStage1Boss);
+}
+
+void ABSPlayerController::ServerDebugMoveToStage1Boss_Implementation()
+{
+	if (UBSGameInstance* GI = GetGameInstance<UBSGameInstance>())
+	{
+		GI->MoveToStage(EStageIndex::Stage1, EStageSection::Boss);
+	}
+}

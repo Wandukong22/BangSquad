@@ -63,7 +63,7 @@ void AMiniGameMode::RequestRespawn(AController* DeadPlayer)
 	FTimerDelegate RespawnDelegate;
 	RespawnDelegate.BindUObject(this, &AMiniGameMode::ExecuteRespawn, DeadPlayer);
 
-	GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, RespawnDelegate, 5.f, false);
+	GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, RespawnDelegate, RespawnTime, false);
 }
 
 void AMiniGameMode::OnPlayerReachedGoal(AController* ReachedPlayer)

@@ -66,4 +66,8 @@ protected:
 	UFUNCTION() void OnRep_IsQTEActive();
 	UFUNCTION() void OnRep_QTECounts();
 	UFUNCTION() void OnRep_TeamLives(); // UI ���ſ�
+
+private:
+	UPROPERTY(Replicated)
+	int32 TeamDeathCount = 0;
 };
