@@ -1,5 +1,6 @@
 #include "Project_Bang_Squad/Character/StageBoss/StageBossGameMode.h"
 
+#include "StageBossGameState.h"
 #include "StageBossPlayerState.h"
 #include "Project_Bang_Squad/Character/StageBoss/Stage1Boss.h"
 #include "Project_Bang_Squad/Core/TrueDamageType.h"
@@ -7,6 +8,8 @@
 #include "GameFramework/PlayerState.h"
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
+#include "Project_Bang_Squad/Game/Stage/StageGameState.h"
 
 AStageBossGameMode::AStageBossGameMode()
 {
@@ -16,6 +19,10 @@ AStageBossGameMode::AStageBossGameMode()
 void AStageBossGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	if (AStageBossGameState* GS = GetGameState<AStageBossGameState>())
+	{
+		GS->SetTeamLives(MaxTeamLives);
+	}
 }
 
 // --- [QTE ����] ---
@@ -136,20 +143,28 @@ void AStageBossGameMode::RequestRespawn(AController* Controller)
 {
 	if (!Controller) return;
 
-	// �� ��� ���� ����
-	if (MaxTeamLives > 0)
-	{
-		MaxTeamLives--;
-		UE_LOG(LogTemp, Warning, TEXT("Team Life Used. Remaining: %d"), MaxTeamLives);
+	FTimerDelegate RespawnDelegate;
+	RespawnDelegate.BindUObject(this, &AStageBossGameMode::AttemptRespawn, Controller);
 
-		// [�߿�] �θ� Ŭ����(AStageGameMode)�� ������ ����(��ġ ���, ���� ��)�� �״�� ���
-		Super::RequestRespawn(Controller);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("No Lives Left. Checking Wipe..."));
-		CheckPartyWipe();
-	}
+	FTimerHandle RespawnTimerHandle;
+	GetWorldTimerManager().SetTimer(RespawnTimerHandle, RespawnDelegate, RespawnTime, false);
+	UE_LOG(LogTemp, Warning, TEXT("8초 뒤 부활"));
+
+	
+	// �� ��� ���� ����
+	//if (MaxTeamLives > 0)
+	//{
+	//	MaxTeamLives--;
+	//	UE_LOG(LogTemp, Warning, TEXT("Team Life Used. Remaining: %d"), MaxTeamLives);
+	//
+	//	// [�߿�] �θ� Ŭ����(AStageGameMode)�� ������ ����(��ġ ���, ���� ��)�� �״�� ���
+	//	//Super::RequestRespawn(Controller);
+	//}
+	//else
+	//{
+	//	UE_LOG(LogTemp, Error, TEXT("No Lives Left. Checking Wipe..."));
+	//	CheckPartyWipe();
+	//}
 }
 
 void AStageBossGameMode::CheckPartyWipe()
@@ -161,11 +176,17 @@ void AStageBossGameMode::CheckPartyWipe()
 	{
 		if (APlayerController* PC = It->Get())
 		{
-			// ���� ����ִٸ� ���� �ƴ�
-			if (PC->GetPawn())
+			APawn* MyPawn = PC->GetPawn();
+
+			if (MyPawn)
 			{
-				bAnyAlive = true;
-				break;
+				ABaseCharacter* BaseChar = Cast<ABaseCharacter>(MyPawn);
+
+				if (BaseChar && !BaseChar->IsDead())
+				{
+					bAnyAlive = true;
+					break;
+				}
 			}
 		}
 	}
@@ -204,5 +225,35 @@ void AStageBossGameMode::EndStage(bool bIsVictory)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Mission Failed."));
 		// �й� ó�� (���� ���� UI ��)
+		FTimerHandle ReturnTimer;
+		GetWorldTimerManager().SetTimer(ReturnTimer, this, &AStageBossGameMode::ReturnToStage, 3.0f, false);
+	}
+
+}
+
+void AStageBossGameMode::AttemptRespawn(AController* ControllerToRespawn)
+{
+	if (!ControllerToRespawn) return;
+	AStageBossGameState* GS = GetWorld()->GetGameState<AStageBossGameState>();
+	if (GS && GS->TeamLives > 0)
+	{
+		GS->SetTeamLives(GS->TeamLives - 1);
+		UE_LOG(LogTemp, Warning, TEXT("부활 성공! 남은 목숨: %d"), GS->TeamLives);
+
+		ExecuteRespawn(ControllerToRespawn);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("부활 실패: 남은 목숨이 없습니다."));
+		CheckPartyWipe();
 	}
 }
+
+void AStageBossGameMode::ReturnToStage()
+{
+	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+	{
+		GI->MoveToStage(GI->GetCurrentStage(), EStageSection::Main);
+	}
+}
+

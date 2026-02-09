@@ -152,9 +152,6 @@ public:
 	UPROPERTY()
 	TSet<uint32> VisitedStageKeys;
 
-	UPROPERTY()
-	EStageIndex CurrentStage = EStageIndex::None;
-
 	//방문한 거 표시
 	UFUNCTION()
 	void MarkStageAsVisited(EStageIndex Stage, EStageSection Section);
@@ -163,8 +160,17 @@ public:
 	UFUNCTION()
 	bool HasVisitedStage(EStageIndex Stage, EStageSection Section) const;
 
+	UFUNCTION()
+	FORCEINLINE EStageIndex GetCurrentStage() const { return CurrentStage; }
+
+	UFUNCTION()
+	void SetCurrentStage(EStageIndex InStage) { CurrentStage = InStage; }
+
 private:
 	uint32 GetStageKey(EStageIndex Stage, EStageSection Section) const;
+
+	UPROPERTY()
+	EStageIndex CurrentStage = EStageIndex::None;
 #pragma endregion
 
 #pragma region Checkpoint
@@ -178,4 +184,9 @@ private:
 	UPROPERTY()
 	int32 SavedCheckpointIndex = 0;
 #pragma endregion
+
+public:
+	//UFUNCTION()
+	//FORCEINLINE EStageIndex GetCurrentStage() const { return CurrentStage; }
+	//void SetCurrentStage(EStageIndex NewIndex) { CurrentStage = NewIndex; }
 };

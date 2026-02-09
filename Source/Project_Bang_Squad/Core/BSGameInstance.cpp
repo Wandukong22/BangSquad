@@ -365,10 +365,10 @@ void UBSGameInstance::MoveToStage(EStageIndex InStage, EStageSection InSection)
 {
 	if (!MapDataAsset) return;
 
-	if (CurrentStage != InStage)
+	if (GetCurrentStage() != InStage)
 	{
 		InitSavedCheckpointIndex();
-		CurrentStage = InStage;
+		SetCurrentStage(InStage);
 		ClearMonsterData();
 	}
 

@@ -44,4 +44,7 @@ protected:
 
 	//모두 도착했는지 체크
 	void CheckAllPlayersFinished();
+
+	UPROPERTY(EditAnywhere, Category = "BS|MiniGame")
+	float RespawnTime = 5.f;
 };

@@ -33,7 +33,7 @@ public:
 	void ProcessQTEInput(AController* PlayerController);
 
 	// ������ ���� (���� ����)
-	virtual void RequestRespawn(AController* Controller);
+	virtual void RequestRespawn(AController* Controller) override;
 	UFUNCTION(BlueprintCallable, Category = "BS|BossRule")
 	void OnPlayerDied(AController* DeadController);
 
@@ -72,4 +72,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "BS|BossRule")
 	int32 MaxTeamLives = 10;
+
+	//부활 시도 함수
+	void AttemptRespawn(AController* ControllerToRespawn);
+	
+	UPROPERTY(EditAnywhere, Category = "BS|Respawn")
+	float RespawnTime = 8.f;
+
+	void ReturnToStage();
 };
