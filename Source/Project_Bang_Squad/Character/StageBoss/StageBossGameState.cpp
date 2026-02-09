@@ -74,6 +74,19 @@ void AStageBossGameState::SetTeamLives(int32 NewLives)
 	}
 }
 
+void AStageBossGameState::Multicast_EndQTE_Implementation(bool bSuccess)
+{
+	bIsQTEActive = false;
+	CurrentQTECount = 0;
+
+	OnQTEStateChanged.Broadcast(false);
+
+	if (bSuccess)
+	{
+		//TODO: QTE 성공
+	}
+}
+
 // --- [OnRep �Լ���: Ŭ���̾�Ʈ UI ���ſ�] ---
 
 void AStageBossGameState::OnRep_BossHealth()

@@ -1,5 +1,7 @@
 // [AQTEObject.cpp]
 #include "AQTEObject.h"
+
+#include "StageBossGameState.h"
 #include "Project_Bang_Squad/Character/StageBoss/StageBossBase.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
 #include "Project_Bang_Squad/Core/TrueDamageType.h"
@@ -11,18 +13,18 @@ AQTEObject::AQTEObject()
 {
     PrimaryActorTick.bCanEverTick = true;
     bReplicates = true;
-    SetReplicateMovement(true); // ¿òÁ÷ÀÓ µ¿±âÈ­
+    SetReplicateMovement(true); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­
 
     MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
     RootComponent = MeshComp;
 }
 
-// [º¯¼ö º¹Á¦ µî·Ï]
+// [ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½]
 void AQTEObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    // CurrentTapCount¸¦ ¸ðµç Å¬¶óÀÌ¾ðÆ®¿¡°Ô º¹Á¦
+    // CurrentTapCountï¿½ï¿½ ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     DOREPLIFETIME(AQTEObject, CurrentTapCount);
 }
 
@@ -35,7 +37,7 @@ void AQTEObject::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    // [¼­¹ö] ³«ÇÏ ·ÎÁ÷
+    // [ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (HasAuthority() && bIsFalling)
     {
         ElapsedTime += DeltaTime;
@@ -44,13 +46,13 @@ void AQTEObject::Tick(float DeltaTime)
     }
 }
 
-// [³«ÇÏ ÃÊ±âÈ­]
+// [ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­]
 void AQTEObject::InitializeFalling(AActor* Target, float Duration)
 {
     if (!HasAuthority() || !Target) return;
 
     TargetLocation = Target->GetActorLocation();
-    TargetLocation.Z -= 100.0f; // ¹Ù´Ú º¸Á¤
+    TargetLocation.Z -= 100.0f; // ï¿½Ù´ï¿½ ï¿½ï¿½ï¿½ï¿½
 
     StartLocation = TargetLocation + FVector(0.0f, 0.0f, DropHeight);
     SetActorLocation(StartLocation);
@@ -60,7 +62,7 @@ void AQTEObject::InitializeFalling(AActor* Target, float Duration)
     bIsFalling = true;
 }
 
-// [ÅÇ µî·Ï]
+// [ï¿½ï¿½ ï¿½ï¿½ï¿½]
 void AQTEObject::RegisterTap()
 {
     if (!HasAuthority()) return;
@@ -74,33 +76,33 @@ void AQTEObject::RegisterTap()
     }
 }
 
-// [¼º°ø Ã³¸®: º¸½º Ã³Çü]
+// [ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½]
 void AQTEObject::TriggerSuccess()
 {
     if (HasAuthority())
     {
         Multicast_PlayExplosion(true);
 
-        // 1. [ÇÙ½É] ¿ùµå¿¡ ÀÖ´Â Stage1Boss¸¦ Á÷Á¢ Ã£½À´Ï´Ù. (GetOwner »ç¿ë X)
+        // 1. [ï¿½Ù½ï¿½] ï¿½ï¿½ï¿½å¿¡ ï¿½Ö´ï¿½ Stage1Bossï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½ï¿½Ï´ï¿½. (GetOwner ï¿½ï¿½ï¿½ X)
         AActor* BossActor = UGameplayStatics::GetActorOfClass(GetWorld(), AStage1Boss::StaticClass());
 
-        // ¾ÈÀüÀåÄ¡: ¸ø Ã£¾ÒÀ¸¸é ºÎ¸ð Å¬·¡½º·Î °Ë»ö
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¡: ï¿½ï¿½ Ã£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î¸ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ë»ï¿½
         if (!BossActor)
         {
             BossActor = UGameplayStatics::GetActorOfClass(GetWorld(), AStageBossBase::StaticClass());
         }
 
-        // 2. º¸½º ¹ß°ß ½Ã Ã³Çü µ¥¹ÌÁö ¹ß¼Û
+        // 2. ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ ï¿½ï¿½ Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß¼ï¿½
         if (BossActor)
         {
             UE_LOG(LogTemp, Warning, TEXT(">>> TARGET FOUND: %s. Executing True Damage! <<<"), *BossActor->GetName());
 
             UGameplayStatics::ApplyDamage(
                 BossActor,
-                999999.0f,                      // Áï»ç µ¥¹ÌÁö
+                999999.0f,                      // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 nullptr,
                 this,
-                UTrueDamageType::StaticClass()  // [¿­¼è] ¹«Àû °üÅë (TrueDamageType)
+                UTrueDamageType::StaticClass()  // [ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (TrueDamageType)
             );
         }
         else
@@ -108,24 +110,36 @@ void AQTEObject::TriggerSuccess()
             UE_LOG(LogTemp, Error, TEXT(">>> ERROR: Boss Not Found! Damage Failed. <<<"));
         }
 
+        //QTE ëë‚¬ë‹¤ê³  Broadcast
+        if (auto* GS = GetWorld()->GetGameState<AStageBossGameState>())
+        {
+            GS->Multicast_EndQTE(true);
+        }
+
         SetLifeSpan(1.0f);
     }
 }
 
-// [½ÇÆÐ Ã³¸®: ÀÌÆåÆ®¸¸]
-// (ÇÃ·¹ÀÌ¾î Àü¸êÀº º¸½ºÂÊ HandleQTEResult¿¡¼­ Ã³¸®ÇÑ´Ù°í ÇÏ¼ÌÀ¸¹Ç·Î ¿©±â¼± ÀÌÆåÆ®¸¸ ³¿)
+// [ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½]
+// (ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ HandleQTEResultï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½Ñ´Ù°ï¿½ ï¿½Ï¼ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½ï¿½â¼± ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½)
 void AQTEObject::TriggerFailure()
 {
     if (HasAuthority())
     {
         Multicast_PlayExplosion(false);
+
+        if (auto* GS = GetWorld()->GetGameState<AStageBossGameState>())
+        {
+            GS->Multicast_EndQTE(false);
+        }
+        
         SetLifeSpan(0.5f);
     }
 }
 
 void AQTEObject::OnRep_CurrentTapCount()
 {
-    // ºñÁÖ¾ó °»½Å ÇÊ¿ä ½Ã ±¸Çö
+    // ï¿½ï¿½ï¿½Ö¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 void AQTEObject::Multicast_PlayExplosion_Implementation(bool bIsSuccess)

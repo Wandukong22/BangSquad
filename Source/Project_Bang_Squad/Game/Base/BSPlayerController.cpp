@@ -60,13 +60,67 @@ void ABSPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	InputComponent->BindKey(EKeys::F1, IE_Pressed, this, &ABSPlayerController::ServerDebugMoveToStage1Boss);
+	InputComponent->BindKey(EKeys::F1, IE_Pressed, this, &ABSPlayerController::MoveToStage1Map);
+	InputComponent->BindKey(EKeys::F2, IE_Pressed, this, &ABSPlayerController::MoveToStage1MiniGameMap);
+	InputComponent->BindKey(EKeys::F3, IE_Pressed, this, &ABSPlayerController::MoveToStage1BossMap);
+	InputComponent->BindKey(EKeys::F4, IE_Pressed, this, &ABSPlayerController::MoveToStage2Map);
+	InputComponent->BindKey(EKeys::F5, IE_Pressed, this, &ABSPlayerController::MoveToStage2MiniGameMap);
+	InputComponent->BindKey(EKeys::F6, IE_Pressed, this, &ABSPlayerController::MoveToStage2BossMap);
+	InputComponent->BindKey(EKeys::F7, IE_Pressed, this, &ABSPlayerController::MoveToStage3Map);
+	InputComponent->BindKey(EKeys::F8, IE_Pressed, this, &ABSPlayerController::MoveToStage3MiniGameMap);
+	InputComponent->BindKey(EKeys::F9, IE_Pressed, this, &ABSPlayerController::MoveToStage3BossMap);
 }
 
-void ABSPlayerController::ServerDebugMoveToStage1Boss_Implementation()
+void ABSPlayerController::MoveToStage1Map()
+{
+	ServerDebugMoveToMapHandle(EStageIndex::Stage1, EStageSection::Main);
+}
+
+void ABSPlayerController::MoveToStage1MiniGameMap()
+{
+	ServerDebugMoveToMapHandle(EStageIndex::Stage1, EStageSection::MiniGame);
+}
+
+void ABSPlayerController::MoveToStage1BossMap()
+{
+	ServerDebugMoveToMapHandle(EStageIndex::Stage1, EStageSection::Boss);
+}
+
+void ABSPlayerController::MoveToStage2Map()
+{
+	ServerDebugMoveToMapHandle(EStageIndex::Stage2, EStageSection::Main);
+}
+
+void ABSPlayerController::MoveToStage2MiniGameMap()
+{
+	ServerDebugMoveToMapHandle(EStageIndex::Stage2, EStageSection::MiniGame);
+}
+
+void ABSPlayerController::MoveToStage2BossMap()
+{
+	ServerDebugMoveToMapHandle(EStageIndex::Stage2, EStageSection::Boss);
+}
+
+void ABSPlayerController::MoveToStage3Map()
+{
+	ServerDebugMoveToMapHandle(EStageIndex::Stage3, EStageSection::Main);
+}
+
+void ABSPlayerController::MoveToStage3MiniGameMap()
+{
+	ServerDebugMoveToMapHandle(EStageIndex::Stage3, EStageSection::MiniGame);
+}
+
+void ABSPlayerController::MoveToStage3BossMap()
+{
+	ServerDebugMoveToMapHandle(EStageIndex::Stage3, EStageSection::Boss);
+}
+
+void ABSPlayerController::ServerDebugMoveToMapHandle_Implementation(EStageIndex Stage, EStageSection Section)
 {
 	if (UBSGameInstance* GI = GetGameInstance<UBSGameInstance>())
 	{
-		GI->MoveToStage(EStageIndex::Stage1, EStageSection::Boss);
+		GI->MoveToStage(Stage, Section);
 	}
 }
+
