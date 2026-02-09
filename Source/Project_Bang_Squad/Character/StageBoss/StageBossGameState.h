@@ -61,6 +61,9 @@ public:
 	void UpdateQTECount(int32 NewCount);
 	void SetTeamLives(int32 NewLives); // GameMode�� ȣ��
 
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_EndQTE(bool bSuccess);
+
 protected:
 	UFUNCTION() void OnRep_BossHealth();
 	UFUNCTION() void OnRep_IsQTEActive();

@@ -14,6 +14,7 @@
 AStageBossGameMode::AStageBossGameMode()
 {
 	// �⺻�� ����
+	bUseSeamlessTravel = true;
 }
 
 void AStageBossGameMode::BeginPlay()

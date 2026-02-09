@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Project_Bang_Squad/Core/BSGameTypes.h"
 #include "BSPlayerController.generated.h"
 
 /**
@@ -27,11 +28,22 @@ protected:
 public:
 	void RegisterManagedWidget(UUserWidget* InWidget);
 
-#pragma region Development Codes
+#pragma region Debug Codes
 	virtual void SetupInputComponent() override;
 
+	
 	UFUNCTION(Server, Reliable)
-	void ServerDebugMoveToStage1Boss();
+	void ServerDebugMoveToMapHandle(EStageIndex Stage, EStageSection Section);
+
+	void MoveToStage1Map();
+	void MoveToStage1MiniGameMap();
+	void MoveToStage1BossMap();
+	void MoveToStage2Map();
+	void MoveToStage2MiniGameMap();
+	void MoveToStage2BossMap();
+	void MoveToStage3Map();
+	void MoveToStage3MiniGameMap();
+	void MoveToStage3BossMap();
 #pragma endregion
 
 };
