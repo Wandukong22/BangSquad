@@ -5,6 +5,7 @@
 
 #include "BSPlayerState.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/GameStateBase.h"
 
 ABSGameMode::ABSGameMode()
 {
@@ -53,6 +54,12 @@ void ABSGameMode::RequestRespawn(AController* Controller)
 	if (!Controller) return;
 
 	float WaitTime = GetRespawnDelay(Controller);
+
+	if (ABSPlayerState* PS = Controller->GetPlayerState<ABSPlayerState>())
+	{
+		float ServerTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+		PS->SetRespawnEndTime(ServerTime + WaitTime);
+	}
 	
 	FTimerHandle RespawnTimerHandle;
 	FTimerDelegate RespawnDelegate;

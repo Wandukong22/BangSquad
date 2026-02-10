@@ -27,10 +27,8 @@ void ALobbyPlayerState::SetJob(EJobType NewJob)
 {
 	if (HasAuthority())
 	{
-		JobType = NewJob;
-		
+		Super::SetJob(NewJob);
 		OnRep_UpdateUI();
-
 		ForceNetUpdate();
 	}
 }
@@ -59,61 +57,25 @@ void ALobbyPlayerState::SetIsConfirmedJob(bool NewIsConfirmedJob)
 void ALobbyPlayerState::OnRep_UpdateUI()
 {
 	OnLobbyDataChanged.Broadcast();
-
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		APlayerController* PC = World->GetFirstPlayerController();
-		if (ALobbyPlayerController* LobbyPC = Cast<ALobbyPlayerController>(PC))
-		{
-			LobbyPC->RefreshLobbyUI();
-		}
-	}
+	RefreshUI();
 }
 
 void ALobbyPlayerState::OnRep_PlayerName()
 {
 	Super::OnRep_PlayerName();
-
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		APlayerController* PC = World->GetFirstPlayerController();
-		if (ALobbyPlayerController* LobbyPC = Cast<ALobbyPlayerController>(PC))
-		{
-			LobbyPC->RefreshLobbyUI();
-		}
-	}
+	RefreshUI();
 }
 
 void ALobbyPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		APlayerController* PC = World->GetFirstPlayerController();
-		if (ALobbyPlayerController* LobbyPC = Cast<ALobbyPlayerController>(PC))
-		{
-			LobbyPC->RefreshLobbyUI();
-		}
-	}
+	RefreshUI();
 }
 
 void ALobbyPlayerState::Destroyed()
 {
 	Super::Destroyed();
-
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		APlayerController* PC = World->GetFirstPlayerController();
-		if (ALobbyPlayerController* LobbyPC = Cast<ALobbyPlayerController>(PC))
-		{
-			LobbyPC->RefreshLobbyUI();
-		}
-	}
+	RefreshUI();
 }
 
 void ALobbyPlayerState::OnRep_JobType()
@@ -121,4 +83,17 @@ void ALobbyPlayerState::OnRep_JobType()
 	Super::OnRep_JobType();
 
 	OnRep_UpdateUI();
+}
+
+void ALobbyPlayerState::RefreshUI()
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		APlayerController* PC = World->GetFirstPlayerController();
+		if (ALobbyPlayerController* LobbyPC = Cast<ALobbyPlayerController>(PC))
+		{
+			LobbyPC->RefreshLobbyUI();
+		}
+	}
 }

@@ -19,7 +19,7 @@ void AMiniGamePlayerController::CreateGameWidget()
 		if (MiniGameWidget)
 		{
 			MiniGameWidget->AddToViewport();
+			RegisterManagedWidget(MiniGameWidget);
 		}
-		RegisterManagedWidget(MiniGameWidget);
 	}
 }

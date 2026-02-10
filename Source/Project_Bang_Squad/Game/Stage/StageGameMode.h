@@ -22,5 +22,6 @@ public:
 	
 protected:
 	virtual FTransform GetRespawnTransform(AController* Controller) override;
-	virtual float GetRespawnDelay(AController* Controller) const override;
+	virtual float GetRespawnDelay(AController* Controller) override;
+	//virtual void RequestRespawn(AController* Controller) override;
 };

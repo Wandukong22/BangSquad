@@ -32,5 +32,5 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "BS|Spawn")
 	float BaseRespawnTime = 3.f;
-	virtual float GetRespawnDelay(AController* Controller) const { return BaseRespawnTime; }
+	virtual float GetRespawnDelay(AController* Controller) { return BaseRespawnTime; }
 };

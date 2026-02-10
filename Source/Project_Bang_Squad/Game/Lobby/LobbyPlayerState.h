@@ -26,7 +26,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnLobbyDataChanged OnLobbyDataChanged;
 
-	void SetJob(EJobType NewJob);
+	virtual void SetJob(EJobType NewJob) override;
 	void SetIsReady(bool NewIsReady);
 	void SetIsConfirmedJob(bool NewIsConfirmedJob);
 
@@ -50,6 +50,7 @@ protected:
 
 	virtual void OnRep_JobType() override;
 
+	void RefreshUI();
 private:
 	EJobType SavedConfirmedJob = EJobType::None;
 };

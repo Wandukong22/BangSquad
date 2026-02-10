@@ -221,9 +221,9 @@ void ALobbyPlayerController::ServerPreviewJob_Implementation(EJobType NewJob)
 		PS->SetJob(NewJob);
 	}
 
-	if (ALobbyGameMode* GM = GetWorld()->GetAuthGameMode<ALobbyGameMode>())
+	if (ABSGameMode* GM = GetWorld()->GetAuthGameMode<ALobbyGameMode>())
 	{
-		GM->ChangePlayerCharacter(this, NewJob);
+		GM->SpawnPlayerCharacter(this, NewJob);
 	}
 }
 

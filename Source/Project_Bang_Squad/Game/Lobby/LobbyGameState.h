@@ -58,6 +58,4 @@ protected:
 	//현재 선점된 직업 목록
 	UPROPERTY(ReplicatedUsing = OnRep_TakenJobs)
 	TArray<EJobType> TakenJobs;
-
-	bool TryAddTakenJob(EJobType JobType);
 };

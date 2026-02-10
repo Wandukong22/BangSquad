@@ -18,13 +18,6 @@ ALobbyGameMode::ALobbyGameMode()
 	bUseSeamlessTravel = true;
 }
 
-void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
-{
-	Super::PostLogin(NewPlayer);
-
-	//TODO: 초기화 작업들 (PlayerState 데이터 갱신 등등...)
-}
-
 bool ALobbyGameMode::TryConfirmJob(EJobType Job, class ALobbyPlayerState* RequestingPS)
 {
 	ALobbyGameState* GS = GetGameState<ALobbyGameState>();
@@ -73,7 +66,7 @@ bool ALobbyGameMode::TryConfirmJob(EJobType Job, class ALobbyPlayerState* Reques
 	return true;
 }
 
-void ALobbyGameMode::ChangePlayerCharacter(AController* Controller, EJobType NewJob)
+/*void ALobbyGameMode::ChangePlayerCharacter(AController* Controller, EJobType NewJob)
 {
 	if (!Controller) return;
 
@@ -92,7 +85,7 @@ void ALobbyGameMode::ChangePlayerCharacter(AController* Controller, EJobType New
 	{
 		Controller->Possess(NewChar);
 	}
-}
+}*/
 
 void ALobbyGameMode::CheckAllReady()
 {

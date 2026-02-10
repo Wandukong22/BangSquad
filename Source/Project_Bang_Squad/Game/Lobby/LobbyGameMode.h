@@ -18,16 +18,14 @@ class PROJECT_BANG_SQUAD_API ALobbyGameMode : public ABSGameMode
 public:
 	ALobbyGameMode();
 
-	//캐릭터 교체
-	void ChangePlayerCharacter(AController* Controller, EJobType NewJob);
+	/*//캐릭터 교체
+	void ChangePlayerCharacter(AController* Controller, EJobType NewJob);*/
 
 	//Ready 체크
 	void CheckAllReady();
 
 	//직업 확정했는지 체크
 	void CheckConfirmedJob();
-
-	virtual void PostLogin(APlayerController* NewPlayer) override;
 	
 	UPROPERTY()
 	TSet<EJobType> ConfirmedJobs;

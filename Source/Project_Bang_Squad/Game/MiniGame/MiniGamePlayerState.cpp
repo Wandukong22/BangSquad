@@ -22,6 +22,12 @@ void AMiniGamePlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProp
 void AMiniGamePlayerState::CopyProperties(APlayerState* PlayerState)
 {
 	Super::CopyProperties(PlayerState);
+
+	AMiniGamePlayerState* PS = Cast<AMiniGamePlayerState>(PlayerState);
+	if (PS)
+	{
+		PS->MiniGameRank = MiniGameRank;
+	}
 }
 
 void AMiniGamePlayerState::SetMiniGameRank(int32 NewRank)

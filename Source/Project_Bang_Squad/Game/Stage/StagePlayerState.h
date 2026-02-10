@@ -7,8 +7,6 @@
 #include "Project_Bang_Squad/Game/Base/BSPlayerState.h"
 #include "StagePlayerState.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRespawnTimeChanged, float, NewRespawnTime);
-
 UCLASS()
 class PROJECT_BANG_SQUAD_API AStagePlayerState : public ABSPlayerState
 {
@@ -20,12 +18,11 @@ public:
 	int32 GetDeathCount() const { return DeathCount; }
 
 	// 부활 타이머
-	UPROPERTY(Replicated/*Using = OnRep_RespawnEndTime*/)
-	float RespawnEndTime = 0.f;
-	UPROPERTY(BlueprintAssignable)
-	FOnRespawnTimeChanged OnRespawnTimeChanged;
-	float GetRespawnEndTime() { return RespawnEndTime; }
-	void SetRespawnEndTime(float NewTime);
+	//UPROPERTY(Replicated/*Using = OnRep_RespawnEndTime*/)
+	//float RespawnEndTime = 0.f;
+
+	//float GetRespawnEndTime() { return RespawnEndTime; }
+	//void SetRespawnEndTime(float NewTime);
 
 	//UFUNCTION()
 	//void OnRep_RespawnEndTime();

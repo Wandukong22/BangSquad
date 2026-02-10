@@ -15,6 +15,20 @@ void ABSPlayerState::OnRep_PlayerName()
 	Super::OnRep_PlayerName();
 }
 
+void ABSPlayerState::SetJob(EJobType NewJob)
+{
+	if (HasAuthority())
+	{
+		JobType = NewJob;
+		OnRep_JobType();
+	}
+}
+
+void ABSPlayerState::SetRespawnEndTime(float NewTime)
+{
+	RespawnEndTime = NewTime;
+}
+
 void ABSPlayerState::CopyProperties(APlayerState* PlayerState)
 {
 	Super::CopyProperties(PlayerState);
@@ -24,6 +38,7 @@ void ABSPlayerState::CopyProperties(APlayerState* PlayerState)
 	if (PS)
 	{
 		PS->JobType = JobType;
+		PS->RespawnEndTime = RespawnEndTime;
 	}
 }
 
@@ -31,6 +46,7 @@ void ABSPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ABSPlayerState, JobType);
+	DOREPLIFETIME(ABSPlayerState, RespawnEndTime);
 }
 
 void ABSPlayerState::Server_SetJob_Implementation(EJobType NewJob)

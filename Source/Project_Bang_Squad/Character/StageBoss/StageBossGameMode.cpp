@@ -14,7 +14,7 @@
 AStageBossGameMode::AStageBossGameMode()
 {
 	// �⺻�� ����
-	bUseSeamlessTravel = true;
+	BaseRespawnTime = 8.f;
 }
 
 void AStageBossGameMode::BeginPlay()
@@ -143,6 +143,12 @@ void AStageBossGameMode::OnPlayerDied(AController* DeadController)
 void AStageBossGameMode::RequestRespawn(AController* Controller)
 {
 	if (!Controller) return;
+
+	if (ABSPlayerState* PS = Controller->GetPlayerState<ABSPlayerState>())
+	{
+		float ServerTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+		PS->SetRespawnEndTime(ServerTime + BaseRespawnTime);
+	}
 
 	FTimerDelegate RespawnDelegate;
 	RespawnDelegate.BindUObject(this, &AStageBossGameMode::AttemptRespawn, Controller);
