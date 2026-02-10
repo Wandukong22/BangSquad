@@ -3,15 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
 #include "Project_Bang_Squad/Core/BSGameTypes.h"
+#include "Project_Bang_Squad/Game/Base/BSGameMode.h"
 #include "LobbyGameMode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECT_BANG_SQUAD_API ALobbyGameMode : public AGameModeBase
+class PROJECT_BANG_SQUAD_API ALobbyGameMode : public ABSGameMode
 {
 	GENERATED_BODY()
 

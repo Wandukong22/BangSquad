@@ -16,6 +16,7 @@
 #include "Project_Bang_Squad/UI/Lobby/JobSelectWidget.h"
 #include "EngineUtils.h" //TActorIterator 사용을 위함
 #include "Checkpoint.h"
+#include "HeadMountedDisplayTypes.h"
 #include "StageGameState.h"
 
 AStageGameMode::AStageGameMode()
@@ -26,199 +27,10 @@ AStageGameMode::AStageGameMode()
 	PlayerControllerClass = AStagePlayerController::StaticClass();
 }
 
-void AStageGameMode::SpawnPlayerCharacter(AController* Controller, EJobType JobType)
-{
-	//데이터 확인
-	if (!Controller) return;
-
-	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-	if (!GI) return;
-	
-	UE_LOG(LogTemp, Warning, TEXT("[SpawnDebug] 요청된 직업: %d"), (int32)JobType);
-	
-	TSubclassOf<ACharacter> PawnClass = GI->GetCharacterClass(JobType);
-	if (!PawnClass) {UE_LOG(LogTemp, Error, TEXT("[SpawnDebug] PawnClass가 Null입니다! 데이터 에셋을 확인하세요."));return;}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[SpawnDebug] 스폰할 클래스 이름: %s"), *PawnClass->GetName());
-	}
-	//기존에 붙어있던 폰이 있다면 제거
-	if (APawn* OldPawn = Controller->GetPawn())
-	{
-		OldPawn->Destroy();
-	}
-
-	FTransform SpawnTransform = GetRespawnTransform(Controller);
-	AStagePlayerController* StagePC = Cast<AStagePlayerController>(Controller);
-
-	if (StagePC && !StagePC->bHasSpawnedOnce)
-	{
-		bool bShouldUsePlayerStart = true;
-
-		if (AStageGameState* GS = GetWorld()->GetGameState<AStageGameState>())
-		{
-			if (GS->GetStageCheckpointIndex() > 0)
-			{
-				bShouldUsePlayerStart = false;
-			}
-		}
-
-		if (bShouldUsePlayerStart)
-		{
-			AActor* StartSpot = FindPlayerStart(Controller);
-			if (StartSpot)
-			{
-				SpawnTransform = StartSpot->GetActorTransform();
-			}
-			else
-			{
-				SpawnTransform = FTransform::Identity;
-			}
-		}
-		StagePC->bHasSpawnedOnce = true;
-	}
-	else
-	{
-		SpawnTransform = GetRespawnTransform(Controller);
-	}
-	FVector SpawnLocation = SpawnTransform.GetLocation();
-	FRotator SpawnRotation = SpawnTransform.GetRotation().Rotator();
-
-	// 소환 (충돌 처리 옵션 추가: 겹쳐도 강제 소환)
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-	if (APawn* NewPawn = GetWorld()->SpawnActor<APawn>(PawnClass, SpawnLocation, SpawnRotation, SpawnParams))
-	{
-		Controller->Possess(NewPawn);
-	}
-}
-
-void AStageGameMode::RequestRespawn(AController* Controller)
-{
-	if (!Controller) return;
-
-	float WaitTime = 3.f;
-
-	if (AStagePlayerState* PS = Controller->GetPlayerState<AStagePlayerState>())
-	{
-		float CalculatedTime = 3.f + (PS->GetDeathCount() * 2.f);
-		WaitTime = FMath::Min(CalculatedTime, 15.f);
-		PS->IncreaseDeathCount();
-
-		if (AGameStateBase* GS = GetGameState<AGameStateBase>())
-		{
-			PS->SetRespawnEndTime(GS->GetServerWorldTimeSeconds() + WaitTime);
-		}
-	}
-
-	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindUObject(this, &AStageGameMode::RespawnPlayerElapsed, Controller);
-
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, WaitTime, false);
-	UE_LOG(LogTemp, Warning, TEXT("[GameMode] 플레이어 사망! %f초 뒤 부활"), WaitTime);
-}
-
-void AStageGameMode::ExecuteRespawn(AController* Controller)
-{
-	if (!Controller) return;
-
-	EJobType JobToSpawn = EJobType::None;
-
-	if (ABSPlayerState* PS = Controller->GetPlayerState<ABSPlayerState>())
-	{
-		JobToSpawn = PS->GetJob();
-	}
-
-	if (JobToSpawn == EJobType::None)
-	{
-		JobToSpawn = EJobType::Titan;
-	}
-
-	SpawnPlayerCharacter(Controller, JobToSpawn);
-}
-
-void AStageGameMode::ClearStageAndMove(EStageIndex NextStage, EStageSection NextSection)
-{
-	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
-	{
-		//TODO: DeathCount 제거
-		//GI->ResetDeathPenalty();
-
-		GI->MoveToStage(NextStage, NextSection);
-	}
-}
-
-void AStageGameMode::RespawnPlayerElapsed(AController* DeadController)
-{
-	if (!DeadController) return;
-
-	APawn* OldPawn = DeadController->GetPawn();
-	if (OldPawn)
-	{
-		OldPawn->Destroy();
-	}
-
-	ExecuteRespawn(DeadController);
-}
-
 FTransform AStageGameMode::GetRespawnTransform(AController* Controller)
 {
 	UWorld* World = GetWorld();
 	if (!World) return FTransform::Identity;
-
-	//팀원 근처 부활 제거
-	/*if (!IsMiniGameMap())
-	{
-		//살아있는 아군 목록 생성
-		TArray<AActor*> AllCharacters;
-		UGameplayStatics::GetAllActorsOfClass(World, ABaseCharacter::StaticClass(), AllCharacters);
-
-		TArray<ABaseCharacter*> AlivePlayers;
-		for (AActor* Actor : AllCharacters)
-		{
-			ABaseCharacter* Char = Cast<ABaseCharacter>(Actor);
-			if (Char && !Char->IsDead() && Char->GetController() != Controller)
-			{
-				AlivePlayers.Add(Char);
-			}
-		}
-
-		if (AlivePlayers.Num() > 0)
-		{
-			//랜덤 아군 선택
-			int32 RandomIndex = FMath::RandRange(0, AlivePlayers.Num() - 1);
-			ABaseCharacter* Target = AlivePlayers[RandomIndex];
-
-			FVector TargetLocation = Target->GetActorLocation();
-
-			//아군 주변 랜덤 위치
-			FVector RandomOffset = FMath::VRand();
-			RandomOffset.Z = 0.f;
-			RandomOffset.Normalize();
-
-			//거리 범위 조정(200 ~ 400)
-			FVector SpawnLocation = TargetLocation + (RandomOffset * FMath::RandRange(200.f, 400.f));
-			SpawnLocation.Z += 200.f;
-
-			FHitResult Hit;
-			FCollisionQueryParams Params;
-			Params.AddIgnoredActor(Target);
-
-			//바닥 확인
-			bool bHit = World->LineTraceSingleByChannel(Hit, SpawnLocation, SpawnLocation - FVector(0, 0, 1000.f),
-			                                            ECC_WorldStatic, Params);
-			if (bHit)
-			{
-				return FTransform(FRotator::ZeroRotator, SpawnLocation);
-			}
-			else
-			{
-				return FTransform(FRotator::ZeroRotator, TargetLocation + FVector(0, 0, 300.f));
-			}
-		}
-	}*/
 
 	//스테이지에서의 체크포인트 확인
 	AStageGameState* GS = World->GetGameState<AStageGameState>();
@@ -247,13 +59,25 @@ FTransform AStageGameMode::GetRespawnTransform(AController* Controller)
 	return FTransform::Identity;
 }
 
-void AStageGameMode::PostLogin(APlayerController* NewPlayer)
+float AStageGameMode::GetRespawnDelay(AController* Controller) const
 {
-	Super::PostLogin(NewPlayer);
+	float FinalTime = BaseRespawnTime; // 기본 3초
 
-	AStageGameState* GS = GetWorld()->GetGameState<AStageGameState>();
-	if (GS && GS->GetStageCheckpointIndex() > 0)
+	if (AStagePlayerState* PS = Controller->GetPlayerState<AStagePlayerState>())
 	{
-		//체크포인트 위치 찾기..
+		// 데스 카운트 증가
+		PS->IncreaseDeathCount();
+
+		// 시간 계산 (기본 + 죽은횟수 * 2초), 최대 15초 제한
+		FinalTime = BaseRespawnTime + ((PS->GetDeathCount() - 1) * 2.f);
+		FinalTime = FMath::Min(FinalTime, 15.f);
+
+		// UI용 시간 갱신 (PlayerState에 알림)
+		if (AGameStateBase* GS = GetGameState<AGameStateBase>())
+		{
+			PS->SetRespawnEndTime(GS->GetServerWorldTimeSeconds() + FinalTime);
+		}
 	}
+
+	return FinalTime;
 }

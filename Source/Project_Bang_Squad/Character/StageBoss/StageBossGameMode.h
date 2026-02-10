@@ -76,8 +76,8 @@ protected:
 	//부활 시도 함수
 	void AttemptRespawn(AController* ControllerToRespawn);
 	
-	UPROPERTY(EditAnywhere, Category = "BS|Respawn")
-	float RespawnTime = 8.f;
+	//UPROPERTY(EditAnywhere, Category = "BS|Respawn")
+	//float RespawnTime = 8.f;
 
 	void ReturnToStage();
 };

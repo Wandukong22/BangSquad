@@ -3,8 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameState.h"
-#include "Net/UnrealNetwork.h"
+#include "Project_Bang_Squad/Game/Base/BSGameState.h"
 #include "StageGameState.generated.h"
 
 class ACheckpoint;
@@ -12,7 +11,7 @@ class ACheckpoint;
  * 
  */
 UCLASS()
-class PROJECT_BANG_SQUAD_API AStageGameState : public AGameStateBase
+class PROJECT_BANG_SQUAD_API AStageGameState : public ABSGameState
 {
 	GENERATED_BODY()
 

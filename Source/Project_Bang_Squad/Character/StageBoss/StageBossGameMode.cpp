@@ -148,7 +148,7 @@ void AStageBossGameMode::RequestRespawn(AController* Controller)
 	RespawnDelegate.BindUObject(this, &AStageBossGameMode::AttemptRespawn, Controller);
 
 	FTimerHandle RespawnTimerHandle;
-	GetWorldTimerManager().SetTimer(RespawnTimerHandle, RespawnDelegate, RespawnTime, false);
+	GetWorldTimerManager().SetTimer(RespawnTimerHandle, RespawnDelegate, BaseRespawnTime, false);
 	UE_LOG(LogTemp, Warning, TEXT("8초 뒤 부활"));
 
 	

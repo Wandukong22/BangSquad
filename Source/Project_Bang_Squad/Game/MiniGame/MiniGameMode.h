@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
+#include "Project_Bang_Squad/Game/Base/BSGameMode.h"
 #include "MiniGameMode.generated.h"
 
 enum class EJobType : uint8;
@@ -11,7 +11,7 @@ enum class EJobType : uint8;
  * 
  */
 UCLASS()
-class PROJECT_BANG_SQUAD_API AMiniGameMode : public AGameModeBase
+class PROJECT_BANG_SQUAD_API AMiniGameMode : public ABSGameMode
 {
 	GENERATED_BODY()
 
@@ -45,6 +45,6 @@ protected:
 	//모두 도착했는지 체크
 	void CheckAllPlayersFinished();
 
-	UPROPERTY(EditAnywhere, Category = "BS|MiniGame")
-	float RespawnTime = 5.f;
+	//UPROPERTY(EditAnywhere, Category = "BS|MiniGame")
+	//float RespawnTime = 5.f;
 };

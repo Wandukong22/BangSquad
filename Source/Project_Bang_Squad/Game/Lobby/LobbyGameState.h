@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameStateBase.h"
 #include "Project_Bang_Squad/Core/BSGameTypes.h"
+#include "Project_Bang_Squad/Game/Base/BSGameState.h"
 #include "LobbyGameState.generated.h"
 
 UENUM(BlueprintType)
@@ -19,7 +19,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLobbyPhaseChanged, ELobbyPhase, N
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTakenJobsChanged, const TArray<EJobType>&, TakenJobs);
 
 UCLASS()
-class PROJECT_BANG_SQUAD_API ALobbyGameState : public AGameStateBase
+class PROJECT_BANG_SQUAD_API ALobbyGameState : public ABSGameState
 {
 	GENERATED_BODY()
 
