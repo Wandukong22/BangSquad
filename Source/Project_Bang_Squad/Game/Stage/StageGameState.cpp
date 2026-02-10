@@ -3,6 +3,7 @@
 
 #include "Project_Bang_Squad/Game/Stage/StageGameState.h"
 
+#include "Net/UnrealNetwork.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 
 void AStageGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

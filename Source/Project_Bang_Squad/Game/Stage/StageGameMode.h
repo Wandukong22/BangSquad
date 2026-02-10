@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
 #include "Project_Bang_Squad/Core/BSGameTypes.h"
+#include "Project_Bang_Squad/Game/Base/BSGameMode.h"
 #include "StageGameMode.generated.h"
 
 class URespawnWidget;
@@ -13,29 +13,15 @@ enum class EJobType : uint8;
  * 
  */
 UCLASS()
-class PROJECT_BANG_SQUAD_API AStageGameMode : public AGameModeBase
+class PROJECT_BANG_SQUAD_API AStageGameMode : public ABSGameMode
 {
 	GENERATED_BODY()
 
 public:
 	AStageGameMode();
 	
-	//실제 소환
-	void SpawnPlayerCharacter(AController* Controller, EJobType MyJob);
-
-	virtual void RequestRespawn(AController* Controller);
-
-	void ExecuteRespawn(AController* Controller);
-
-	//스테이지 이동 함수
-	UFUNCTION(BlueprintCallable, Category = "BS|Stage")
-	void ClearStageAndMove(EStageIndex NextStage, EStageSection NextSection = EStageSection::Main);
-
 protected:
-	void RespawnPlayerElapsed(AController* DeadController);
-
-	//부활 위치 계산
-	FTransform GetRespawnTransform(AController* Controller);
-
-	virtual void PostLogin(APlayerController* NewPlayer) override;
+	virtual FTransform GetRespawnTransform(AController* Controller) override;
+	virtual float GetRespawnDelay(AController* Controller) override;
+	//virtual void RequestRespawn(AController* Controller) override;
 };

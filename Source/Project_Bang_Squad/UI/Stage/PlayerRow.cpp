@@ -60,9 +60,9 @@ void UPlayerRow::SetTargetPlayerState(class APlayerState* InPlayerState)
 	if (TargetPlayerState.IsValid())
 	{
 		TargetPlayerState->OnPawnSet.RemoveDynamic(this, &UPlayerRow::OnPawnSet);
-		if (AStagePlayerState* StagePS = Cast<AStagePlayerState>(TargetPlayerState.Get()))
+		if (ABSPlayerState* BSPS = Cast<ABSPlayerState>(TargetPlayerState.Get()))
 		{
-			StagePS->OnRespawnTimeChanged.RemoveDynamic(this, &UPlayerRow::UpdateDeathState);
+			BSPS->OnRespawnTimeChanged.RemoveDynamic(this, &UPlayerRow::UpdateDeathState);
 		}
 	}
 
@@ -81,12 +81,12 @@ void UPlayerRow::SetTargetPlayerState(class APlayerState* InPlayerState)
 		}
 
 		TargetPlayerState->OnPawnSet.AddDynamic(this, &UPlayerRow::OnPawnSet);
-		if (AStagePlayerState* StagePS = Cast<AStagePlayerState>(TargetPlayerState.Get()))
+		if (ABSPlayerState* BSPS = Cast<ABSPlayerState>(TargetPlayerState.Get()))
 		{
-			StagePS->OnRespawnTimeChanged.AddDynamic(this, &UPlayerRow::UpdateDeathState);
+			BSPS->OnRespawnTimeChanged.AddDynamic(this, &UPlayerRow::UpdateDeathState);
 
-			UpdateProfileImage(StagePS->GetJob());
-			UpdateDeathState(StagePS->GetRespawnEndTime());
+			UpdateProfileImage(BSPS->GetJob());
+			UpdateDeathState(BSPS->GetRespawnEndTime());
 		}
 
 		if (TargetPlayerState->GetPawn())
@@ -182,13 +182,13 @@ void UPlayerRow::RefreshTimeUI()
 	// 1. 방어 코드: UI가 꺼져있거나 타겟이 없으면 계산 X
 	if (!TargetPlayerState.IsValid() || !Overlay_Death) return;
 
-	AStagePlayerState* StagePS = Cast<AStagePlayerState>(TargetPlayerState.Get());
+	ABSPlayerState* BSPS = Cast<ABSPlayerState>(TargetPlayerState.Get());
 	AGameStateBase* GS = GetWorld()->GetGameState();
 
-	if (StagePS && GS)
+	if (BSPS && GS)
 	{
 		// 2. 시간 계산
-		float RemainTime = StagePS->GetRespawnEndTime() - GS->GetServerWorldTimeSeconds();
+		float RemainTime = BSPS->GetRespawnEndTime() - GS->GetServerWorldTimeSeconds();
 
 		// 3. 텍스트 설정
 		if (RemainTime > 0.f)

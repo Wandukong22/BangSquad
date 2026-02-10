@@ -7,9 +7,8 @@
 #include "Project_Bang_Squad/Core/BSGameTypes.h"
 #include "BSPlayerState.generated.h"
 
-/**
- * 
- */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRespawnTimeChanged, float, NewRespawnTime);
+
 UCLASS()
 class PROJECT_BANG_SQUAD_API ABSPlayerState : public APlayerState
 {
@@ -23,7 +22,13 @@ public:
 
 	UFUNCTION()
 	FORCEINLINE EJobType GetJob() { return JobType; }
+	virtual void SetJob(EJobType NewJob);
+	
+	void SetRespawnEndTime(float NewTime);
+	float GetRespawnEndTime() const { return RespawnEndTime; }
 
+	UPROPERTY(BlueprintAssignable)
+	FOnRespawnTimeChanged OnRespawnTimeChanged;
 protected:
 	UPROPERTY(ReplicatedUsing = OnRep_JobType)
 	EJobType JobType = EJobType::None;
@@ -34,4 +39,7 @@ protected:
 
 	UFUNCTION()
 	virtual void OnRep_JobType();
+
+	UPROPERTY(Replicated)
+	float RespawnEndTime = 0.f;
 };

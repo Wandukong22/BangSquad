@@ -12,7 +12,6 @@ void AStagePlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimePropert
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AStagePlayerState, RespawnEndTime);
 	DOREPLIFETIME(AStagePlayerState, DeathCount);
 }
 
@@ -23,15 +22,8 @@ void AStagePlayerState::CopyProperties(APlayerState* PlayerState)
 	AStagePlayerState* PS = Cast<AStagePlayerState>(PlayerState);
 	if (PS)
 	{
-		PS->RespawnEndTime = RespawnEndTime;
 		PS->DeathCount = DeathCount;
 	}
-}
-
-void AStagePlayerState::SetRespawnEndTime(float NewTime)
-{
-	RespawnEndTime = NewTime;
-	//OnRep_RespawnEndTime();
 }
 
 //void AStagePlayerState::OnRep_RespawnEndTime()

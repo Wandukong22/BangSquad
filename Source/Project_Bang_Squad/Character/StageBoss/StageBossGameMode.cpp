@@ -14,7 +14,7 @@
 AStageBossGameMode::AStageBossGameMode()
 {
 	// �⺻�� ����
-	bUseSeamlessTravel = true;
+	BaseRespawnTime = 8.f;
 }
 
 void AStageBossGameMode::BeginPlay()
@@ -144,11 +144,17 @@ void AStageBossGameMode::RequestRespawn(AController* Controller)
 {
 	if (!Controller) return;
 
+	if (ABSPlayerState* PS = Controller->GetPlayerState<ABSPlayerState>())
+	{
+		float ServerTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+		PS->SetRespawnEndTime(ServerTime + BaseRespawnTime);
+	}
+
 	FTimerDelegate RespawnDelegate;
 	RespawnDelegate.BindUObject(this, &AStageBossGameMode::AttemptRespawn, Controller);
 
 	FTimerHandle RespawnTimerHandle;
-	GetWorldTimerManager().SetTimer(RespawnTimerHandle, RespawnDelegate, RespawnTime, false);
+	GetWorldTimerManager().SetTimer(RespawnTimerHandle, RespawnDelegate, BaseRespawnTime, false);
 	UE_LOG(LogTemp, Warning, TEXT("8초 뒤 부활"));
 
 	

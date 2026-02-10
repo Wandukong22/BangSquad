@@ -12,7 +12,7 @@
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
-#include "Project_Bang_Squad/Game/InteractionInterface.h"
+#include "Project_Bang_Squad/Game/Interface/InteractionInterface.h"
 #include "Project_Bang_Squad/Game/MiniGame/MiniGameMode.h"
 #include "Project_Bang_Squad/UI/Stage/StageMainWidget.h"
 
@@ -66,7 +66,11 @@ void AStagePlayerController::StartSpectating()
 
 	if (HasAuthority())
 	{
-		// StageGameMode 체크
+		if (IRespawnInterface* RespawnInterface = Cast<IRespawnInterface>(GetWorld()->GetAuthGameMode()))
+		{
+			RespawnInterface->RequestRespawn(this);
+		}
+		/*// StageGameMode 체크
 		if (AStageGameMode* StageGM = GetWorld()->GetAuthGameMode<AStageGameMode>())
 		{
 			StageGM->RequestRespawn(this);
@@ -75,7 +79,7 @@ void AStagePlayerController::StartSpectating()
 		else if (AMiniGameMode* MiniGM = GetWorld()->GetAuthGameMode<AMiniGameMode>())
 		{
 			MiniGM->RequestRespawn(this);
-		}
+		}*/
 	}
 }
 
@@ -224,14 +228,9 @@ void AStagePlayerController::ServerRequestSpawn_Implementation(EJobType Job)
 	{
 		AGameModeBase* GM = GetWorld()->GetAuthGameMode();
 	
-		//서버에서 게임모드를 찾아 실제 소환명령
-		if (AStageGameMode* StageGM = Cast<AStageGameMode>(GM))
+		if (ABSGameMode* BSGM = GetWorld()->GetAuthGameMode<ABSGameMode>())
 		{
-			StageGM->SpawnPlayerCharacter(this, FinalJob);
-		}
-		else if (AMiniGameMode* MiniGM = Cast<AMiniGameMode>(GM))
-		{
-			MiniGM->SpawnPlayerCharacter(this, FinalJob);
+			BSGM->SpawnPlayerCharacter(this, FinalJob);
 		}
 	}
 }

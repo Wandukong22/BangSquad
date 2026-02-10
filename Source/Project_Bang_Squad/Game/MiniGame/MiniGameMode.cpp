@@ -16,54 +16,11 @@
 
 AMiniGameMode::AMiniGameMode()
 {
-	//맵 이동 시 끊김 최소화
-	bUseSeamlessTravel = true;
-
 	PlayerStateClass = AMiniGamePlayerState::StaticClass();
 	PlayerControllerClass = AMiniGamePlayerController::StaticClass();
 	GameStateClass = AStageGameState::StaticClass();
-}
 
-void AMiniGameMode::PostLogin(APlayerController* NewPlayer)
-{
-	Super::PostLogin(NewPlayer);
-}
-
-void AMiniGameMode::SpawnPlayerCharacter(AController* Controller, EJobType JobType)
-{
-	if (!Controller) return;
-
-	// 기존 폰 제거
-	if (APawn* OldPawn = Controller->GetPawn())
-	{
-		OldPawn->Destroy();
-	}
-
-	FTransform SpawnTransform = GetRespawnTransform(Controller);
-
-	// 소환
-	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-	if (!GI) return;
-	
-	UClass* PawnClass = GI->GetCharacterClass(JobType);
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-	if (APawn* NewPawn = GetWorld()->SpawnActor<APawn>(PawnClass, SpawnTransform.GetLocation(), SpawnTransform.GetRotation().Rotator(), SpawnParams))
-	{
-		Controller->Possess(NewPawn);
-	}
-}
-
-void AMiniGameMode::RequestRespawn(AController* DeadPlayer)
-{
-	if (!DeadPlayer) return;
-	
-	FTimerHandle RespawnTimerHandle;
-	FTimerDelegate RespawnDelegate;
-	RespawnDelegate.BindUObject(this, &AMiniGameMode::ExecuteRespawn, DeadPlayer);
-
-	GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, RespawnDelegate, RespawnTime, false);
+	BaseRespawnTime = 5.f;
 }
 
 void AMiniGameMode::OnPlayerReachedGoal(AController* ReachedPlayer)
@@ -82,28 +39,9 @@ void AMiniGameMode::OnPlayerReachedGoal(AController* ReachedPlayer)
 		}
 	}
 	//보상 로직
-	
+
 	//미니게임 종료
 	CheckAllPlayersFinished();
-}
-
-void AMiniGameMode::ExecuteRespawn(AController* Controller)
-{
-	if (!Controller) return;
-
-	EJobType JobToSpawn = EJobType::None;
-
-	if (ABSPlayerState* PS = Controller->GetPlayerState<ABSPlayerState>())
-	{
-		JobToSpawn = PS->GetJob();
-	}
-
-	if (JobToSpawn == EJobType::None)
-	{
-		JobToSpawn = EJobType::Titan;
-	}
-	
-	SpawnPlayerCharacter(Controller, JobToSpawn);
 }
 
 FTransform AMiniGameMode::GetRespawnTransform(AController* Controller)
@@ -131,13 +69,7 @@ FTransform AMiniGameMode::GetRespawnTransform(AController* Controller)
 		}
 	}
 
-	//아무것도 없을 땐 PlayerStart 위치
-	AActor* StartSpot = FindPlayerStart(Controller);
-	if (StartSpot)
-	{
-		return StartSpot->GetActorTransform();
-	}
-	return FTransform::Identity;
+	return Super::GetRespawnTransform(Controller);
 }
 
 void AMiniGameMode::CheckAllPlayersFinished()
@@ -147,14 +79,9 @@ void AMiniGameMode::CheckAllPlayersFinished()
 
 	if (FinishedPlayers.Num() >= 1)
 	{
-		UWorld* World = GetWorld();
-		if (World)
+		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 		{
-			if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
-			{
-				GI->MoveToStage(EStageIndex::Stage1, EStageSection::Main);
-			}
-			//World->ServerTravel("/Game/TeamShare/Level/Stage1_Demo?listen");
+			GI->MoveToStage(EStageIndex::Stage1, EStageSection::Main);
 		}
 	}
 }
