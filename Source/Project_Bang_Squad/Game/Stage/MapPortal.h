@@ -7,6 +7,7 @@
 #include "Project_Bang_Squad/Core/BSGameTypes.h"
 #include "MapPortal.generated.h"
 
+class UWidgetComponent;
 class UTextRenderComponent;
 class USphereComponent;
 
@@ -37,8 +38,8 @@ protected:
 	TObjectPtr<UStaticMeshComponent> PortalMesh;
 
 	//카운트다운 표시용 텍스트
-	UPROPERTY(VisibleAnywhere, Category = "BS|Components")
-	TObjectPtr<UTextRenderComponent> CountdownText;
+	//UPROPERTY(VisibleAnywhere, Category = "BS|Components")
+	//TObjectPtr<UTextRenderComponent> CountdownText;
 
 	UPROPERTY(EditAnywhere, Category = "BS|Map")
 	EStageIndex TargetStageIndex = EStageIndex::None;
@@ -55,6 +56,8 @@ protected:
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UPROPERTY(VisibleAnywhere, Category = "BS|Components")
+	TObjectPtr<UWidgetComponent> PortalWidgetComp;
 private:
 	//구역 안의 플레이어
 	TSet<AActor*> OverlappingPlayers;
@@ -70,7 +73,6 @@ private:
 	void ProcessLevelTransition();
 	void UpdateCountdownText();
 
-	//Client에게 텍스트 변경을 알림
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastUpdateText(const FString& NewText);
+	void MulticastUpdateUI(int32 CurrentPlayerCount, int32 CurrentTime);
 };

@@ -5,10 +5,12 @@
 
 #include "Components/SphereComponent.h"
 #include "Components/TextRenderComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Evaluation/IMovieSceneEvaluationHook.h"
 #include "GameFramework/GameStateBase.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
+#include "Project_Bang_Squad/UI/Stage/PortalMainWidget.h"
 
 AMapPortal::AMapPortal()
 {
@@ -24,11 +26,11 @@ AMapPortal::AMapPortal()
 	PortalMesh->SetupAttachment(RootComponent);
 	PortalMesh->SetCollisionProfileName(TEXT("NoCollision"));
 
-	CountdownText = CreateDefaultSubobject<UTextRenderComponent>(TEXT("CountdownText"));
-	CountdownText->SetupAttachment(RootComponent);
-	CountdownText->SetText(FText::GetEmpty());
-	CountdownText->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
-	CountdownText->SetRelativeLocation(FVector(0.f, 0.f, 150.f));
+	PortalWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("PortalWidgetComp"));
+	PortalWidgetComp->SetupAttachment(RootComponent);
+	PortalWidgetComp->SetRelativeLocation(FVector(0.f, 0.f, 200.f)); // 포탈보다 약간 위에
+	PortalWidgetComp->SetWidgetSpace(EWidgetSpace::Screen); // Screen으로 하면 항상 정면을 바라봄 (World로 하면 3D 물체처럼 보임)
+	PortalWidgetComp->SetDrawSize(FVector2D(500.f, 200.f)); // 위젯 크기 적절히 조절
 }
 
 void AMapPortal::ActivatePortal()
@@ -53,6 +55,7 @@ void AMapPortal::BeginPlay()
 		
 		TriggerSphere->OnComponentBeginOverlap.AddDynamic(this, &AMapPortal::OnOverlapBegin);
 		TriggerSphere->OnComponentEndOverlap.AddDynamic(this, &AMapPortal::OnOverlapEnd);
+
 	}
 
 	if (!bIsStartActive)
@@ -60,6 +63,18 @@ void AMapPortal::BeginPlay()
 		SetActorHiddenInGame(true);
 		SetActorEnableCollision(false);
 		if (TriggerSphere) TriggerSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
+	if (PortalWidgetComp)
+	{
+		PortalWidgetComp->InitWidget();
+		
+		UPortalMainWidget* PortalUI = Cast<UPortalMainWidget>(PortalWidgetComp->GetUserWidgetObject());
+		if (PortalUI && GetWorld()->GetGameState())
+		{
+			PortalUI->InitializePortal(GetWorld()->GetGameState()->PlayerArray.Num());
+			PortalUI->UpdatePlayerCount(0, GetWorld()->GetGameState()->PlayerArray.Num());
+		}
 	}
 }
 
@@ -73,9 +88,11 @@ void AMapPortal::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	{
 		OverlappingPlayers.Add(OtherActor);
 
+		MulticastUpdateUI(OverlappingPlayers.Num(), RemainingTime);
+
 		//GameState를 통해 플레이어 수 확인
 		AGameStateBase* GS = GetWorld()->GetGameState();
-		if (GS && OverlappingPlayers.Num() == GS->PlayerArray.Num())
+		if (GS && OverlappingPlayers.Num() >= GS->PlayerArray.Num())
 		{
 			StartCountdown();
 		}
@@ -90,6 +107,8 @@ void AMapPortal::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Other
 	{
 		OverlappingPlayers.Remove(OtherActor);
 		CancelCountdown();
+
+		MulticastUpdateUI(OverlappingPlayers.Num(), -1);
 	}
 }
 
@@ -99,9 +118,8 @@ void AMapPortal::StartCountdown()
 
 	//5초 후 이동
 	GetWorldTimerManager().SetTimer(TravelTimerHandle, this, &AMapPortal::ProcessLevelTransition, 5.f, false);
-
-	//1초마다 텍스트 갱신
 	GetWorldTimerManager().SetTimer(CountdownUpdateTimer, this, &AMapPortal::UpdateCountdownText, 1.f, true);
+
 	UpdateCountdownText();
 }
 
@@ -113,7 +131,7 @@ void AMapPortal::CancelCountdown()
 		GetWorldTimerManager().ClearTimer(CountdownUpdateTimer);
 
 		//텍스트 초기화
-		MulticastUpdateText(TEXT("Canceled"));
+		MulticastUpdateUI(OverlappingPlayers.Num(), -1);
 	}
 }
 
@@ -131,13 +149,18 @@ void AMapPortal::UpdateCountdownText()
 {
 	if (RemainingTime > 0)
 	{
-		MulticastUpdateText(FString::FromInt(RemainingTime));
+		MulticastUpdateUI(OverlappingPlayers.Num(), RemainingTime);
 		RemainingTime--;
 	}
 }
 
-void AMapPortal::MulticastUpdateText_Implementation(const FString& NewText)
+void AMapPortal::MulticastUpdateUI_Implementation(int32 CurrentPlayerCount, int32 CurrentTime)
 {
-	if (CountdownText)
-		CountdownText->SetText(FText::FromString(NewText));
+	if (!PortalWidgetComp) return;
+
+	UPortalMainWidget* PortalUI = Cast<UPortalMainWidget>(PortalWidgetComp->GetUserWidgetObject());
+	if (PortalUI && GetWorld()->GetGameState())
+	{
+		PortalUI->UpdatePlayerCount(CurrentPlayerCount, GetWorld()->GetGameState()->PlayerArray.Num());
+	}
 }
