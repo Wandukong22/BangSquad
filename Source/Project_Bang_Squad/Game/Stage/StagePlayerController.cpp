@@ -12,7 +12,7 @@
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
-#include "Project_Bang_Squad/Game/Interface/InteractionInterface.h"
+#include "Project_Bang_Squad/Game/InteractionInterface.h"
 #include "Project_Bang_Squad/Game/MiniGame/MiniGameMode.h"
 #include "Project_Bang_Squad/UI/Stage/StageMainWidget.h"
 
