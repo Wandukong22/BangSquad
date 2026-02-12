@@ -25,6 +25,10 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	//렌더링되는 거리
+	UPROPERTY(EditAnywhere, Category = "BS|Widget")
+	float MaxDrawDistance = 1000.f;
+	
 	//처음부터 활성화인지
 	UPROPERTY(EditAnywhere, Category = "BS|Map")
 	bool bIsStartActive = true;
@@ -58,6 +62,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "BS|Components")
 	TObjectPtr<UWidgetComponent> PortalWidgetComp;
+
+	FTimerHandle CheckDistanceTimerHandle;
+	void CheckWidgetDistance();
 private:
 	//구역 안의 플레이어
 	TSet<AActor*> OverlappingPlayers;
@@ -74,5 +81,5 @@ private:
 	void UpdateCountdownText();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastUpdateUI(int32 CurrentPlayerCount, int32 CurrentTime);
+	void MulticastUpdateUI(int32 CurrentPlayerCount, int32 MaxPlayers, int32 CurrentTime);
 };

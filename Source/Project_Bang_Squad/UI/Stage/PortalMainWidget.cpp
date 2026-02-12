@@ -31,6 +31,8 @@ void UPortalMainWidget::InitializePortal(int32 MaxPlayers)
 	}
 }
 
+/*
+
 void UPortalMainWidget::UpdatePlayerCount(int32 CurrentCount, int32 MaxPlayers)
 {
 	//슬롯 상태 업데이트
@@ -62,6 +64,38 @@ void UPortalMainWidget::UpdatePlayerCount(int32 CurrentCount, int32 MaxPlayers)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
 		if (Txt_Countdown)
+		{
+			Txt_Countdown->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}*/
+
+void UPortalMainWidget::UpdatePortalState(int32 CurrentCount, int32 MaxPlayers, int32 RemainingTime)
+{
+	//슬롯 개수 안맞으면 다시 생성
+	if (SlotWidgets.Num() != MaxPlayers)
+	{
+		InitializePortal(MaxPlayers);
+	}
+
+	//활성화 상태 갱신
+	for (int32 i = 0; i < SlotWidgets.Num(); i++)
+	{
+		if (SlotWidgets[i])
+		{
+			SlotWidgets[i]->SetActive(i < CurrentCount);
+		}
+	}
+
+	//시간 표시
+	if (Txt_Countdown)
+	{
+		if (RemainingTime >= 0 && CurrentCount >= MaxPlayers)
+		{
+			Txt_Countdown->SetVisibility(ESlateVisibility::Visible);
+			Txt_Countdown->SetText(FText::AsNumber(RemainingTime));
+		}
+		else
 		{
 			Txt_Countdown->SetVisibility(ESlateVisibility::Hidden);
 		}

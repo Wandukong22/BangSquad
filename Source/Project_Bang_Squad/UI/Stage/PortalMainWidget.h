@@ -19,10 +19,13 @@ public:
 	//최대 인원수만큼 슬롯 갱신
 	UFUNCTION()
 	void InitializePortal(int32 MaxPlayers);
-
+	
 	//현재 인원수에 따라 슬롯 색 변경 및 타이머 시작 체크
+	//UFUNCTION()
+	//void UpdatePlayerCount(int32 CurrentCount, int32 MaxPlayers);
+
 	UFUNCTION()
-	void UpdatePlayerCount(int32 CurrentCount, int32 MaxPlayers);
+	void UpdatePortalState(int32 CurrentCount, int32 MaxPlayers, int32 RemainingTime);
 
 protected:
 	UPROPERTY(meta = (BindWidget))
