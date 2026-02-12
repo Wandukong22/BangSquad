@@ -7,9 +7,17 @@
 #include "Project_Bang_Squad/Core/BSGameTypes.h"
 #include "MapPortal.generated.h"
 
+class UBoxComponent;
 class UWidgetComponent;
 class UTextRenderComponent;
 class USphereComponent;
+
+UENUM(BlueprintType)
+enum class EPortalShape : uint8
+{
+	Sphere,
+	Box
+};
 
 UCLASS()
 class PROJECT_BANG_SQUAD_API AMapPortal : public AActor
@@ -40,6 +48,21 @@ protected:
 	//Mesh
 	UPROPERTY(VisibleAnywhere, Category = "BS|Components")
 	TObjectPtr<UStaticMeshComponent> PortalMesh;
+
+	// 루트 교체용 (쉐이프를 자식으로 두기 위함)
+	UPROPERTY(VisibleAnywhere, Category = "BS|Components")
+	TObjectPtr<USceneComponent> DefaultSceneRoot;
+
+	// 박스 형태 추가
+	UPROPERTY(EditAnywhere, Category = "BS|Components")
+	TObjectPtr<UBoxComponent> TriggerBox;
+
+	// 형태 선택 변수
+	UPROPERTY(EditAnywhere, Category = "BS|Map")
+	EPortalShape PortalShape = EPortalShape::Sphere;
+
+	// 에디터에서 값 변경 시 바로 반영
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 	//카운트다운 표시용 텍스트
 	//UPROPERTY(VisibleAnywhere, Category = "BS|Components")
