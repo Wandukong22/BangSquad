@@ -3,6 +3,7 @@
 
 #include "MapPortal.h"
 
+#include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Components/WidgetComponent.h"
@@ -17,11 +18,19 @@ AMapPortal::AMapPortal()
 	bReplicates = true;
 	bAlwaysRelevant = true;
 
+	DefaultSceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultSceneRoot"));
+	RootComponent = DefaultSceneRoot;
+	
 	TriggerSphere = CreateDefaultSubobject<USphereComponent>(TEXT("TriggerSphere"));
-	RootComponent = TriggerSphere;
+	TriggerSphere->SetupAttachment(RootComponent);
 	TriggerSphere->SetSphereRadius(300.f);
 	TriggerSphere->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 
+	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
+	TriggerBox->SetupAttachment(RootComponent);
+	TriggerBox->SetBoxExtent(FVector(300.f, 300.f, 100.f));
+	TriggerBox->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+	
 	PortalMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PortalMesh"));
 	PortalMesh->SetupAttachment(RootComponent);
 	PortalMesh->SetCollisionProfileName(TEXT("NoCollision"));
@@ -55,7 +64,9 @@ void AMapPortal::BeginPlay()
 
 		TriggerSphere->OnComponentBeginOverlap.AddDynamic(this, &AMapPortal::OnOverlapBegin);
 		TriggerSphere->OnComponentEndOverlap.AddDynamic(this, &AMapPortal::OnOverlapEnd);
-
+		TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &AMapPortal::OnOverlapBegin);
+		TriggerBox->OnComponentEndOverlap.AddDynamic(this, &AMapPortal::OnOverlapEnd);
+		
 		FTimerHandle InitTimer;
 		GetWorld()->GetTimerManager().SetTimer(InitTimer, [this]()
 		{
@@ -91,6 +102,24 @@ void AMapPortal::BeginPlay()
 		//}
 	}
 	GetWorld()->GetTimerManager().SetTimer(CheckDistanceTimerHandle, this, &AMapPortal::CheckWidgetDistance, 0.1f, true);
+}
+
+void AMapPortal::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+
+	if (PortalShape == EPortalShape::Sphere)
+	{
+		TriggerSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		TriggerBox->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 박스 끄기
+		TriggerBox->SetHiddenInGame(true); // 디버그 선 숨기기
+	}
+	else
+	{
+		TriggerBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		TriggerSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 원 끄기
+		TriggerSphere->SetHiddenInGame(true);
+	}
 }
 
 void AMapPortal::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
