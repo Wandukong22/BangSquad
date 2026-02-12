@@ -5,10 +5,12 @@
 
 #include "Components/SphereComponent.h"
 #include "Components/TextRenderComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Evaluation/IMovieSceneEvaluationHook.h"
 #include "GameFramework/GameStateBase.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
+#include "Project_Bang_Squad/UI/Stage/PortalMainWidget.h"
 
 AMapPortal::AMapPortal()
 {
@@ -24,11 +26,11 @@ AMapPortal::AMapPortal()
 	PortalMesh->SetupAttachment(RootComponent);
 	PortalMesh->SetCollisionProfileName(TEXT("NoCollision"));
 
-	CountdownText = CreateDefaultSubobject<UTextRenderComponent>(TEXT("CountdownText"));
-	CountdownText->SetupAttachment(RootComponent);
-	CountdownText->SetText(FText::GetEmpty());
-	CountdownText->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
-	CountdownText->SetRelativeLocation(FVector(0.f, 0.f, 150.f));
+	PortalWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("PortalWidgetComp"));
+	PortalWidgetComp->SetupAttachment(RootComponent);
+	PortalWidgetComp->SetRelativeLocation(FVector(0.f, 0.f, 200.f)); // 포탈보다 약간 위에
+	PortalWidgetComp->SetWidgetSpace(EWidgetSpace::Screen); // Screen으로 하면 항상 정면을 바라봄 (World로 하면 3D 물체처럼 보임)
+	PortalWidgetComp->SetDrawSize(FVector2D(500.f, 200.f)); // 위젯 크기 적절히 조절
 }
 
 void AMapPortal::ActivatePortal()
@@ -50,9 +52,23 @@ void AMapPortal::BeginPlay()
 			Destroy();
 			return;
 		}
-		
+
 		TriggerSphere->OnComponentBeginOverlap.AddDynamic(this, &AMapPortal::OnOverlapBegin);
 		TriggerSphere->OnComponentEndOverlap.AddDynamic(this, &AMapPortal::OnOverlapEnd);
+
+		FTimerHandle InitTimer;
+		GetWorld()->GetTimerManager().SetTimer(InitTimer, [this]()
+		{
+			if (IsValid(this))
+			{
+				int32 MaxPlayers = 0;
+				if (GetWorld()->GetGameState())
+				{
+					MaxPlayers = GetWorld()->GetGameState()->PlayerArray.Num();
+				}
+				MulticastUpdateUI(0, MaxPlayers, -1);
+			}
+		}, 0.5f, false);
 	}
 
 	if (!bIsStartActive)
@@ -61,10 +77,25 @@ void AMapPortal::BeginPlay()
 		SetActorEnableCollision(false);
 		if (TriggerSphere) TriggerSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
+
+	if (PortalWidgetComp)
+	{
+		PortalWidgetComp->InitWidget();
+		PortalWidgetComp->SetCullDistance(MaxDrawDistance);
+
+		//UPortalMainWidget* PortalUI = Cast<UPortalMainWidget>(PortalWidgetComp->GetUserWidgetObject());
+		//if (PortalUI && GetWorld()->GetGameState())
+		//{
+		//	PortalUI->InitializePortal(GetWorld()->GetGameState()->PlayerArray.Num());
+		//	PortalUI->UpdatePlayerCount(0, GetWorld()->GetGameState()->PlayerArray.Num());
+		//}
+	}
+	GetWorld()->GetTimerManager().SetTimer(CheckDistanceTimerHandle, this, &AMapPortal::CheckWidgetDistance, 0.1f, true);
 }
 
 void AMapPortal::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+                                const FHitResult& SweepResult)
 {
 	if (!HasAuthority()) return;
 
@@ -73,9 +104,19 @@ void AMapPortal::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	{
 		OverlappingPlayers.Add(OtherActor);
 
-		//GameState를 통해 플레이어 수 확인
+		int32 MaxPlayers = 0;
 		AGameStateBase* GS = GetWorld()->GetGameState();
-		if (GS && OverlappingPlayers.Num() == GS->PlayerArray.Num())
+		if (GS)
+		{
+			MaxPlayers = GS->PlayerArray.Num();
+		}
+
+		MulticastUpdateUI(OverlappingPlayers.Num(), MaxPlayers, RemainingTime);
+		//MulticastUpdateUI(OverlappingPlayers.Num(), RemainingTime);
+
+		//GameState를 통해 플레이어 수 확인
+		//AGameStateBase* GS = GetWorld()->GetGameState();
+		if (GS && OverlappingPlayers.Num() >= MaxPlayers && MaxPlayers > 0)
 		{
 			StartCountdown();
 		}
@@ -83,13 +124,59 @@ void AMapPortal::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Oth
 }
 
 void AMapPortal::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	if (!HasAuthority()) return;
 	if (OtherActor && OverlappingPlayers.Contains(OtherActor))
 	{
 		OverlappingPlayers.Remove(OtherActor);
 		CancelCountdown();
+
+		int32 MaxPlayers = 0;
+		if (GetWorld()->GetGameState())
+		{
+			MaxPlayers = GetWorld()->GetGameState()->PlayerArray.Num();
+		}
+		MulticastUpdateUI(OverlappingPlayers.Num(), MaxPlayers, -1);
+	}
+}
+
+void AMapPortal::CheckWidgetDistance()
+{
+	if (!PortalWidgetComp || !PortalWidgetComp->GetUserWidgetObject()) return;
+
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (!PC || !PC->PlayerCameraManager) return;
+
+	FVector CamLoc = PC->PlayerCameraManager->GetCameraLocation();
+	float Distance = FVector::Dist(GetActorLocation(), CamLoc);
+
+	// Fade 로직 (방법 2 활용)
+	float FadeStart = MaxDrawDistance * 0.8f;
+	float FadeEnd = MaxDrawDistance;
+
+	if (Distance > FadeEnd)
+	{
+		// 완전히 멀어지면 렌더링 자체를 꺼버림 (성능 절약)
+		if (PortalWidgetComp->IsVisible()) 
+			PortalWidgetComp->SetVisibility(false);
+	}
+	else
+	{
+		if (!PortalWidgetComp->IsVisible()) 
+			PortalWidgetComp->SetVisibility(true);
+
+		float Alpha = 1.0f;
+		if (Distance > FadeStart)
+		{
+			Alpha = 1.0f - ((Distance - FadeStart) / (FadeEnd - FadeStart));
+		}
+
+		// Cast 비용을 줄이기 위해 멤버변수로 캐싱해두는 것을 추천
+		if (UUserWidget* Widget = PortalWidgetComp->GetUserWidgetObject())
+		{
+			Widget->SetRenderOpacity(Alpha);
+		}
 	}
 }
 
@@ -99,9 +186,8 @@ void AMapPortal::StartCountdown()
 
 	//5초 후 이동
 	GetWorldTimerManager().SetTimer(TravelTimerHandle, this, &AMapPortal::ProcessLevelTransition, 5.f, false);
-
-	//1초마다 텍스트 갱신
 	GetWorldTimerManager().SetTimer(CountdownUpdateTimer, this, &AMapPortal::UpdateCountdownText, 1.f, true);
+
 	UpdateCountdownText();
 }
 
@@ -111,9 +197,9 @@ void AMapPortal::CancelCountdown()
 	{
 		GetWorldTimerManager().ClearTimer(TravelTimerHandle);
 		GetWorldTimerManager().ClearTimer(CountdownUpdateTimer);
-
+		RemainingTime = -1;
 		//텍스트 초기화
-		MulticastUpdateText(TEXT("Canceled"));
+		//MulticastUpdateUI(OverlappingPlayers.Num(), -1);
 	}
 }
 
@@ -129,15 +215,27 @@ void AMapPortal::ProcessLevelTransition()
 
 void AMapPortal::UpdateCountdownText()
 {
-	if (RemainingTime > 0)
+	if (RemainingTime >= 0)
 	{
-		MulticastUpdateText(FString::FromInt(RemainingTime));
+		int32 MaxPlayers = 0;
+		if (GetWorld()->GetGameState())
+		{
+			MaxPlayers = GetWorld()->GetGameState()->PlayerArray.Num();
+		}
+		
+		MulticastUpdateUI(OverlappingPlayers.Num(), MaxPlayers, RemainingTime);
 		RemainingTime--;
 	}
 }
 
-void AMapPortal::MulticastUpdateText_Implementation(const FString& NewText)
+void AMapPortal::MulticastUpdateUI_Implementation(int32 CurrentPlayerCount, int32 MaxPlayers, int32 CurrentTime)
 {
-	if (CountdownText)
-		CountdownText->SetText(FText::FromString(NewText));
+	if (!PortalWidgetComp) return;
+
+	UPortalMainWidget* PortalUI = Cast<UPortalMainWidget>(PortalWidgetComp->GetUserWidgetObject());
+	if (PortalUI)
+	{
+		//PortalUI->UpdatePlayerCount(CurrentPlayerCount, GetWorld()->GetGameState()->PlayerArray.Num());
+		PortalUI->UpdatePortalState(CurrentPlayerCount, MaxPlayers, CurrentTime);
+	}
 }
