@@ -37,6 +37,7 @@ public:
 	void UpdateJobAvailability(const TArray<EJobType>& TakenJobs);
 private:
 	EJobType PendingJob = EJobType::None;
+	EJobType ConfirmJob = EJobType::None;
 	
 	UFUNCTION()
 	void OnJobButtonClicked(EJobType SelectedJob);

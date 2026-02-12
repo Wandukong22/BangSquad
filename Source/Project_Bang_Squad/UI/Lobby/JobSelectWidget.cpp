@@ -46,11 +46,21 @@ void UJobSelectWidget::NativeConstruct()
 
 void UJobSelectWidget::UpdateJobAvailability(const TArray<EJobType>& TakenJobs)
 {
+	EJobType MyConfirmedJob = EJobType::None;
+	if (ALobbyPlayerState* PS = GetOwningPlayer()->GetPlayerState<ALobbyPlayerState>())
+	{
+		if (PS->GetIsConfirmedJob())
+		{
+			MyConfirmedJob = PS->GetJob();
+		}
+	}
 	auto UpdateButtonState = [&](UJobButton* Btn, EJobType JobType)
 	{
 		if (!Btn) return;
 
 		bool bIsTaken = TakenJobs.Contains(JobType);
+		bool bIsMyJob = (MyConfirmedJob == JobType);
+		
 		Btn->SetIsEnabled(!bIsTaken);
 
 		if (bIsTaken)
@@ -59,7 +69,7 @@ void UJobSelectWidget::UpdateJobAvailability(const TArray<EJobType>& TakenJobs)
 			{
 				PendingJob = EJobType::None;
 			}
-			Btn->SetSelectedState(false);
+			Btn->SetSelectedState(bIsMyJob);
 		}
 		else
 		{
@@ -95,6 +105,7 @@ void UJobSelectWidget::OnConfirmClicked()
 	ALobbyPlayerController* PC = Cast<ALobbyPlayerController>(GetOwningPlayer());
 	if (PC)
 	{
+		ConfirmJob = PendingJob;
 		PC->RequestConfirmedJob(PendingJob);
 	}
 }
