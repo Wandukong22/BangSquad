@@ -39,7 +39,7 @@ void AMiniGameGoal::Interact_Implementation(APawn* InstigatorPawn)
 	AMiniGameMode* GM = Cast<AMiniGameMode>(GetWorld()->GetAuthGameMode());
 	if (GM)
 	{
-		GM->OnPlayerReachedGoal(InstigatorPawn->GetController());
+		GM->OnPlayerReachedGoal(InstigatorPawn->GetController(), StageIndex);
 	}
 }
 

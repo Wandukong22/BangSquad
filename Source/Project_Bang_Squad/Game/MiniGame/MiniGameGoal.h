@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Project_Bang_Squad/Core/BSGameTypes.h"
 #include "Project_Bang_Squad/Game/InteractionInterface.h"
 #include "MiniGameGoal.generated.h"
 
@@ -32,6 +33,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, Category = "BS|Goal")
+	EStageIndex StageIndex = EStageIndex::Stage1;
 private:
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
