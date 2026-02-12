@@ -19,7 +19,7 @@ public:
 	AMiniGameMode();
 
 	//도착 처리
-	void OnPlayerReachedGoal(AController* ReachedPlayer);
+	void OnPlayerReachedGoal(AController* ReachedPlayer, EStageIndex StageIndex);
 	
 
 protected:
@@ -31,5 +31,5 @@ protected:
 	TArray<AController*> FinishedPlayers;
 
 	//모두 도착했는지 체크
-	void CheckAllPlayersFinished();
+	void CheckAllPlayersFinished(EStageIndex StageIndex);
 };

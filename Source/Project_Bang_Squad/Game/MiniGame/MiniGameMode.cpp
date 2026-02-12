@@ -23,7 +23,7 @@ AMiniGameMode::AMiniGameMode()
 	BaseRespawnTime = 5.f;
 }
 
-void AMiniGameMode::OnPlayerReachedGoal(AController* ReachedPlayer)
+void AMiniGameMode::OnPlayerReachedGoal(AController* ReachedPlayer, EStageIndex StageIndex)
 {
 	if (FinishedPlayers.Contains(ReachedPlayer)) return;
 
@@ -41,7 +41,7 @@ void AMiniGameMode::OnPlayerReachedGoal(AController* ReachedPlayer)
 	//보상 로직
 
 	//미니게임 종료
-	CheckAllPlayersFinished();
+	CheckAllPlayersFinished(StageIndex);
 }
 
 FTransform AMiniGameMode::GetRespawnTransform(AController* Controller)
@@ -72,7 +72,7 @@ FTransform AMiniGameMode::GetRespawnTransform(AController* Controller)
 	return Super::GetRespawnTransform(Controller);
 }
 
-void AMiniGameMode::CheckAllPlayersFinished()
+void AMiniGameMode::CheckAllPlayersFinished(EStageIndex StageIndex)
 {
 	int32 TotalPlayers = GetNumPlayers();
 	if (TotalPlayers <= 0) return;
@@ -97,7 +97,7 @@ void AMiniGameMode::CheckAllPlayersFinished()
 		// =================================================================
 		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 		{
-			GI->MoveToStage(EStageIndex::Stage1, EStageSection::Main);
+			GI->MoveToStage(StageIndex, EStageSection::Main);
 		}
 	}
 }
