@@ -20,6 +20,37 @@ void ABS_Door::ExecuteAction(EDoorAction Action) {
 	}
 }
 
+FName ABS_Door::GetSaveID() const
+{
+	return PuzzleID;
+}
+
+void ABS_Door::SaveActorData(FActorSaveData& OutData)
+{
+	OutData.BoolData.Add("bMasterOpen", bMasterOpen);
+}
+
+void ABS_Door::LoadActorData(const FActorSaveData& InData)
+{
+	if (InData.BoolData.Contains("bMasterOpen"))
+	{
+		bMasterOpen = InData.BoolData["bMasterOpen"];
+		/*if (bMasterOpen)
+		{
+			CurrentAlpha = 1.f;
+			LeftDoorMesh->SetRelativeRotation(FRotator(0.f, LeftTargetAngle, 0.f));
+			RightDoorMesh->SetRelativeRotation(FRotator(0.f, -180.f + RightTargetAngle, 0.f));
+		}
+		else
+		{
+			CurrentAlpha = 0.f;
+			LeftDoorMesh->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));
+			RightDoorMesh->SetRelativeRotation(FRotator(0.f, -180.f, 0.f));
+		}*/
+		CurrentAlpha = bMasterOpen ? 1.f : 0.f;
+	}
+}
+
 void ABS_Door::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 	// 마스터가 열렸거나 일시적으로 열렸을 때 작동

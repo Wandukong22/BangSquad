@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Project_Bang_Squad/Core/BSGameInstance.h"
+#include "Project_Bang_Squad/Game/Interface/SaveInterface.h"
 #include "BS_Door.generated.h"
 
 UENUM(BlueprintType)
@@ -12,14 +14,23 @@ enum class EDoorAction : uint8
 };
 
 UCLASS()
-class PROJECT_BANG_SQUAD_API ABS_Door : public AActor
+class PROJECT_BANG_SQUAD_API ABS_Door : public AActor, public ISaveInterface
 {
 	GENERATED_BODY()
 public:
 	ABS_Door();
 	void ExecuteAction(EDoorAction Action); // 외부에서 명령을 내리는 창구
 
+	UPROPERTY(EditAnywhere, Category = "BS|Save")
+	FName PuzzleID;
+
+	//인터페이스 구현
+	virtual FName GetSaveID() const override;
+	virtual void SaveActorData(FActorSaveData& OutData) override;
+	virtual void LoadActorData(const FActorSaveData& InData) override;
+	
 protected:
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -35,3 +46,17 @@ private:
 	UPROPERTY(Replicated) bool bTempOpen = false;   // 버튼 등으로 일시적 개방
 	float CurrentAlpha = 0.f;
 };
+
+inline void ABS_Door::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+	{
+		FActorSaveData* SavedData = GI->GetDataFromInstance(PuzzleID);
+		if (SavedData)
+		{
+			LoadActorData(*SavedData);
+		}
+	}
+}

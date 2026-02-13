@@ -9,6 +9,7 @@
 #include "Components/WidgetComponent.h"
 #include "Evaluation/IMovieSceneEvaluationHook.h"
 #include "GameFramework/GameStateBase.h"
+#include "Kismet/GameplayStatics.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "Project_Bang_Squad/UI/Stage/PortalMainWidget.h"
@@ -47,6 +48,29 @@ void AMapPortal::ActivatePortal()
 	SetActorHiddenInGame(false);
 	SetActorEnableCollision(true);
 	if (TriggerSphere) TriggerSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void AMapPortal::SaveAllPuzzles()
+{
+	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
+	if (!GI) return;
+
+	// 맵에 있는 ISaveInterface를 가진 모든 액터 찾기
+	TArray<AActor*> PuzzleActors;
+	UGameplayStatics::GetAllActorsWithInterface(GetWorld(), USaveInterface::StaticClass(), PuzzleActors);
+
+	for (AActor* Actor : PuzzleActors)
+	{
+		ISaveInterface* SaveInterface = Cast<ISaveInterface>(Actor);
+		if (SaveInterface)
+		{
+			FActorSaveData TempData;
+			SaveInterface->SaveActorData(TempData); // 가방에 데이터 채우라고 명령
+            
+			// 다 채워진 가방을 GameInstance에 전달
+			GI->SaveDataToInstance(SaveInterface->GetSaveID(), TempData); 
+		}
+	}
 }
 
 void AMapPortal::BeginPlay()
@@ -237,6 +261,7 @@ void AMapPortal::ProcessLevelTransition()
 	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
 	if (GI)
 	{
+		SaveAllPuzzles();
 		GI->MarkStageAsVisited(TargetStageIndex, TargetSection);
 		GI->MoveToStage(TargetStageIndex, TargetSection);
 	}

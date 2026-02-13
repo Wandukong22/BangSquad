@@ -30,6 +30,8 @@ public:
 	UFUNCTION()
 	void ActivatePortal();
 
+	void SaveAllPuzzles();
+
 protected:
 	virtual void BeginPlay() override;
 
