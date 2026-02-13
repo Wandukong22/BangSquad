@@ -6,6 +6,7 @@
 
 ABSGameMode::ABSGameMode()
 {
+	bUseSeamlessTravel = true;
 }
 
 // =========================================================================

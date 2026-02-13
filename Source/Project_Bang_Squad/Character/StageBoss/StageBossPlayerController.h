@@ -6,12 +6,13 @@
 #include "Project_Bang_Squad/Game/Stage/StagePlayerController.h"
 #include "StageBossPlayerController.generated.h"
 
+class UQTEWidget;
 class UInputMappingContext;
 class UInputAction;
 
 /**
- * º¸½ºÀü Àü¿ë ÄÁÆ®·Ñ·¯
- * ¿ªÇÒ: BaseCharacter ¼öÁ¤ ¾øÀÌ, µ¶ÀÚÀûÀ¸·Î QTE ÀÔ·ÂÀ» ¹Þ¾Æ Ã³¸®ÇÔ.
+ * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½
+ * ï¿½ï¿½ï¿½ï¿½: BaseCharacter ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ QTE ï¿½Ô·ï¿½ï¿½ï¿½ ï¿½Þ¾ï¿½ Ã³ï¿½ï¿½ï¿½ï¿½.
  */
 UCLASS()
 class PROJECT_BANG_SQUAD_API AStageBossPlayerController : public AStagePlayerController
@@ -23,19 +24,23 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void SetupInputComponent() override;
 
-	// [ÀÔ·Â ¼³Á¤] ¿¡µðÅÍ¿¡¼­ ÇÒ´ç ÇÊ¿ä
+	// [ï¿½Ô·ï¿½ ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ï¿½Í¿ï¿½ï¿½ï¿½ ï¿½Ò´ï¿½ ï¿½Ê¿ï¿½
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	TObjectPtr<UInputMappingContext> QTE_IMC; // QTE Àü¿ë Å° ¸ÅÇÎ (GÅ°)
+	TObjectPtr<UInputMappingContext> QTE_IMC; // QTE ï¿½ï¿½ï¿½ï¿½ Å° ï¿½ï¿½ï¿½ï¿½ (GÅ°)
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	TObjectPtr<UInputAction> QTE_Action;      // QTE ÀÔ·Â ¾×¼Ç
+	TObjectPtr<UInputAction> QTE_Action;      // QTE ï¿½Ô·ï¿½ ï¿½×¼ï¿½
 
-	// [·ÎÄÃ] Å° ÀÔ·Â ½Ã È£Ãâ
+	// [ï¿½ï¿½ï¿½ï¿½] Å° ï¿½Ô·ï¿½ ï¿½ï¿½ È£ï¿½ï¿½
 	void Input_QTEInteract();
 
-	// [¼­¹ö] ¼­¹ö·Î ÀÔ·Â ½ÅÈ£ Àü¼Û (RPC)
+	// [ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·ï¿½ ï¿½ï¿½È£ ï¿½ï¿½ï¿½ï¿½ (RPC)
 	UFUNCTION(Server, Reliable)
 	void Server_SubmitQTEInput();
+
+	UPROPERTY()
+	TObjectPtr<UQTEWidget> QTEWidgetInstance;
 };

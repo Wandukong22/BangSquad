@@ -16,8 +16,6 @@
 
 AStageGameMode::AStageGameMode()
 {
-	bUseSeamlessTravel = true;
-	
 	PlayerStateClass = AStagePlayerState::StaticClass();
 	PlayerControllerClass = AStagePlayerController::StaticClass();
 }

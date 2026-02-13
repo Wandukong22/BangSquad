@@ -117,6 +117,6 @@ void UQTEWidget::HandleQTEStateChanged(bool bIsActive)
 	}
 	else
 	{
-		HideWidget(); // 끄기
+		//HideWidget(); // 끄기
 	}
 }

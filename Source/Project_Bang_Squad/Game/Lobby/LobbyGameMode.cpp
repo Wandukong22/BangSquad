@@ -14,8 +14,6 @@ ALobbyGameMode::ALobbyGameMode()
 	PlayerStateClass = ALobbyPlayerState::StaticClass();
 	PlayerControllerClass = ALobbyPlayerController::StaticClass();
 	GameStateClass = ALobbyGameState::StaticClass();
-
-	bUseSeamlessTravel = true;
 }
 
 bool ALobbyGameMode::TryConfirmJob(EJobType Job, class ALobbyPlayerState* RequestingPS)
