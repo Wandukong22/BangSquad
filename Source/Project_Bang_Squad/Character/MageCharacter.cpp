@@ -987,6 +987,20 @@ void AMageCharacter::Multicast_PlaySkill1VFX_Implementation()
 	}
 }
 
+float AMageCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	// 1. 부모 클래스 로직 실행 (체력 감소 등)
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	// 2. 직업 능력(기둥/보트) 사용 중 피격 시 취소 로직
+	if (ActualDamage > 0.0f && (bIsPillarMode || bIsBoatMode))
+	{
+		EndJobAbility();
+	}
+
+	return ActualDamage;
+}
+
 FVector AMageCharacter::GetCrosshairTargetLocation()
 {
 	// 1. 카메라 컴포넌트의 실제 위치와 보는 방향을 '직접' 가져옵니다.
