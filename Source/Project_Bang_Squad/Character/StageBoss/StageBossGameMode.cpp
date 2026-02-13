@@ -114,6 +114,11 @@ void AStageBossGameMode::EndSpearQTE(bool bSuccess)
 			CurrentBoss->HandleQTEResult(true);
 		}
 
+		if (AStageBossGameState* GS = GetWorld()->GetGameState<AStageBossGameState>())
+		{
+			GS->SetQTEActive(false);
+		}
+
 		// 2. Ŭ���� UI ȣ�� (BP���� ����)
 		ShowGameClearUI(FinalStats);
 	}

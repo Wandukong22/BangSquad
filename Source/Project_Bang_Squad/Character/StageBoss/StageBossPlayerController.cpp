@@ -5,6 +5,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "Project_Bang_Squad/UI/Stage/Boss/QTEWidget.h"
 
 AStageBossPlayerController::AStageBossPlayerController()
 {
@@ -24,6 +25,17 @@ void AStageBossPlayerController::BeginPlay()
 			// �̷��� �ϸ� ĳ������ �ٸ� Ű�� ���ĵ� QTE�� ���� ������
 			Subsystem->AddMappingContext(QTE_IMC, 1);
 		}
+	}
+}
+
+void AStageBossPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (QTEWidgetInstance && QTEWidgetInstance->IsInViewport())
+	{
+		QTEWidgetInstance->RemoveFromParent();
+		QTEWidgetInstance = nullptr;
 	}
 }
 
