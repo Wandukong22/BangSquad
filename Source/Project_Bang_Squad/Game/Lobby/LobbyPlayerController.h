@@ -31,11 +31,7 @@ public:
 	//직업 최종 확정
 	UFUNCTION(BlueprintCallable)
 	void RequestConfirmedJob(EJobType FinalJob);
-
-	//닉네임 변경 요청
 	
-	// virtual void ServerSetNickName_Implementation(const FString& NewName) override;
-
 	//UI 갱신 요청
 	void RefreshLobbyUI();
 protected:
