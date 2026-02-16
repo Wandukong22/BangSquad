@@ -8,15 +8,16 @@
 UENUM(BlueprintType)
 enum class EDoorAction : uint8
 {
-	Open      UMETA(DisplayName = "Permanent Open"), // 완전 열림
-	Close     UMETA(DisplayName = "Force Close"),    // 강제 닫힘
-	TempOpen  UMETA(DisplayName = "Temporary Open")  // 일시적 열림
+	Open UMETA(DisplayName = "Permanent Open"), // 완전 열림
+	Close UMETA(DisplayName = "Force Close"), // 강제 닫힘
+	TempOpen UMETA(DisplayName = "Temporary Open") // 일시적 열림
 };
 
 UCLASS()
 class PROJECT_BANG_SQUAD_API ABS_Door : public AActor, public ISaveInterface
 {
 	GENERATED_BODY()
+
 public:
 	ABS_Door();
 	void ExecuteAction(EDoorAction Action); // 외부에서 명령을 내리는 창구
@@ -25,38 +26,32 @@ public:
 	FName PuzzleID;
 
 	//인터페이스 구현
-	virtual FName GetSaveID() const override;
+	virtual FName GetSaveID() const override { return PuzzleID; }
 	virtual void SaveActorData(FActorSaveData& OutData) override;
 	virtual void LoadActorData(const FActorSaveData& InData) override;
-	
+
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* LeftDoorMesh;
-	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* RightDoorMesh;
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* LeftDoorMesh;
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* RightDoorMesh;
 
-	UPROPERTY(EditAnywhere, Category = "Settings") float LeftTargetAngle = 110.f;
-	UPROPERTY(EditAnywhere, Category = "Settings") float RightTargetAngle = -110.f;
-	UPROPERTY(EditAnywhere, Category = "Settings") float OpenDuration = 1.5f;
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float LeftTargetAngle = 110.f;
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float RightTargetAngle = -110.f;
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float OpenDuration = 1.5f;
 
 private:
-	UPROPERTY(Replicated) bool bMasterOpen = false; // 스위치 등으로 영구 개방
-	UPROPERTY(Replicated) bool bTempOpen = false;   // 버튼 등으로 일시적 개방
+	UPROPERTY(Replicated)
+	bool bMasterOpen = false; // 스위치 등으로 영구 개방
+	UPROPERTY(Replicated)
+	bool bTempOpen = false; // 버튼 등으로 일시적 개방
 	float CurrentAlpha = 0.f;
 };
-
-inline void ABS_Door::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
-	{
-		FActorSaveData* SavedData = GI->GetDataFromInstance(PuzzleID);
-		if (SavedData)
-		{
-			LoadActorData(*SavedData);
-		}
-	}
-}
