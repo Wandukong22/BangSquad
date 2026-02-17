@@ -7,6 +7,7 @@
 #include "Project_Bang_Squad/Core/SessionInterface.h"
 #include "Engine/GameInstance.h"
 #include "Interfaces/OnlineSessionInterface.h"
+#include "Project_Bang_Squad/Game/Interface/SaveInterface.h"
 #include "BSGameInstance.generated.h"
 
 class UBSMapData;
@@ -198,13 +199,13 @@ public:
 	// Key 타입을 FString으로 변경
 	UPROPERTY()
 	TMap<FString, int32> SavedPlayerCoins;
-	
+
 	// 코인 저장 (레벨 이동 전 호출)
 	// [수정] 인자 타입 변경
 	void SaveCoinToInstance(FString PlayerKey, int32 Amount)
 	{
 		SavedPlayerCoins.FindOrAdd(PlayerKey) = Amount;
-        
+
 		// 로그로 확인
 		UE_LOG(LogTemp, Warning, TEXT("💾 [GameInstance] Saved for %s: %d G"), *PlayerKey, Amount);
 	}
@@ -221,5 +222,15 @@ public:
 		UE_LOG(LogTemp, Warning, TEXT("📂 [GameInstance] No data for %s (Start 0 G)"), *PlayerKey);
 		return 0;
 	}
-};
 
+#pragma region Save Actor
+
+public:
+	UPROPERTY()
+	TMap<FName, FActorSaveData> StageSaveData;
+
+	void SaveDataToInstance(FName ID, const FActorSaveData& Data) { StageSaveData.Add(ID, Data); }
+	FActorSaveData* GetDataFromInstance(FName ID) { return StageSaveData.Find(ID); }
+
+#pragma endregion
+};

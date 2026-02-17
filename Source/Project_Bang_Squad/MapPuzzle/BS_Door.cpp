@@ -1,7 +1,8 @@
 ﻿#include "BS_Door.h"
 #include "Net/UnrealNetwork.h"
 
-ABS_Door::ABS_Door() {
+ABS_Door::ABS_Door()
+{
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
@@ -11,16 +12,64 @@ ABS_Door::ABS_Door() {
 	RightDoorMesh->SetupAttachment(RootComponent);
 }
 
-void ABS_Door::ExecuteAction(EDoorAction Action) {
+void ABS_Door::ExecuteAction(EDoorAction Action)
+{
 	if (!HasAuthority()) return;
-	switch (Action) {
-	case EDoorAction::Open: bMasterOpen = true; break;
-	case EDoorAction::Close: bMasterOpen = false; bTempOpen = false; break;
-	case EDoorAction::TempOpen: bTempOpen = true; break;
+	switch (Action)
+	{
+	case EDoorAction::Open: bMasterOpen = true;
+		break;
+	case EDoorAction::Close: bMasterOpen = false;
+		bTempOpen = false;
+		break;
+	case EDoorAction::TempOpen: bTempOpen = true;
+		break;
 	}
 }
 
-void ABS_Door::Tick(float DeltaTime) {
+void ABS_Door::SaveActorData(FActorSaveData& OutData)
+{
+	OutData.BoolData.Add("bMasterOpen", bMasterOpen);
+}
+
+void ABS_Door::LoadActorData(const FActorSaveData& InData)
+{
+	if (InData.BoolData.Contains("bMasterOpen"))
+	{
+		bMasterOpen = InData.BoolData["bMasterOpen"];
+		CurrentAlpha = bMasterOpen ? 1.f : 0.f;
+	}
+}
+
+void ABS_Door::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+	{
+		if (FActorSaveData* SavedData = GI->GetDataFromInstance(PuzzleID))
+		{
+			LoadActorData(*SavedData);
+		}
+	}
+}
+
+void ABS_Door::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (HasAuthority())
+	{
+		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+		{
+			FActorSaveData NewData;
+			SaveActorData(NewData);
+			GI->SaveDataToInstance(PuzzleID, NewData);
+		}
+	}
+	Super::EndPlay(EndPlayReason);
+}
+
+void ABS_Door::Tick(float DeltaTime)
+{
 	Super::Tick(DeltaTime);
 	// 마스터가 열렸거나 일시적으로 열렸을 때 작동
 	float TargetAlpha = (bMasterOpen || bTempOpen) ? 1.f : 0.f;
@@ -33,7 +82,8 @@ void ABS_Door::Tick(float DeltaTime) {
 	RightDoorMesh->SetRelativeRotation(FRotator(0.f, RightNewYaw, 0.f));
 }
 
-void ABS_Door::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
+void ABS_Door::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ABS_Door, bMasterOpen);
 	DOREPLIFETIME(ABS_Door, bTempOpen);

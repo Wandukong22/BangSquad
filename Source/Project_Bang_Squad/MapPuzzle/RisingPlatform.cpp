@@ -4,6 +4,7 @@
 #include "Curves/CurveFloat.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraShakeBase.h"
+#include "Project_Bang_Squad/Core/BSGameInstance.h"
 
 ARisingPlatform::ARisingPlatform()
 {
@@ -13,6 +14,25 @@ ARisingPlatform::ARisingPlatform()
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	RootComponent = MeshComp;
 	MeshComp->SetMobility(EComponentMobility::Movable);
+}
+
+void ARisingPlatform::SaveActorData(FActorSaveData& OutData)
+{
+	OutData.BoolData.Add("bHasArrived", bHasArrived);
+}
+
+void ARisingPlatform::LoadActorData(const FActorSaveData& InData)
+{
+	if (InData.BoolData.Contains("bHasArrived"))
+	{
+		bHasArrived = InData.BoolData["bHasArrived"];
+
+		if (bHasArrived)
+		{
+			bIsRising = false;
+			SetActorLocation(EndLocation);
+		}
+	}
 }
 
 void ARisingPlatform::BeginPlay()
@@ -28,13 +48,36 @@ void ARisingPlatform::BeginPlay()
 		RiseCurve->GetTimeRange(MinTime, MaxTime);
 		MaxCurveTime = MaxTime;
 	}
+	
+	//저장된 데이터 확인
+	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+	{
+		if (FActorSaveData* SavedData = GI->GetDataFromInstance(PuzzleID))
+		{
+			LoadActorData(*SavedData);
+		}
+	}
+}
+
+void ARisingPlatform::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (HasAuthority())
+	{
+		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+		{
+			FActorSaveData NewData;
+			SaveActorData(NewData);
+			GI->SaveDataToInstance(PuzzleID, NewData);
+		}
+	}
+	Super::EndPlay(EndPlayReason);
 }
 
 void ARisingPlatform::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsRising && RiseCurve)
+	if (bIsRising && RiseCurve && !bHasArrived)
 	{
 		CurrentCurveTime += DeltaTime;
 
@@ -45,6 +88,8 @@ void ARisingPlatform::Tick(float DeltaTime)
 		if (CurrentCurveTime >= MaxCurveTime)
 		{
 			bIsRising = false;
+			bHasArrived = true;
+			
 			SetActorLocation(EndLocation);
 
 			if (ArrivalCameraShake)
@@ -69,6 +114,8 @@ void ARisingPlatform::Tick(float DeltaTime)
 
 void ARisingPlatform::Multicast_TriggerRise_Implementation()
 {
+	if (bHasArrived) return;
+	
 	bIsRising = true;
 	CurrentCurveTime = 0.0f;
 }

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Project_Bang_Squad/Game/Interface/SaveInterface.h"
 #include "RisingPlatform.generated.h"
 
 class UStaticMeshComponent;
@@ -9,15 +10,22 @@ class UCurveFloat;
 class UCameraShakeBase;
 
 UCLASS()
-class PROJECT_BANG_SQUAD_API ARisingPlatform : public AActor
+class PROJECT_BANG_SQUAD_API ARisingPlatform : public AActor, public ISaveInterface
 {
 	GENERATED_BODY()
 
 public:
 	ARisingPlatform();
+	UPROPERTY(EditAnywhere, Category = "BS|Save")
+	FName PuzzleID;
 
+	//인터페이스 구현
+	virtual FName GetSaveID() const override { return PuzzleID; }
+	virtual void SaveActorData(FActorSaveData& OutData) override;
+	virtual void LoadActorData(const FActorSaveData& InData) override;
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaTime) override;
 
 public:
@@ -45,6 +53,9 @@ public:
 	void Multicast_TriggerRise();
 
 private:
+	//이미 올라갔는지 체크
+	bool bHasArrived = false;
+	
 	bool bIsRising = false;
 	float CurrentCurveTime = 0.0f;
 	float MaxCurveTime = 0.0f;

@@ -6,6 +6,7 @@
 #include "Net/UnrealNetwork.h"
 #include "TimerManager.h"
 #include "Curves/CurveFloat.h" 
+#include "Project_Bang_Squad/Core/BSGameInstance.h"
 
 ACenterStatueManager::ACenterStatueManager()
 {
@@ -42,6 +43,52 @@ void ACenterStatueManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ACenterStatueManager, bLeftActive);
 	DOREPLIFETIME(ACenterStatueManager, bRightActive);
+	DOREPLIFETIME(ACenterStatueManager, bPuzzleCompleted);
+}
+
+void ACenterStatueManager::SaveActorData(FActorSaveData& OutData)
+{
+	OutData.BoolData.Add("bLeftActive", bLeftActive);
+	OutData.BoolData.Add("bRightActive", bRightActive);
+	OutData.BoolData.Add("bPuzzleCompleted", bPuzzleCompleted);
+
+	bool bIsDestroyed = (StatueMesh == nullptr || !StatueMesh->IsVisible());
+	OutData.BoolData.Add("bIsDestroyed", bIsDestroyed);
+}
+
+void ACenterStatueManager::LoadActorData(const FActorSaveData& InData)
+{
+	if (InData.BoolData.Contains("bLeftActive")) bLeftActive = InData.BoolData["bLeftActive"];
+	if (InData.BoolData.Contains("bRightActive")) bRightActive = InData.BoolData["bRightActive"];
+	if (InData.BoolData.Contains("bPuzzleCompleted")) bPuzzleCompleted = InData.BoolData["bPuzzleCompleted"];
+
+	if (bLeftActive && LeftFireMesh) LeftFireMesh->SetHiddenInGame(false);
+	if (bRightActive && RightFireMesh) RightFireMesh->SetHiddenInGame(false);
+	
+	if (InData.BoolData.Contains("bIsDestroyed"))
+	{
+		bool bDestroyed = InData.BoolData["bIsDestroyed"];
+		if (bDestroyed && StatueMesh)
+		{
+			StatueMesh->DestroyComponent();
+			StatueMesh = nullptr;
+		}
+	}
+}
+
+void ACenterStatueManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (HasAuthority())
+	{
+		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+		{
+			FActorSaveData NewData;
+			SaveActorData(NewData);
+			GI->SaveDataToInstance(PuzzleID, NewData);
+		}
+	}
+	
+	Super::EndPlay(EndPlayReason);
 }
 
 void ACenterStatueManager::BeginPlay()
@@ -77,9 +124,17 @@ void ACenterStatueManager::BeginPlay()
 		MaxCurveTime = MaxTime;
 	}
 
+	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+	{
+		if (FActorSaveData* SavedData = GI->GetDataFromInstance(PuzzleID))
+		{
+			LoadActorData(*SavedData);
+		}
+	}
+
 	if (HasAuthority())
 	{
-		if (BossSpawner)
+		if (!bPuzzleCompleted && BossSpawner)
 		{
 			BossSpawner->SetActorEnableCollision(false);
 			BossSpawner->OnSpawnerCleared.AddDynamic(this, &ACenterStatueManager::OnBossDefeated);
@@ -92,7 +147,9 @@ void ACenterStatueManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsFalling && FallCurve && StatueMesh)
+	if (!StatueMesh) return;
+
+	if (bIsFalling && FallCurve)
 	{
 		// 1. 시간 흐름
 		CurrentCurveTime += DeltaTime;
