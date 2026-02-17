@@ -2,6 +2,7 @@
 #include "Project_Bang_Squad/MapPuzzle/CenterStatueManager.h"
 #include "Net/UnrealNetwork.h"
 #include "Components/StaticMeshComponent.h"
+#include "Project_Bang_Squad/Core/BSGameInstance.h"
 
 AGemStatue::AGemStatue()
 {
@@ -21,9 +22,56 @@ void AGemStatue::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	DOREPLIFETIME(AGemStatue, bIsActivated);
 }
 
+void AGemStatue::SaveActorData(FActorSaveData& OutData)
+{
+	OutData.BoolData.Add("bIsActivated", bIsActivated);
+}
+
+void AGemStatue::LoadActorData(const FActorSaveData& InData)
+{
+	if (InData.BoolData.Contains("bIsActivated"))
+	{
+		bIsActivated = InData.BoolData["bIsActivated"];
+
+		if (bIsActivated)
+		{
+			if (HiddenAddonMesh)
+			{
+				HiddenAddonMesh->SetHiddenInGame(false);
+			}
+		}
+	}
+}
+
+void AGemStatue::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (HasAuthority())
+	{
+		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+		{
+			FActorSaveData NewData;
+			SaveActorData(NewData);
+			GI->SaveDataToInstance(PuzzleID, NewData);
+		}
+	}
+	
+	Super::EndPlay(EndPlayReason);
+	
+}
+
 void AGemStatue::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+	{
+		if (FActorSaveData* SavedData = GI->GetDataFromInstance(PuzzleID))
+		{
+			LoadActorData(*SavedData);
+		}
+	}
+
+	if (bIsActivated) return;
 
 	CurrentGemCount = 0;
 

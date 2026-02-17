@@ -6,6 +6,7 @@
 #include "Components/TimelineComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Curves/CurveFloat.h"
+#include "Project_Bang_Squad/Core/BSGameInstance.h"
 
 ACombatStatue::ACombatStatue()
 {
@@ -31,6 +32,50 @@ void ACombatStatue::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ACombatStatue, bIsActivated); // 변수 동기화 등록
+}
+
+void ACombatStatue::SaveActorData(FActorSaveData& OutData)
+{
+	OutData.BoolData.Add("bIsActivated", bIsActivated);
+}
+
+void ACombatStatue::LoadActorData(const FActorSaveData& InData)
+{
+	if (InData.BoolData.Contains("bIsActivated"))
+	{
+		bIsActivated = InData.BoolData["bIsActivated"];
+
+		if (bIsActivated)
+		{
+			if (DynMaterial)
+			{
+				DynMaterial->SetScalarParameterValue(MaterialParamName, 50.0f);
+			}
+			if (TriggerSphere)
+			{
+				TriggerSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			}
+			if (LinkedSpawner)
+			{
+				LinkedSpawner->SetSpawnerActive(false);
+			}
+		}
+	}
+}
+
+void ACombatStatue::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (HasAuthority())
+	{
+		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+		{
+			FActorSaveData NewData;
+			SaveActorData(NewData);
+			GI->SaveDataToInstance(PuzzleID, NewData);
+		}
+	}
+	
+	Super::EndPlay(EndPlayReason);
 }
 
 void ACombatStatue::BeginPlay()
@@ -69,6 +114,14 @@ void ACombatStatue::BeginPlay()
 		ProgressFunction.BindDynamic(this, &ACombatStatue::HandleTimelineProgress);
 		MaterialTimeline->AddInterpFloat(ChangeCurve, ProgressFunction);
 	}
+
+	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+	{
+		if (FActorSaveData* SavedData = GI->GetDataFromInstance(PuzzleID))
+		{
+			LoadActorData(*SavedData);
+		}
+	}
 }
 
 void ACombatStatue::Tick(float DeltaTime)
@@ -78,7 +131,8 @@ void ACombatStatue::Tick(float DeltaTime)
 }
 
 void ACombatStatue::OnTriggerOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+                                     const FHitResult& SweepResult)
 {
 	// 이미 켜졌으면 무시
 	if (bIsActivated) return;

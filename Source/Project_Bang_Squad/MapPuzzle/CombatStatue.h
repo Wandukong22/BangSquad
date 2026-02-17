@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/TimelineComponent.h" 
+#include "Project_Bang_Squad/Game/Interface/SaveInterface.h"
 #include "CombatStatue.generated.h"
 
 class UBoxComponent;
@@ -11,15 +12,23 @@ class ACenterStatueManager;
 class UCurveFloat;
 
 UCLASS()
-class PROJECT_BANG_SQUAD_API ACombatStatue : public AActor
+class PROJECT_BANG_SQUAD_API ACombatStatue : public AActor, public ISaveInterface
 {
 	GENERATED_BODY()
 
 public:
 	ACombatStatue();
 
+	UPROPERTY(EditAnywhere, Category = "BS|Save")
+	FName PuzzleID;
+
+	//인터페이스 함수
+	virtual FName GetSaveID() const override { return PuzzleID; }
+	virtual void SaveActorData(FActorSaveData& OutData) override;
+	virtual void LoadActorData(const FActorSaveData& InData) override;
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaTime) override;
 
 public:

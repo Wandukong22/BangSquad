@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Project_Bang_Squad/Game/Interface/SaveInterface.h"
 #include "CenterStatueManager.generated.h"
 
 class UStaticMeshComponent;
@@ -12,7 +13,7 @@ class UArrowComponent;
 class AStage3PuzzleManager;
 
 UCLASS()
-class PROJECT_BANG_SQUAD_API ACenterStatueManager : public AActor
+class PROJECT_BANG_SQUAD_API ACenterStatueManager : public AActor, public ISaveInterface
 {
 	GENERATED_BODY()
 
@@ -20,8 +21,17 @@ public:
 	ACenterStatueManager();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UPROPERTY(EditAnywhere, Category = "BS|Save")
+	FName PuzzleID;
+
+	//인터페이스 구현
+	virtual FName GetSaveID() const override { return PuzzleID; }
+	virtual void SaveActorData(FActorSaveData& OutData) override;
+	virtual void LoadActorData(const FActorSaveData& InData) override;
+	
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaTime) override;
 
 public:
@@ -77,6 +87,7 @@ private:
 	UFUNCTION() void OnRep_LeftActive();
 	UFUNCTION() void OnRep_RightActive();
 
+	UPROPERTY(Replicated)
 	bool bPuzzleCompleted = false;
 	void CheckPuzzleCompletion();
 
