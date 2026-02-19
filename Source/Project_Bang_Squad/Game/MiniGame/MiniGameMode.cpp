@@ -79,7 +79,7 @@ void AMiniGameMode::CheckAllPlayersFinished(EStageIndex StageIndex)
 
 	if (FinishedPlayers.Num() >= 1)
 	{
-		// 부모님(ABSGameMode)에게 줄 '플레이어 컨트롤러 리스트' 만들기
+		/*// 부모님(ABSGameMode)에게 줄 '플레이어 컨트롤러 리스트' 만들기
 		TArray<APlayerController*> RankedList;
 
 		// FinishedPlayers는 이미 도착순(1등, 2등..)으로 저장되어 있음
@@ -89,9 +89,43 @@ void AMiniGameMode::CheckAllPlayersFinished(EStageIndex StageIndex)
 			{
 				RankedList.Add(PC);
 			}
-			
+		}*/
+		
+		TArray<APlayerController*> Players;
+
+		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+		{
+			if (APlayerController* PC = Cast<APlayerController>(*It))
+			{
+				Players.Add(PC);
+			}
 		}
-		// 부모님 함수 호출! (1등 100코인, 2등 70코인... 자동 지급 및 저장)
+
+		Players.Sort([](const APlayerController& A, const APlayerController& B)
+		{
+			AMiniGamePlayerState* APS = A.GetPlayerState<AMiniGamePlayerState>();
+			AMiniGamePlayerState* BPS = B.GetPlayerState<AMiniGamePlayerState>();
+
+			float ScoreA = APS ? APS->GetMiniGameProgressScore() : 0.f;
+			float ScoreB = BPS ? BPS->GetMiniGameProgressScore() : 0.f;
+
+			return ScoreA > ScoreB;
+		});
+
+		TArray<APlayerController*> RankedList;
+		for (int32 i = 0; i < Players.Num(); i++)
+		{
+			APlayerController* PC = Players[i];
+			RankedList.Add(PC);
+
+			if (AMiniGamePlayerState* PS = PC->GetPlayerState<AMiniGamePlayerState>())
+			{
+				if (PS->GetMiniGameRank() == 0)
+				{
+					PS->SetMiniGameRank(i + 1);
+				}
+			}
+		}
 		GiveMiniGameReward(RankedList);
 
 		// =================================================================

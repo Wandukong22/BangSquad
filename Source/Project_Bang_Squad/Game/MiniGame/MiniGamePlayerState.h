@@ -20,14 +20,10 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void CopyProperties(APlayerState* PlayerState) override;
 
-	//순위
-	UPROPERTY(Replicated)
-	int32 MiniGameRank = 0;
-	void SetMiniGameRank(int32 NewRank);
 
-	//체크포인트
-	UPROPERTY(Replicated)
-	int32 MiniGameCheckpointIndex = 0;
+	void SetMiniGameRank(int32 NewRank);
+	int32 GetMiniGameRank() { return MiniGameRank; }
+
 
 	void UpdateMiniGameCheckpoint(int32 NewIndex);
 	int32 GetMiniGameCheckpoint() { return MiniGameCheckpointIndex; }
@@ -35,4 +31,13 @@ public:
 	//점수 계산
 	UFUNCTION()
 	float GetMiniGameProgressScore() const;
+
+protected:
+	//체크포인트
+	UPROPERTY(Replicated)
+	int32 MiniGameCheckpointIndex = 0;
+	
+	//순위
+	UPROPERTY(Replicated)
+	int32 MiniGameRank = 0;
 };
