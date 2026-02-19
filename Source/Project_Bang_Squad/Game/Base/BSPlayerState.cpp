@@ -10,7 +10,7 @@ void ABSPlayerState::BeginPlay()
 	Super::BeginPlay();
 	if (HasAuthority())
 	{
-		SetCoin(10000); // 테스트용: 1만 골드 지급
+		//SetCoin(10000); // 테스트용: 1만 골드 지급
 	}
 }
 
