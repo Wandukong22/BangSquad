@@ -63,11 +63,15 @@ public:
 
 private:
 
+	//UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
+	//TSubclassOf<UStageMainWidget> StageMainWidgetClass;
+	//
+	//UPROPERTY()
+	//TObjectPtr<UStageMainWidget> StageMainWidget = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
-	TSubclassOf<UStageMainWidget> StageMainWidgetClass;
-
+	TSubclassOf<class UUserWidget> GameWidgetClass;
 	UPROPERTY()
-	TObjectPtr<UStageMainWidget> StageMainWidget = nullptr;
+	TObjectPtr<class UUserWidget> GameWidget = nullptr;
 
 	// 에디터에서 생성한 MPC 에셋을 넣을 변수
 	UPROPERTY(EditDefaultsOnly, Category = "BS|Visual")

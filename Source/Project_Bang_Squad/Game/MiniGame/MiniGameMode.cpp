@@ -4,7 +4,6 @@
 #include "Project_Bang_Squad/Game/MiniGame/MiniGameMode.h"
 
 #include "EngineUtils.h"
-#include "MiniGamePlayerController.h"
 #include "MiniGamePlayerState.h"
 #include "GameFramework/Character.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
@@ -17,7 +16,7 @@
 AMiniGameMode::AMiniGameMode()
 {
 	PlayerStateClass = AMiniGamePlayerState::StaticClass();
-	PlayerControllerClass = AMiniGamePlayerController::StaticClass();
+	PlayerControllerClass = AStagePlayerController::StaticClass();
 	GameStateClass = AStageGameState::StaticClass();
 
 	BaseRespawnTime = 5.f;
