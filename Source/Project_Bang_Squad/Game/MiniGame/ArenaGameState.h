@@ -7,7 +7,7 @@
 #include "ArenaGameState.generated.h"
 
 UENUM(BlueprintType)
-enum class EArenaPhase : uint8
+enum class EArenaPattern : uint8
 {
 	Waiting,
 	Surviving,
@@ -20,19 +20,23 @@ class PROJECT_BANG_SQUAD_API AArenaGameState : public ABSGameState
 {
 	GENERATED_BODY()
 public:
-	void SetCurrentPhase(EArenaPhase InPhase) { CurrentPhase = InPhase; }
-	EArenaPhase GetCurrentPhase() const { return CurrentPhase; }
+	void SetCurrentPhase(EArenaPattern InPhase) { CurrentPhase = InPhase; }
+	EArenaPattern GetCurrentPhase() const { return CurrentPhase; }
 	
 	void SetRemainingTime(int32 InRemainingTime) { RemainingTime = InRemainingTime; }
 	int32 GetRemainingTime() const { return RemainingTime; }
 
 	void SetCurrentSinkingFloor(int32 InFloor) { CurrentSinkingFloor = InFloor; }
 	int32 GetCurrentSinkingFloor() const { return CurrentSinkingFloor; }
+	
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION()
+	void OnRep_CurrentPhase(EArenaPattern OldPhase);
 	
-	UPROPERTY(Replicated)
-	EArenaPhase CurrentPhase = EArenaPhase::Waiting;
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentPhase)
+	EArenaPattern CurrentPhase = EArenaPattern::Waiting;
 
 	UPROPERTY(Replicated)
 	int32 RemainingTime = 5;

@@ -30,7 +30,7 @@ public:
 	//void ServerSetNickName(const FString& InNickName);
 
 	//캐릭터 사망 시 호출
-	void StartSpectating();
+	virtual void StartSpectating();
 
 	virtual void CreateGameWidget();
 

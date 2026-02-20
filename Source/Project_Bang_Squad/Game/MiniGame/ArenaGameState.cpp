@@ -13,3 +13,11 @@ void AArenaGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AArenaGameState, RemainingTime);
 	DOREPLIFETIME(AArenaGameState, CurrentSinkingFloor);
 }
+
+void AArenaGameState::OnRep_CurrentPhase(EArenaPattern OldPhase)
+{
+	/*if (OldPhase == EArenaPattern::None && CurrentPhase == EArenaPattern::Surviving)
+	{
+		
+	}*/
+}

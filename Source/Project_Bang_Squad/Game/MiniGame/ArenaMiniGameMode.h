@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ArenaGameState.h"
 #include "Project_Bang_Squad/Game/Base/BSGameMode.h"
 #include "ArenaMiniGameMode.generated.h"
 
@@ -19,8 +20,26 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	FTimerHandle ArenaTimerHandle;
-	void UpdateArenaTimer();
+private:
+	void TickWaitingCountdown();
+	void TickArenaTimer();
+	void BroadcastPhaseChanged(EArenaPattern NewPhase);
+	void EndArena();
 	
 	int32 AlivePlayerCount = 0;
+	FTimerHandle WaitingTimerHandle;
+	FTimerHandle ArenaTimerHandle;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "BS|Arena")
+	int32 WaitingDuration = 5;
+	UPROPERTY(EditDefaultsOnly, Category = "BS|Arena")
+	int32 SurvivingDuration = 20;
+	UPROPERTY(EditDefaultsOnly, Category = "BS|Arena")
+	int32 FloorSinkingDuration = 5;
+	//가라앉는 바닥 개수
+	UPROPERTY(EditDefaultsOnly, Category = "BS|Arena")
+	int32 MaxSinkingFloors = 2;
+	
+	//void UpdateArenaTimer();
+	
 };
