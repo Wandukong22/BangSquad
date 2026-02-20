@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Project_Bang_Squad/Game/Base/BSGameState.h"
+#include "Project_Bang_Squad/Game/Base/InGameState.h"
 #include "MiniGameState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECT_BANG_SQUAD_API AMiniGameState : public ABSGameState
+class PROJECT_BANG_SQUAD_API AMiniGameState : public AInGameState
 {
 	GENERATED_BODY()
 

@@ -18,7 +18,7 @@
 AMiniGameMode::AMiniGameMode()
 {
 	PlayerStateClass = AMiniGamePlayerState::StaticClass();
-	PlayerControllerClass = AStagePlayerController::StaticClass();
+	PlayerControllerClass = AMiniGamePlayerController::StaticClass();
 	GameStateClass = AMiniGameState::StaticClass();
 
 	BaseRespawnTime = 5.f;

@@ -22,11 +22,11 @@ public:
 
 
 	void SetMiniGameRank(int32 NewRank);
-	int32 GetMiniGameRank() { return MiniGameRank; }
+	int32 GetMiniGameRank() const { return MiniGameRank; }
 
 
 	void UpdateMiniGameCheckpoint(int32 NewIndex);
-	int32 GetMiniGameCheckpoint() { return MiniGameCheckpointIndex; }
+	int32 GetMiniGameCheckpoint() const { return MiniGameCheckpointIndex; }
 
 	//점수 계산
 	UFUNCTION()
