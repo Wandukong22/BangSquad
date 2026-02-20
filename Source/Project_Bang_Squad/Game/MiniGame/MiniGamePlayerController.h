@@ -18,8 +18,12 @@ public:
 	UFUNCTION(Client, Reliable)
 	void OnPhaseChanged(EMiniGamePhase NewPhase);
 
+	UFUNCTION(Client, Reliable)
+	void Client_UpdateCountdown(int32 Count);
+
 protected:
 	virtual void BeginPlay() override;
+	virtual void AcknowledgePossession(class APawn* P) override;
 
 private:
 	void HandleWaiting();

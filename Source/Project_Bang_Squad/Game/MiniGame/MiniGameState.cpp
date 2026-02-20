@@ -3,6 +3,7 @@
 
 #include "MiniGameState.h"
 
+#include "MiniGamePlayerController.h"
 #include "Net/UnrealNetwork.h"
 
 void AMiniGameState::OnRep_CurrentPhase(EMiniGamePhase OldPhase)

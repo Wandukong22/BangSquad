@@ -26,7 +26,7 @@ protected:
 	EMiniGamePhase CurrentPhase = EMiniGamePhase::Waiting;
 
 	UPROPERTY(Replicated)
-	int32 Countdown = 5;
+	int32 Countdown = 6;
 
 	UFUNCTION()
 	void OnRep_CurrentPhase(EMiniGamePhase OldPhase);

@@ -3,10 +3,12 @@
 
 #include "Project_Bang_Squad/UI/MiniGame/MiniGameWidget.h"
 
+#include "CountdownWidget.h"
 #include "MiniGameRankingRow.h"
 #include "Components/VerticalBox.h"
 #include "GameFramework/GameStateBase.h"
 #include "Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.h"
+#include "Project_Bang_Squad/Game/MiniGame/MiniGameState.h"
 #include "Project_Bang_Squad/Game/Stage/StagePlayerState.h"
 
 void UMiniGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)

@@ -45,7 +45,7 @@ void AMiniGameMode::OnPlayerReachedGoal(AController* ReachedPlayer, EStageIndex 
 void AMiniGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	GetWorldTimerManager().SetTimer(
 		CountdownTimerHandle,
 		this,
@@ -133,13 +133,20 @@ void AMiniGameMode::EndMiniGame(EStageIndex StageIndex)
 void AMiniGameMode::TickCountdown()
 {
 	AMiniGameState* GS = GetGameState<AMiniGameState>();
-	if (!GS) return;
-
-	if (GS->GetCurrentPhase() != EMiniGamePhase::Waiting) return;
+	if (!GS || GS->GetCurrentPhase() != EMiniGamePhase::Waiting) return;
 
 	int32 Current = GS->GetCountdown() - 1;
 	GS->SetCountdown(Current);
 
+	//클라이언트에 카운트다운 값 전달
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (AMiniGamePlayerController* PC = Cast<AMiniGamePlayerController>(It->Get()))
+		{
+			PC->Client_UpdateCountdown(Current);
+		}
+	}
+	
 	if (Current <= 0)
 	{
 		GetWorldTimerManager().ClearTimer(CountdownTimerHandle);

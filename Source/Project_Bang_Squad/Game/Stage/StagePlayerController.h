@@ -61,7 +61,7 @@ public:
 	//첫 스폰 여부
 	bool bHasSpawnedOnce = false;
 
-private:
+protected:
 
 	//UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
 	//TSubclassOf<UStageMainWidget> StageMainWidgetClass;
