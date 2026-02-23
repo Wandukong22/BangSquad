@@ -19,7 +19,16 @@ void UMiniGameResultRow::UpdateResultData(int32 Rank, AArenaPlayerState* PlayerS
 
 	if (Txt_Nickname)
 	{
-		Txt_Nickname->SetText(FText::FromString(PlayerState->GetPlayerName()));
+		FString Nickname = PlayerState->GetPlayerName();
+		int32 MaxLength = 8;
+
+		if (Nickname.Len() > MaxLength)
+		{
+			Nickname = Nickname.Left(MaxLength) + TEXT("...");
+		}
+		
+		//Txt_Nickname->SetText(FText::FromString(PlayerState->GetPlayerName()));
+		Txt_Nickname->SetText(FText::FromString(Nickname));
 	}
 
 	if (Txt_CoinReward)
