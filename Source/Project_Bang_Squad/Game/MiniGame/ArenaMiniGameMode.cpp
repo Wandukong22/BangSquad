@@ -6,7 +6,9 @@
 #include "ArenaGameState.h"
 #include "ArenaPlayerController.h"
 #include "ArenaPlayerState.h"
+#include "EngineUtils.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
+#include "Project_Bang_Squad/MapPuzzle/ArenaFloor.h"
 
 AArenaMiniGameMode::AArenaMiniGameMode()
 {
@@ -92,15 +94,15 @@ void AArenaMiniGameMode::TickWaitingCountdown()
 		GS->SetCurrentPhase(EArenaPattern::Surviving);
 		GS->SetRemainingTime(SurvivingDuration);
 		BroadcastPhaseChanged(EArenaPattern::Surviving);
-	}
 
-	GetWorldTimerManager().SetTimer(
-		ArenaTimerHandle,
-		this,
-		&AArenaMiniGameMode::TickArenaTimer,
-		1.f,
-		true
-	);
+		GetWorldTimerManager().SetTimer(
+			ArenaTimerHandle,
+			this,
+			&AArenaMiniGameMode::TickArenaTimer,
+			1.f,
+			true
+		);
+	}
 }
 
 void AArenaMiniGameMode::TickArenaTimer()
@@ -141,6 +143,15 @@ void AArenaMiniGameMode::TickArenaTimer()
 			GS->SetCurrentPhase(EArenaPattern::FloorSinking);
 			GS->SetRemainingTime(FloorSinkingDuration);
 			BroadcastPhaseChanged(EArenaPattern::FloorSinking);
+
+			for (TActorIterator<AArenaFloor> It(GetWorld()); It; ++It)
+			{
+				if (It->GetFloorNumber() == NextFloor)
+				{
+					It->Multicast_StartSinking();
+					break;
+				}
+			}
 		}
 		else
 		{
@@ -161,7 +172,7 @@ void AArenaMiniGameMode::TickArenaTimer()
 		GS->SetCurrentSinkingFloor(NextFloor);
 
 		GS->SetCurrentPhase(EArenaPattern::Surviving);
-		
+
 		if (NextFloor <= MaxSinkingFloors)
 		{
 			GS->SetRemainingTime(SurvivingDuration);
