@@ -195,6 +195,52 @@ void AArenaMiniGameMode::EndArena()
 		}
 	}
 
+	//서버 기준 전체 플레이어 수집 및 정렬
+	TArray<AArenaPlayerState*> PlayerList;
+	if (GS)
+	{
+		for (APlayerState* PS : GS->PlayerArray)
+		{
+			if (AArenaPlayerState* ArenaPS = Cast<AArenaPlayerState>(PS))
+			{
+				PlayerList.Add(ArenaPS);
+			}
+		}
+	}
+	PlayerList.Sort([](const AArenaPlayerState& A, const AArenaPlayerState& B)
+	{
+		return A.GetArenaRank() < B.GetArenaRank();
+	});
+
+	//순위 및 코인 보상 데이터 분리
+	TArray<int32> Ranks;
+	TArray<int32> Rewards;
+	for (AArenaPlayerState* ArenaPS : PlayerList)
+	{
+		int32 CurrentRank = ArenaPS->GetArenaRank();
+		Ranks.Add(CurrentRank);
+
+		int32 RewardCoin = 0;
+		switch (CurrentRank)
+		{
+		case 1: RewardCoin = 100; break;
+		case 2: RewardCoin = 70;  break;
+		case 3: RewardCoin = 40;  break;
+		case 4: RewardCoin = 20;  break;
+		default: break;
+		}
+		Rewards.Add(RewardCoin);
+	}
+
+	//모든 클라이언트에게 확정된 배열 쏘기
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (AArenaPlayerController* PC = Cast<AArenaPlayerController>(It->Get()))
+		{
+			PC->Client_ShowArenaResult(PlayerList, Ranks, Rewards);
+		}
+	}
+	
 	// 5초 후 Stage3 Main으로 이동
 	FTimerHandle ReturnHandle;
 	GetWorldTimerManager().SetTimer(ReturnHandle, FTimerDelegate::CreateLambda([this]()

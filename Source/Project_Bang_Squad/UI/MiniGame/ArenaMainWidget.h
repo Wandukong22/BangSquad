@@ -6,6 +6,9 @@
 #include "Blueprint/UserWidget.h"
 #include "ArenaMainWidget.generated.h"
 
+class UMiniGameResultRow;
+class UVerticalBox;
+class AArenaPlayerState;
 class UTextBlock;
 class UCountdownWidget;
 /**
@@ -26,4 +29,16 @@ public:
 	void UpdateWaitingCountdown(int32 Count);
 	void UpdateSurvivingTimer(int32 RemainingTime);
 	void SetSurvivingTimerVisible(bool bVisible);
+
+	void ShowRankingBoard(const TArray<AArenaPlayerState*>& Players, const TArray<int32>& Ranks, const TArray<int32>& CoinRewards);
+
+protected:
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* RankingContainer;
+
+	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
+	TSubclassOf<UMiniGameResultRow> RankingRowClass;
+
+	//UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
+	
 };

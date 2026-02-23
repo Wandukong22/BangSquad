@@ -3,6 +3,7 @@
 
 #include "ArenaPlayerController.h"
 
+#include "ArenaPlayerState.h"
 #include "Project_Bang_Squad/UI/MiniGame/ArenaMainWidget.h"
 
 void AArenaPlayerController::Client_OnArenaPhaseChanged_Implementation(EArenaPattern NewPhase)
@@ -44,6 +45,15 @@ void AArenaPlayerController::StartSpectating()
 {
 	//부활 없이 관전만
 	ViewNextPlayer();
+}
+
+void AArenaPlayerController::Client_ShowArenaResult_Implementation(const TArray<class AArenaPlayerState*>& Players,
+	const TArray<int32>& Ranks, const TArray<int32>& Rewards)
+{
+	if (UArenaMainWidget* ArenaMainWidget = Cast<UArenaMainWidget>(GameWidget))
+	{
+		ArenaMainWidget->ShowRankingBoard(Players, Ranks, Rewards);
+	}
 }
 
 void AArenaPlayerController::BeginPlay()
@@ -100,5 +110,29 @@ void AArenaPlayerController::HandleFloorSinking()
 void AArenaPlayerController::HandleFinished()
 {
 	SetGameInputEnabled(false);
-	//TODO: 순위 결과 UI
+
+	/*TArray<AArenaPlayerState*> PlayerList;
+	if (AArenaGameState* GS = GetWorld()->GetGameState<AArenaGameState>())
+	{
+		//아레나 플레이어 상태 수집
+		for (APlayerState* PS : GS->PlayerArray)
+		{
+			if (AArenaPlayerState* ArenaPS = Cast<AArenaPlayerState>(PS))
+			{
+				PlayerList.Add(ArenaPS);
+			}
+		}
+
+		//등수 오름차순 정렬
+		PlayerList.Sort([](const AArenaPlayerState& A, const AArenaPlayerState& B)
+		{
+			return A.GetArenaRank() < B.GetArenaRank();
+		});
+	}
+
+	//UI 전달
+	if (UArenaMainWidget* ArenaMainWidget = Cast<UArenaMainWidget>(GameWidget))
+	{
+		ArenaMainWidget->ShowRankingBoard(PlayerList);
+	}*/
 }
