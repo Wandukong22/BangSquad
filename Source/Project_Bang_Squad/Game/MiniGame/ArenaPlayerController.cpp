@@ -28,7 +28,15 @@ void AArenaPlayerController::Client_UpdateSurvivingTimer_Implementation(int32 Re
 {
 	if (UArenaMainWidget* ArenaMainWidget = Cast<UArenaMainWidget>(GameWidget))
 	{
-		ArenaMainWidget->UpdateSurvivingTimer(RemainingTime);
+		if (RemainingTime < 0)
+		{
+			ArenaMainWidget->SetSurvivingTimerVisible(false);
+		}
+		else
+		{
+			ArenaMainWidget->SetSurvivingTimerVisible(true);
+			ArenaMainWidget->UpdateSurvivingTimer(RemainingTime);
+		}
 	}
 }
 
@@ -70,11 +78,15 @@ void AArenaPlayerController::HandleWaiting()
 void AArenaPlayerController::HandleSurviving()
 {
 	SetGameInputEnabled(true);
-	if (UArenaMainWidget* ArenaMainWidget = Cast<UArenaMainWidget>(GameWidget))
+	
+	/*if (UArenaMainWidget* ArenaMainWidget = Cast<UArenaMainWidget>(GameWidget))
 	{
 		ArenaMainWidget->SetSurvivingTimerVisible(true);
-		ArenaMainWidget->UpdateSurvivingTimer(20);
-	}
+		if (AArenaGameState* GS = GetWorld()->GetGameState<AArenaGameState>())
+		{
+			ArenaMainWidget->UpdateSurvivingTimer(GS->GetRemainingTime());
+		}
+	}*/
 }
 
 void AArenaPlayerController::HandleFloorSinking()

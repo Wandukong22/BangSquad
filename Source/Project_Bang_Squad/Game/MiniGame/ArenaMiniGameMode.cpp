@@ -95,12 +95,12 @@ void AArenaMiniGameMode::TickWaitingCountdown()
 	}
 
 	GetWorldTimerManager().SetTimer(
-		  ArenaTimerHandle,
-		  this,
-		  &AArenaMiniGameMode::TickArenaTimer,
-		  1.f,
-		  true
-	  );
+		ArenaTimerHandle,
+		this,
+		&AArenaMiniGameMode::TickArenaTimer,
+		1.f,
+		true
+	);
 }
 
 void AArenaMiniGameMode::TickArenaTimer()
@@ -145,13 +145,31 @@ void AArenaMiniGameMode::TickArenaTimer()
 		else
 		{
 			GetWorldTimerManager().ClearTimer(ArenaTimerHandle);
+
+			for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+			{
+				if (AArenaPlayerController* PC = Cast<AArenaPlayerController>(It->Get()))
+				{
+					PC->Client_UpdateSurvivingTimer(-1);
+				}
+			}
 		}
 	}
 	else if (Phase == EArenaPattern::FloorSinking)
 	{
-		GS->SetCurrentSinkingFloor(GS->GetCurrentSinkingFloor() + 1);
+		int32 NextFloor = GS->GetCurrentSinkingFloor() + 1;
+		GS->SetCurrentSinkingFloor(NextFloor);
+
 		GS->SetCurrentPhase(EArenaPattern::Surviving);
-		GS->SetRemainingTime(SurvivingDuration);
+		
+		if (NextFloor <= MaxSinkingFloors)
+		{
+			GS->SetRemainingTime(SurvivingDuration);
+		}
+		else
+		{
+			GS->SetRemainingTime(-1);
+		}
 		BroadcastPhaseChanged(EArenaPattern::Surviving);
 	}
 }
