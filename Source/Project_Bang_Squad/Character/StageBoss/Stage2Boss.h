@@ -12,6 +12,8 @@ class AEnemySpawner;
 class UHealthComponent;
 class UAnimMontage;
 class AQTE_Trap;
+class ABossSplitPattern;
+class UAnimMontage;
 
 UCLASS()
 class PROJECT_BANG_SQUAD_API AStage2Boss : public AEnemyCharacterBase
@@ -23,6 +25,10 @@ public:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+    // [비주얼 동기화] 서버가 지시하면 모든 클라이언트가 이 함수를 실행하여 몽타주를 재생합니다.
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_PlayBossMontage(UAnimMontage* MontageToPlay);
 
     // --- [Actions] ---
     float PlayMeleeAttackAnim();
@@ -56,6 +62,15 @@ public:
     UPROPERTY(EditAnywhere, Category = "Boss|Combat")
     float SmashZOffset = -50.0f;
 
+    // 애니메이션 노티파이에서 호출할 실제 넉백 함수
+    UFUNCTION(BlueprintCallable, Category = "Boss|Combat")
+    void ExecuteFollowUpKnockback();
+
+    // 블루프린트에서 설정할 추가타 몽타주
+    UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+    UAnimMontage* QTEFollowUpMontage;
+
+
     // [Getter]
     UEnemyBossData* GetBossData() const { return BossData; }
 
@@ -67,7 +82,54 @@ public:
     UFUNCTION(Server, Reliable)
     void ServerRPC_QTEResult(class APlayerController* Player, bool bSuccess);
 
+    
+
+
+    // [추가] 기본 공격(평타) 피격 판정 (몽타주 Notify에서 호출)
+    UFUNCTION(BlueprintCallable, Category = "Boss|Combat")
+    void PerformMeleeHitCheck();
+
+    // [추가] 평타 판정 범위 (반지름)
+    UPROPERTY(EditAnywhere, Category = "Boss|Combat")
+    float MeleeRadius = 200.0f;
+
+    // [추가] 평타 판정 앞방향 거리
+    UPROPERTY(EditAnywhere, Category = "Boss|Combat")
+    float MeleeForwardOffset = 150.0f;
+
+    // [추가] 평타 판정 높낮이 조절 (Z축)
+    UPROPERTY(EditAnywhere, Category = "Boss|Combat")
+    float MeleeZOffset = 50.0f;
+
+
+
+
+    // --- [기믹 실행 및 결과 처리] ---
+    // Notify에서 호출할 실제 스폰 함수
+    UFUNCTION(BlueprintCallable, Category = "Boss|Pattern")
+    void SpawnSplitPattern();
+
+    // 패턴이 끝나면 통보받을 콜백
+    UFUNCTION()
+    void HandleSplitPatternResult(bool bIsSuccess);
+
+    // --- [비주얼 동기화 (원칙 2)] ---
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_PlayPhase50Montage();
+
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_SetBossVisibility(bool bIsVisible);
+
+
+    // [신규 추가] 클라이언트 동기화용 섹션 점프 함수
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_JumpMontageSection(FName SectionName);
+
+
+
+
 protected:
+    UFUNCTION()
     void CheckMinionsStatus();
 
 protected:
@@ -78,8 +140,13 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UHealthComponent> HealthComponent;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss|Phase")
-    TObjectPtr<AEnemySpawner> MinionSpawner;
+    // 70% 페이즈용 스포너
+    UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Boss|Pattern")
+    TObjectPtr<class AEnemySpawner> Phase70Spawner;
+
+    // 30% 페이즈용 스포너
+    UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Boss|Pattern")
+    TObjectPtr<class AEnemySpawner> Phase30Spawner;
 
     // --- [Settings] ---
     UPROPERTY(EditAnywhere, Category = "Boss|Combat")
@@ -94,7 +161,18 @@ protected:
     // --- [State] ---
     bool bIsInvincible = false;
     bool bPhase70Triggered = false;
+    bool bPhase50Triggered = false;
     bool bPhase30Triggered = false;
+
+    // --- [50% 기믹 전용 세팅] ---
+    // 팀원이 만든 패턴 액터 할당용
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Boss|Pattern")
+    TSubclassOf<ABossSplitPattern> SplitPatternClass;
+
+    // 50% 페이즈 돌입 시 재생할 기믹 몽타주
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boss|Pattern")
+    TObjectPtr<UAnimMontage> Phase50Montage;
+
 
     // --- [Anim] ---
     UPROPERTY(EditAnywhere, Category = "Boss|Anim")
@@ -103,5 +181,29 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Boss|Anim")
     UAnimMontage* SmashMontage;
 
-  
+   
+
+    // [추가] 넉백 힘 (기본값 설정)
+    UPROPERTY(EditAnywhere, Category = "Boss|Combat")
+    float FollowUpKnockbackPower = 2000.0f;
+
+    // [추가] 추가타 판정 거리 (앞으로 얼마나 멀리)
+    UPROPERTY(EditAnywhere, Category = "Boss|Combat")
+    float FollowUpTraceForwardOffset = 400.0f;
+
+    // [추가] 추가타 판정 높이 (Z축 조절 - 땅에 묻히거나 허공을 칠 때 사용)
+    UPROPERTY(EditAnywhere, Category = "Boss|Combat")
+    float FollowUpTraceZOffset = 50.0f;
+
+    // [추가] 추가타 판정 두께 (구체의 반지름)
+    UPROPERTY(EditAnywhere, Category = "Boss|Combat")
+    float FollowUpTraceRadius = 300.0f;
+
+
+
+    // 70%, 30% 쫄몹 소환 페이즈 때 재생할 '섹션이 나뉜' 몽타주
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boss|Pattern")
+    TObjectPtr<UAnimMontage> SummonPhaseMontage;
+
+
 };

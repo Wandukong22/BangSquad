@@ -305,7 +305,9 @@ void APaladinCharacter::Client_TriggerHitStop_Implementation()
 
     // 2. 복구 타이머
     GetWorldTimerManager().ClearTimer(HitStopTimer);
-    GetWorldTimerManager().SetTimer(HitStopTimer, this, &APaladinCharacter::RestoreTimeDilation, HitStopDuration, false);
+    
+    float ActualDelay = HitStopDuration * HitStopTimeDilation;
+    GetWorldTimerManager().SetTimer(HitStopTimer, this, &APaladinCharacter::RestoreTimeDilation, ActualDelay, false);
 
     // 3. 카메라 흔들림
     if (APlayerController* PC = Cast<APlayerController>(GetController()))
@@ -336,7 +338,7 @@ void APaladinCharacter::ProcessSkill(FName SkillRowName)
         if (!IsSkillUnlocked(Data->RequiredStage)) return;
 
         // 스탯 로드
-        CurrentSkillDamage = Data->Damage;
+        CurrentSkillDamage = Data->GetRandomizedDamage();
         CurrentActionDelay = Data->ActionDelay;
 
         // 쿨타임 체크
@@ -389,7 +391,7 @@ void APaladinCharacter::ProcessSkill(FName SkillRowName)
                 LaunchCharacter(LaunchDir, true, true);
 
                 // 3. 착지 시 데미지 타이머 설정
-                float FinalDamage = Data->Damage;
+                float FinalDamage = Data->GetRandomizedDamage();
                 bIsSmashing = true; 
 
                 if (CurrentActionDelay > 0.0f)
@@ -572,7 +574,7 @@ void APaladinCharacter::Server_Skill2_Implementation()
         {
             if (!IsSkillUnlocked(Data->RequiredStage)) return;
 
-            FinalDamage = Data->Damage;
+            FinalDamage = Data->GetRandomizedDamage();
             if (Data->Cooldown > 0.0f) FinalCooldown = Data->Cooldown;
             DelayTime = Data->ActionDelay;
 
@@ -829,10 +831,9 @@ float APaladinCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
     // [Defense Logic] 방어 중일 때 전방 공격 차단
     if (HasAuthority() && bIsGuarding && !bIsShieldBroken && DamageCauser)
     {
-        FVector LocalEnemyLoc = GetActorTransform().InverseTransformPosition(DamageCauser->GetActorLocation());
-        
-        // 적이 내 앞쪽(X > 100)에 있는가?
-        if (LocalEnemyLoc.X > 100.0f)
+        FVector DirectionFromAttacker = (GetActorLocation()) - DamageCauser->GetActorLocation();
+     
+        if (IsBlockingDirection(DirectionFromAttacker))
         {
             ActualDamage = 0.0f; // 본체 데미지 무효화
             CurrentShieldHP -= DamageAmount;

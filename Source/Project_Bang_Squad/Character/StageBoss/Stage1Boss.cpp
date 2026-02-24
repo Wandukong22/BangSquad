@@ -23,6 +23,7 @@
 #include "TimerManager.h"
 #include "AIController.h"
 #include "BrainComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "Net/UnrealNetwork.h"
 #include "Project_Bang_Squad/Game/Stage/MapPortal.h"
 
@@ -55,6 +56,8 @@ void AStage1Boss::BeginPlay()
 		if (UHealthComponent* HC = FindComponentByClass<UHealthComponent>())
 		{
 			HC->OnHealthChanged.AddDynamic(this, &AStage1Boss::OnHealthChanged);
+			
+			
 		}
 
 		if (!IsValid(MeleeCollisionBox))
@@ -62,7 +65,53 @@ void AStage1Boss::BeginPlay()
 			MeleeCollisionBox = Cast<UBoxComponent>(GetComponentByClass(UBoxComponent::StaticClass()));
 		}
 	}
+	
+	if (UHealthComponent* HC = FindComponentByClass<UHealthComponent>())
+	{
+		// 서버와 클라이언트가 각자의 컴퓨터에 보스가 로딩되면 즉시 UI를 띄움
+		Multicast_ShowBossHP_Implementation(HC->MaxHealth);
+	}
 }
+
+// 보스 패턴 발동시 나오는 자막 코드
+void AStage1Boss::Multicast_ShowBossSubtitle_Implementation(const FText& Message, float Duration)
+{
+	// 로컬 플레이어인지 확인
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (!PC || !PC->IsLocalPlayerController() || !BossSubtitleWidgetClass)
+	{
+		return;
+	}
+	
+	// 1. 위젯 생성
+	UUserWidget* SubtitleWidget = CreateWidget<UUserWidget>(PC, BossSubtitleWidgetClass);
+	if (SubtitleWidget)
+	{
+		// 2. 화면에 띄우기
+		SubtitleWidget->AddToViewport();
+		
+		// 3. 블루프린트에 만들어둔 ShowSubtitle 함수 호출
+		UFunction* ShowFunc = SubtitleWidget->FindFunction(FName("ShowSubtitle"));
+		if (ShowFunc)
+		{
+			// 넘겨줄 파라미터 구조체 포인터
+			struct { FText TextParams; } Params;
+			Params.TextParams = Message;
+			SubtitleWidget->ProcessEvent(ShowFunc, &Params);
+		}
+		
+		// 4. 지정된 시간 뒤에 화면에서 지우기
+		FTimerHandle RemoveTimer;
+		GetWorldTimerManager().SetTimer(RemoveTimer, [SubtitleWidget]()
+		{
+			if (IsValid(SubtitleWidget))
+			{
+				SubtitleWidget->RemoveFromParent();
+			}
+		}, Duration, false);
+	}
+}
+
 
 // ==============================================================================
 // [1] ������ ó�� �� ���(100, 50, 10) �ߵ� ����
@@ -143,6 +192,8 @@ float AStage1Boss::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 			{
 				GM->TriggerSpearQTE(this);
 				UE_LOG(LogTemp, Warning, TEXT("[BOSS] HP 1 Reached! Finale QTE Triggered!"));
+				
+				Multicast_ShowBossSubtitle(FText::FromString(TEXT(" 보스가 최후의 발악을 합니다! G키를 연타하세요!!")), 5.0f);
 			}
 
 			//
@@ -277,6 +328,12 @@ void AStage1Boss::OnPhaseChanged(EBossPhase NewPhase)
 
 void AStage1Boss::OnHealthChanged(float CH, float MH)
 {
+	// 체력이 변할 때마다 UI 갱신 (서버가 클라이언트에게 명령)
+	if (HasAuthority())
+	{
+		Multicast_UpdateBossHP(CH, MH);
+	}
+	
 	// ü�� 70% ���� & �� ���� �̹ߵ� �� ���� & QTE �� �ƴ�
 	if (HasAuthority() && !bHasTriggeredDeathWall && !bHasTriggeredQTE_10 && CH > 0 && (CH / MH) <= 0.7f)
 	{
@@ -413,7 +470,7 @@ void AStage1Boss::StartDeathWallSequence()
 	if (!HasAuthority()) return;
 
 	ControlRamparts(true);
-	GetWorldTimerManager().SetTimer(RampartTimerHandle, this, &AStage1Boss::RestoreRamparts, 60.0f, false);
+	GetWorldTimerManager().SetTimer(RampartTimerHandle, this, &AStage1Boss::RestoreRamparts, 50.0f, false);//성벽 오르는 시간 50초 하드코딩
 
 	//if (GetCharacterMovement()) GetCharacterMovement()->SetMovementMode(MOVE_None);
 	if (GetCharacterMovement()) GetCharacterMovement()->StopMovementImmediately();
@@ -430,6 +487,8 @@ void AStage1Boss::StartDeathWallSequence()
 		if (UBrainComponent* BC = AIC->GetBrainComponent()) BC->PauseLogic(TEXT("DeathWallPattern"));
 	}
 
+	// 자막 띄우기
+	Multicast_ShowBossSubtitle(FText::FromString(TEXT("죽음의 성벽이 다가옵니다! 발판을 타고 어서 넘어가세요!")), 4.0f);
 	Multicast_PlayDeathWallMontage();
 }
 
@@ -437,7 +496,7 @@ void AStage1Boss::AnimNotify_ActivateDeathWall()
 {
 	if (!HasAuthority()) return;
 	SpawnDeathWall();
-	GetWorldTimerManager().SetTimer(DeathWallTimerHandle, this, &AStage1Boss::FinishDeathWallPattern, 60.0f, false);
+	GetWorldTimerManager().SetTimer(DeathWallTimerHandle, this, &AStage1Boss::FinishDeathWallPattern, 50.0f, false);
 }
 
 void AStage1Boss::SpawnDeathWall()
@@ -568,6 +627,8 @@ void AStage1Boss::SpawnCrystals()
 		}
 	}
 	UE_LOG(LogTemp, Log, TEXT("[BOSS] Spawned %d Job Crystals"), RemainingGimmickCount);
+	
+	Multicast_ShowBossSubtitle(FText::FromString(TEXT("보스가 마력 수정을 소환합니다! 각 직업의 색깔에 맞게 수정을 부숴야 합니다!")), 4.0f);
 }
 
 void AStage1Boss::OnGimmickResolved(int32 GimmickID)
@@ -631,6 +692,11 @@ void AStage1Boss::OnDeathStarted()
 	Super::OnDeathStarted();
 	if (!HasAuthority()) return;
 	
+	// 보스가 죽으면 화면에서 체력바 삭제
+	Multicast_HideBossHP();
+	
+	Multicast_ShowBossSubtitle(FText::FromString(TEXT("보스를 물리쳤습니다! 포탈을 타고 이동하세요!")), 5.0f);
+	
 	if (AStageBossGameMode* GM = GetWorld()->GetAuthGameMode<AStageBossGameMode>())
 	{
 		GM->OnBossKilled();
@@ -649,3 +715,88 @@ void AStage1Boss::OnDeathStarted()
 	for (AActor* W : Walls) W->SetActorTickEnabled(false);
 }
 
+void AStage1Boss::Multicast_ShowBossHP_Implementation(float MaxHP)
+{
+	// 이미 만들어졌거나, 위젯 클래스가 없으면 패스
+	if (!BossHPWidgetClass || ActiveBossHPWidget) return;
+
+	// 멀티플레이어 환경에서 내 화면(LocalController)을 확실하게 찾는 방법
+	APlayerController* LocalPC = nullptr;
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		APlayerController* PC = Iterator->Get();
+		if (PC && PC->IsLocalController())
+		{
+			LocalPC = PC;
+			break;
+		}
+	}
+
+	if (!LocalPC) return;
+    
+	// 찾아낸 내 화면에 위젯 생성
+	ActiveBossHPWidget = CreateWidget<UUserWidget>(LocalPC, BossHPWidgetClass);
+	if (ActiveBossHPWidget)
+	{
+		ActiveBossHPWidget->AddToViewport(); // 화면에 띄우기
+		
+		// 1. 보스 아이콘(이미지) 세팅
+		if (BossData && BossData->BossIcon)
+		{
+			UFunction* InitFunc = ActiveBossHPWidget->FindFunction(FName("InitBossUI"));
+			if (InitFunc)
+			{
+				struct { UTexture2D* IconParam;} InitParams;
+				InitParams.IconParam = BossData->BossIcon;
+				ActiveBossHPWidget->ProcessEvent(InitFunc, &InitParams);
+			}
+		}
+		
+		// ==========================================================
+		//  보스 이름 세팅 (방금 만든 SetBossName 호출)
+		// ==========================================================
+		UFunction* NameFunc = ActiveBossHPWidget->FindFunction(FName("SetBossName"));
+		if (NameFunc)
+		{
+			// 블루프린트에서 만든 입력 파라미터(Text)와 동일한 형태의 구조체
+			struct { FText NameParam; } NameStruct;
+			NameStruct.NameParam = BossData->BossName;
+			ActiveBossHPWidget->ProcessEvent(NameFunc, &NameStruct);
+		}
+       
+		// 초기 체력 세팅 (블루프린트의 UpdateHP 함수 호출)
+		UFunction* UpdateFunc = ActiveBossHPWidget->FindFunction(FName("UpdateHP"));
+		if (UpdateFunc)
+		{
+			struct { double Current; double Max; } Params;
+			Params.Current = (double)MaxHP;
+			Params.Max = (double)MaxHP;
+			ActiveBossHPWidget->ProcessEvent(UpdateFunc, &Params);
+		}
+	}
+}
+
+void AStage1Boss::Multicast_UpdateBossHP_Implementation(float CurrentHP, float MaxHP)
+{
+	if (ActiveBossHPWidget)
+	{
+		// 위젯에 있는 UpdateHP 함수 찾아서 체력 넘겨주기
+		UFunction* UpdateFunc = ActiveBossHPWidget->FindFunction(FName("UpdateHP"));
+		if (UpdateFunc)
+		{
+			struct { double Current; double Max; } Params;
+			Params.Current = (double)CurrentHP;
+			Params.Max = (double)MaxHP;
+			ActiveBossHPWidget->ProcessEvent(UpdateFunc, &Params);
+		}
+	}
+}
+
+void AStage1Boss::Multicast_HideBossHP_Implementation()
+{
+	if (ActiveBossHPWidget)
+	{
+		ActiveBossHPWidget->RemoveFromParent(); // 화면에서 지움
+		ActiveBossHPWidget = nullptr;
+	}
+}

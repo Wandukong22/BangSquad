@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "Components/CapsuleComponent.h"
+#include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
 #include "Project_Bang_Squad/Character/MonsterBase/EnemyBossData.h"
 
 
@@ -61,13 +62,10 @@ void AStage2SpiderAIController::Tick(float DeltaTime)
 
     case ESpiderPatternState::SmashQTE:
     {
-        // StateTimer가 -1.0f면 "아직 도착 안 함(돌진 중)" 상태로 간주
         if (StateTimer < 0.0f)
         {
-            // 1. 타겟에게 맹렬히 다시 접근
             MoveToActor(TargetActor, 1.0f);
 
-            // 2. 공격 사거리 체크 (UpdateChase와 동일 로직)
             float WeaponReach = 150.0f;
             if (SpiderBoss && SpiderBoss->GetBossData())
                 WeaponReach = SpiderBoss->GetBossData()->AttackRange;
@@ -75,28 +73,42 @@ void AStage2SpiderAIController::Tick(float DeltaTime)
             float BossRadius = SpiderBoss->GetCapsuleComponent()->GetScaledCapsuleRadius();
             float Dist = FVector::Dist(SpiderBoss->GetActorLocation(), TargetActor->GetActorLocation());
 
-            // 표면 거리가 사거리 안쪽이면? -> 찍기 발동!
-            // (더 바짝 붙게 하려고 -50.0f 함)
             if (Dist <= (BossRadius + WeaponReach - 50.0f))
             {
                 StopMovement();
-                SpiderBoss->PerformSmashAttack(TargetActor); // 쾅!
-                StateTimer = 3.0f; // 공격 후 3초간 대기 (후딜레이)
+                SpiderBoss->PerformSmashAttack(TargetActor);
+
+                StateTimer = 3.0f; // 1단계: 기존 QTE 시간 (3초 대기)
+                bIsDoingFollowUp = false; // 플래그 초기화
             }
         }
-        // StateTimer가 양수면 "이미 찍었고 쉬는 중"
         else
         {
             StateTimer -= DeltaTime;
             if (StateTimer <= 0.0f)
             {
-                FindNearestTarget();
-                CurrentState = ESpiderPatternState::Chase; // 다시 평타 추격 모드로
+                // [핵심] 3초가 끝난 직후, 추격으로 넘어가지 않고 여기서 추가타를 재생합니다.
+                if (!bIsDoingFollowUp)
+                {
+                    if (SpiderBoss && SpiderBoss->QTEFollowUpMontage)
+                    {
+                        // [수정 완료] 서버 전용 재생을 멀티캐스트 재생으로 교체!
+                        SpiderBoss->Multicast_PlayBossMontage(SpiderBoss->QTEFollowUpMontage);
+                    }
+
+                    StateTimer = 6.0f; // 2단계: 추가타 몽타주 길이만큼 대기 (원하시는 초로 수정)
+                    bIsDoingFollowUp = true;
+                }
+                // 추가타 시간까지 끝났으면 일상 복귀
+                else
+                {
+                    FindNearestTarget();
+                    CurrentState = ESpiderPatternState::Chase;
+                }
             }
         }
     }
     break;
-
     // 나머지 패턴(평타, 거미줄)은 기존 타이머 방식 유지
     case ESpiderPatternState::Attack:
     case ESpiderPatternState::WebShot:
@@ -226,24 +238,34 @@ void AStage2SpiderAIController::FindNearestTarget()
         // 1. 나 자신은 제외
         if (Actor == SpiderBoss) continue;
 
-        // 2. 같은 몬스터 진영 제외 (EnemyCharacterBase 상속 여부로 판단)
-        // (EnemyCharacterBase 헤더가 필요할 수 있음. 없으면 태그나 클래스 이름으로 체크)
+        // 2. 같은 몬스터 진영 제외
         if (Actor->ActorHasTag(TEXT("Enemy"))) continue;
 
-        // 3. 죽은 플레이어 제외 (선택사항)
-         //if (Change to your specific player class -> IsDead()) continue;
+        // 3. [핵심 수정 부분] ABaseCharacter로 형변환하여 생존 여부를 체크합니다.
+        if (ABaseCharacter* PlayerCharacter = Cast<ABaseCharacter>(Actor))
+        {
+            // 시체(죽은 플레이어)는 배열에 넣지 않고 무시(continue)합니다!
+            if (PlayerCharacter->IsDead()) continue;
+
+            // (안전장치) 연결이 끊기거나 조종 중이 아닌 더미 캐릭터도 무시합니다.
+            if (!PlayerCharacter->IsPlayerControlled()) continue;
+        }
 
         ValidPlayers.Add(Actor);
     }
 
     if (ValidPlayers.Num() > 0)
     {
-        // 랜덤 타겟 (또는 가장 가까운 타겟 로직 추가 가능)
+        // 랜덤 타겟 선정 (이제 살아있는 플레이어 중에서만 고릅니다)
         int32 Idx = FMath::RandRange(0, ValidPlayers.Num() - 1);
         TargetActor = ValidPlayers[Idx];
     }
+    else
+    {
+        // 맵에 살아있는 플레이어가 1명도 없으면 타겟을 비웁니다.
+        TargetActor = nullptr;
+    }
 }
-
 void AStage2SpiderAIController::StartPhasePattern()
 {
     StopMovement();
