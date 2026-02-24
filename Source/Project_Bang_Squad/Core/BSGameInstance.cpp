@@ -152,25 +152,10 @@ void UBSGameInstance::RefreshServerList()
 void UBSGameInstance::OpenMainMenuLevel()
 {
 	APlayerController* PC = GetFirstLocalPlayerController();
-	
-	const FMapInfo* MapInfo = MapDataAsset->GetMapInfo(EStageIndex::Lobby, EStageSection::Menu);
-	
-	if (!PC || !MapInfo) return;
-	FString Path = MapInfo->Level.GetLongPackageName();
-	
-	// 로비 전용 로딩 이미지
-	ShowLoadingScreen(MapInfo->LoadingImage);
-	
-	FTimerHandle TravelTimer;
-	GetWorld()->GetTimerManager().SetTimer(
-		TravelTimer,
-		[PC, Path]()
-		{
-			PC->ClientTravel(Path, ETravelType::TRAVEL_Absolute);
-		},
-		2.0f,
-		false
-		);
+
+	FString Path = MapDataAsset->GetMapPath(EStageIndex::Lobby, EStageSection::Menu);
+	if (!PC) return;
+	PC->ClientTravel(Path, ETravelType::TRAVEL_Absolute);
 }
 
 void UBSGameInstance::ShowLoadingScreen(UTexture2D* LoadingImage)
@@ -199,8 +184,10 @@ void UBSGameInstance::ShowLoadingScreen(UTexture2D* LoadingImage)
 void UBSGameInstance::OnCreateSessionComplete(FName InSessionName, bool IsSuccess)
 {
 	if (!IsSuccess) return;
-	
-	MoveToStage(EStageIndex::Lobby, EStageSection::Main);
+
+	FString Path = MapDataAsset->GetMapPath(EStageIndex::Lobby, EStageSection::Main);
+	GetWorld()->ServerTravel(Path + "?listen");
+	//MoveToStage(EStageIndex::Lobby, EStageSection::Main);
 }
 
 void UBSGameInstance::OnDestroySessionComplete(FName InSessionName, bool IsSuccess)
@@ -412,7 +399,31 @@ void UBSGameInstance::MoveToStage(EStageIndex InStage, EStageSection InSection)
 		ClearMonsterData();
 	}
 
-	const FMapInfo* MapInfo = MapDataAsset->GetMapInfo(InStage, InSection);
+	FString Path = MapDataAsset->GetMapPath(InStage, InSection);
+	if (!Path.IsEmpty())
+	{
+		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+		{
+			if (ABSPlayerController* PC = Cast<ABSPlayerController>(It->Get()))
+			{
+				// 변경된 부분: 이미지 포인터 대신 InStage, InSection 전달
+				PC->Client_ShowLoadingScreen(InStage, InSection); 
+			}
+		}
+		
+		FTimerHandle TravelTimer;
+		GetWorld()->GetTimerManager().SetTimer(
+			TravelTimer, 
+			[this, Path]()
+			{
+				GetWorld()->ServerTravel(Path + "?listen");
+			}, 
+			2.0f, 
+			false
+		);
+	}
+
+	/*const FMapInfo* MapInfo = MapDataAsset->GetMapInfo(InStage, InSection);
     
 	if (MapInfo && !MapInfo->Level.IsNull() && GetWorld())
 	{
@@ -438,7 +449,7 @@ void UBSGameInstance::MoveToStage(EStageIndex InStage, EStageSection InSection)
 			2.0f, 
 			false
 		);
-	}
+	}*/
 }
 
 void UBSGameInstance::MarkStageAsVisited(EStageIndex Stage, EStageSection Section)
