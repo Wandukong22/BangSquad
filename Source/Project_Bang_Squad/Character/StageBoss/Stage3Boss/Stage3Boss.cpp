@@ -167,7 +167,10 @@ float AStage3Boss::Execute_Laser()
 		{
 			bIsFiringLaser = false;
 			GetWorldTimerManager().ClearTimer(LaserDamageTimer);
-			StopAnimMontage();
+			if (GetMesh()->GetAnimInstance())
+			{
+				GetMesh()->GetAnimInstance()->Montage_JumpToSection(FName("End"), BossData->LaserMontage);
+			}
 		}, 3.0f, false);
 
 	return 4.0f;
@@ -214,7 +217,7 @@ float AStage3Boss::Execute_Meteor()
 	float Duration = 0.0f;
 	if (BossData->MeteorMontage)
 	{
-		Duration = PlayAnimMontage(BossData->MeteorMontage);
+		Duration = PlayAnimMontage(BossData->MeteorMontage, 1.0f, FName("Cast")); // "Cast" 섹션 시작
 	}
 
 	// 2. 타겟 발판 선정 (기존 로직: 플레이어 위치 + 랜덤)
@@ -262,7 +265,49 @@ float AStage3Boss::Execute_Meteor()
 	// 자막 출력
 	Multicast_ShowBossSubtitle(FText::FromString(TEXT("메테오가 떨어집니다!")), 3.0f);
 
-	return (Duration > 0.0f) ? Duration : 4.0f;
+	//이후 먼 적에게 이동
+	FTimerHandle DiveTimer;
+	GetWorldTimerManager().SetTimer(DiveTimer, [this]()
+		{
+			// 1) 가장 먼 적 찾기
+			AActor* FurthestTarget = nullptr;
+			float MaxDist = -1.0f;
+			TArray<AActor*> Players;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACharacter::StaticClass(), Players);
+
+			for (AActor* P : Players)
+			{
+				if (P != this)
+				{
+					float D = GetDistanceTo(P);
+					if (D > MaxDist) { MaxDist = D; FurthestTarget = P; }
+				}
+			}
+
+			// 2) 타겟이 있다면 회전 및 이동
+			if (FurthestTarget)
+			{
+				// [회전] 보스를 타겟 방향으로 돌리기
+				FVector Direction = (FurthestTarget->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+				Direction.Z = 0.0f; // 높이는 무시
+				SetActorRotation(Direction.Rotation());
+
+				// [이동] LaunchCharacter로 날리기 (포물선 혹은 직선)
+				// 힘 조절: 거리 * 계수 + 위쪽 힘
+				FVector LaunchVel = Direction * (MaxDist * 1.0f) + FVector(0, 0, 500.0f);
+				LaunchCharacter(LaunchVel, true, true);
+			}
+
+			// 3) [몽타주] 날아가는 모션(Dive)으로 전환
+			// 만약 몽타주가 이어져 있다면 굳이 안 해도 되지만, 확실히 하기 위해 섹션 점프
+			if (GetMesh()->GetAnimInstance() && BossData->MeteorMontage)
+			{
+				GetMesh()->GetAnimInstance()->Montage_JumpToSection(FName("Dive"), BossData->MeteorMontage);
+			}
+
+		}, 3.0f, false); // *3.0초는 Cast 동작이 끝나는 타이밍에 맞춰 조절*
+
+	return (Duration > 0.0f) ? Duration : 5.0f;
 }
 
 float AStage3Boss::Execute_PlatformBreak()
