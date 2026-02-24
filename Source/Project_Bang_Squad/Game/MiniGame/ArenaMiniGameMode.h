@@ -40,6 +40,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "BS|Arena")
 	int32 MaxSinkingFloors = 2;
 	
-	//void UpdateArenaTimer();
-	
+	//Guard flag
+	bool bArenaEnded = false;
 };

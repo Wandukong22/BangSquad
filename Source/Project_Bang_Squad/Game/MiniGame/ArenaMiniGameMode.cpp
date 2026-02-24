@@ -28,8 +28,9 @@ void AArenaMiniGameMode::OnPlayerDied(AController* VictimController)
 		PS->SetArenaRank(AlivePlayerCount);
 		AlivePlayerCount--;
 
-		if (AlivePlayerCount <= 1)
+		if (AlivePlayerCount <= 1 && !bArenaEnded)
 		{
+			bArenaEnded = true;
 			EndArena();
 		}
 	}
