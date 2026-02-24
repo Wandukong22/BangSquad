@@ -94,7 +94,7 @@ void AArenaPlayerController::HandleFloorSinking()
 {
 	if (UArenaMainWidget* ArenaMainWidget = Cast<UArenaMainWidget>(GameWidget))
 	{
-		ArenaMainWidget->SetSurvivingTimerVisible(false);
+		ArenaMainWidget->ShowFloorSinkingText();
 	}
 }
 

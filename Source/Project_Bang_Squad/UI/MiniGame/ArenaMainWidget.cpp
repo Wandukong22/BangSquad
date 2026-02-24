@@ -33,6 +33,15 @@ void UArenaMainWidget::SetSurvivingTimerVisible(bool bVisible)
 	}
 }
 
+void UArenaMainWidget::ShowFloorSinkingText()
+{
+	if (SurvivingTimerText)
+	{
+		SurvivingTimerText->SetText(FText::FromString(TEXT("전장 축소중")));
+		SurvivingTimerText->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
 void UArenaMainWidget::ShowRankingBoard(const TArray<AArenaPlayerState*>& Players, const TArray<int32>& Ranks, const TArray<int32>& CoinRewards)
 {
 	if (!RankingContainer || !RankingRowClass) return;
