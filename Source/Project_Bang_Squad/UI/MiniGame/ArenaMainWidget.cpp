@@ -7,6 +7,7 @@
 #include "MiniGameResultRow.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
+#include "Project_Bang_Squad/Game/MiniGame/ArenaGameState.h"
 #include "Project_Bang_Squad/Game/MiniGame/ArenaPlayerState.h"
 
 void UArenaMainWidget::UpdateWaitingCountdown(int32 Count)
@@ -49,24 +50,29 @@ void UArenaMainWidget::ShowRankingBoard(const TArray<AArenaPlayerState*>& Player
 			RankingContainer->AddChildToVerticalBox(Row);
 		}
 	}
-	
-	/*for (AArenaPlayerState* PS : SortedPlayers)
+}
+
+void UArenaMainWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	if (AArenaGameState* GS = GetWorld()->GetGameState<AArenaGameState>())
 	{
-		if (UMiniGameResultRow* Row = CreateWidget<UMiniGameResultRow>(GetWorld(), RankingRowClass))
+		EArenaPattern Phase = GS->GetCurrentPhase();
+		int32 Time = GS->GetRemainingTime();
+
+		if (Phase == EArenaPattern::Waiting)
 		{
-			int32 CurrentRank = PS->GetArenaRank();
-
-			int32 RewardCoin = 0;
-			switch (CurrentRank)
-			{
-			case 1: RewardCoin = 100; break;
-			case 2: RewardCoin = 70;  break;
-			case 3: RewardCoin = 40;  break;
-			case 4: RewardCoin = 20;  break;
-			}
-
-			Row->UpdateResultData(CurrentRank, PS, RewardCoin);
-			RankingContainer->AddChildToVerticalBox(Row);
+			UpdateWaitingCountdown(Time);
 		}
-	}*/
+		else if (Phase == EArenaPattern::Surviving)
+		{
+			SetSurvivingTimerVisible(Time > 0);
+			UpdateSurvivingTimer(Time);
+		}
+		else
+		{
+			SetSurvivingTimerVisible(false);
+		}
+	}
 }

@@ -13,8 +13,7 @@ class PROJECT_BANG_SQUAD_API AArenaPlayerController : public AStagePlayerControl
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(Client, Reliable)
-	void Client_OnArenaPhaseChanged(EArenaPattern NewPhase);
+	void Local_OnArenaPhaseChanged(EArenaPattern NewPhase);
 
 	UFUNCTION(Client, Reliable)
 	void Client_UpdateWaitingCountdown(int32 Count);

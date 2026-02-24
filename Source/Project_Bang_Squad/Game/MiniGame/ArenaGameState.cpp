@@ -3,7 +3,19 @@
 
 #include "ArenaGameState.h"
 
+#include "ArenaPlayerController.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+
+void AArenaGameState::SetCurrentPhase(EArenaPattern InPhase)
+{
+	CurrentPhase = InPhase;
+
+	if (HasAuthority())
+	{
+		OnRep_CurrentPhase(CurrentPhase);
+	}
+}
 
 void AArenaGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -16,8 +28,8 @@ void AArenaGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 
 void AArenaGameState::OnRep_CurrentPhase(EArenaPattern OldPhase)
 {
-	/*if (OldPhase == EArenaPattern::None && CurrentPhase == EArenaPattern::Surviving)
+	if (AArenaPlayerController* PC = Cast<AArenaPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
 	{
-		
-	}*/
+		PC->Local_OnArenaPhaseChanged(CurrentPhase);
+	}
 }

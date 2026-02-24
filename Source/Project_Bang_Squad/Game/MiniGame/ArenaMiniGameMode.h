@@ -23,7 +23,6 @@ protected:
 private:
 	void TickWaitingCountdown();
 	void TickArenaTimer();
-	void BroadcastPhaseChanged(EArenaPattern NewPhase);
 	void EndArena();
 	
 	int32 AlivePlayerCount = 0;

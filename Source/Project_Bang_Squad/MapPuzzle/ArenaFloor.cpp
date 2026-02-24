@@ -19,33 +19,24 @@ AArenaFloor::AArenaFloor()
 
 void AArenaFloor::StartSinking()
 {
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Floor %d Start Sinking!"), FloorNumber));
-
-	if (SinkCurve == nullptr)
+	if (SinkCurve)
 	{
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("에러: SinkCurve가 할당되지 않았습니다!"));
-		return;
+		StartLocation = GetActorLocation();
+		SinkTimeline->PlayFromStart();
 	}
-	
-	StartLocation = GetActorLocation();
-	SinkTimeline->PlayFromStart();
 }
 
 void AArenaFloor::Multicast_StartSinking_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("StartSinking called on: %s"), HasAuthority() ? TEXT("Server") : TEXT("Client"));
 	StartSinking();
 }
 
 void AArenaFloor::TimelineProgress(float Value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("TimelineProgress: %f"), Value);
-	
 	FVector NewLocation = StartLocation;
 	NewLocation.Z = FMath::Lerp(StartLocation.Z, StartLocation.Z + TargetZOffset, Value);
 
 	if (FloorMesh) FloorMesh->SetWorldLocation(NewLocation);
-	//SetActorLocation(NewLocation);
 }
 
 void AArenaFloor::TimelineFinished()

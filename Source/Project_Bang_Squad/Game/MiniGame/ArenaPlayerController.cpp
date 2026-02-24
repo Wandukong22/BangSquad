@@ -6,7 +6,7 @@
 #include "ArenaPlayerState.h"
 #include "Project_Bang_Squad/UI/MiniGame/ArenaMainWidget.h"
 
-void AArenaPlayerController::Client_OnArenaPhaseChanged_Implementation(EArenaPattern NewPhase)
+void AArenaPlayerController::Local_OnArenaPhaseChanged(EArenaPattern NewPhase)
 {
 	switch (NewPhase)
 	{
@@ -72,7 +72,7 @@ void AArenaPlayerController::AcknowledgePossession(class APawn* P)
 
 	if (AArenaGameState* GS = GetWorld()->GetGameState<AArenaGameState>())
 	{
-		Client_OnArenaPhaseChanged(GS->GetCurrentPhase());
+		Local_OnArenaPhaseChanged(GS->GetCurrentPhase());
 	}
 	else
 	{
@@ -88,15 +88,6 @@ void AArenaPlayerController::HandleWaiting()
 void AArenaPlayerController::HandleSurviving()
 {
 	SetGameInputEnabled(true);
-	
-	/*if (UArenaMainWidget* ArenaMainWidget = Cast<UArenaMainWidget>(GameWidget))
-	{
-		ArenaMainWidget->SetSurvivingTimerVisible(true);
-		if (AArenaGameState* GS = GetWorld()->GetGameState<AArenaGameState>())
-		{
-			ArenaMainWidget->UpdateSurvivingTimer(GS->GetRemainingTime());
-		}
-	}*/
 }
 
 void AArenaPlayerController::HandleFloorSinking()
@@ -110,29 +101,4 @@ void AArenaPlayerController::HandleFloorSinking()
 void AArenaPlayerController::HandleFinished()
 {
 	SetGameInputEnabled(false);
-
-	/*TArray<AArenaPlayerState*> PlayerList;
-	if (AArenaGameState* GS = GetWorld()->GetGameState<AArenaGameState>())
-	{
-		//아레나 플레이어 상태 수집
-		for (APlayerState* PS : GS->PlayerArray)
-		{
-			if (AArenaPlayerState* ArenaPS = Cast<AArenaPlayerState>(PS))
-			{
-				PlayerList.Add(ArenaPS);
-			}
-		}
-
-		//등수 오름차순 정렬
-		PlayerList.Sort([](const AArenaPlayerState& A, const AArenaPlayerState& B)
-		{
-			return A.GetArenaRank() < B.GetArenaRank();
-		});
-	}
-
-	//UI 전달
-	if (UArenaMainWidget* ArenaMainWidget = Cast<UArenaMainWidget>(GameWidget))
-	{
-		ArenaMainWidget->ShowRankingBoard(PlayerList);
-	}*/
 }

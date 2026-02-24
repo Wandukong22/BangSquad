@@ -68,7 +68,6 @@ void AArenaMiniGameMode::TickWaitingCountdown()
 
 		GS->SetCurrentPhase(EArenaPattern::Surviving);
 		GS->SetRemainingTime(SurvivingDuration);
-		BroadcastPhaseChanged(EArenaPattern::Surviving);
 
 		GetWorldTimerManager().SetTimer(
 			ArenaTimerHandle,
@@ -117,7 +116,6 @@ void AArenaMiniGameMode::TickArenaTimer()
 		{
 			GS->SetCurrentPhase(EArenaPattern::FloorSinking);
 			GS->SetRemainingTime(FloorSinkingDuration);
-			BroadcastPhaseChanged(EArenaPattern::FloorSinking);
 
 			for (TActorIterator<AArenaFloor> It(GetWorld()); It; ++It)
 			{
@@ -156,18 +154,6 @@ void AArenaMiniGameMode::TickArenaTimer()
 		{
 			GS->SetRemainingTime(-1);
 		}
-		BroadcastPhaseChanged(EArenaPattern::Surviving);
-	}
-}
-
-void AArenaMiniGameMode::BroadcastPhaseChanged(EArenaPattern NewPhase)
-{
-	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-	{
-		if (AArenaPlayerController* PC = Cast<AArenaPlayerController>(It->Get()))
-		{
-			PC->Client_OnArenaPhaseChanged(NewPhase);
-		}
 	}
 }
 
@@ -180,7 +166,6 @@ void AArenaMiniGameMode::EndArena()
 	if (!GS) return;
 
 	GS->SetCurrentPhase(EArenaPattern::Finished);
-	BroadcastPhaseChanged(EArenaPattern::Finished);
 
 	// 마지막 생존자에게 1등 부여 + 데미지 막기
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
