@@ -38,6 +38,4 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
 	TSubclassOf<UMiniGameResultRow> RankingRowClass;
-
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 };

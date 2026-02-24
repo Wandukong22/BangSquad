@@ -6,17 +6,6 @@
 #include "ArenaPlayerState.h"
 #include "Project_Bang_Squad/UI/MiniGame/ArenaMainWidget.h"
 
-void AArenaPlayerController::Local_OnArenaPhaseChanged(EArenaPattern NewPhase)
-{
-	switch (NewPhase)
-	{
-	case EArenaPattern::Waiting:      HandleWaiting();      break;
-	case EArenaPattern::Surviving:    HandleSurviving();    break;
-	case EArenaPattern::FloorSinking: HandleFloorSinking(); break;
-	case EArenaPattern::Finished:     HandleFinished();     break;
-	}
-}
-
 void AArenaPlayerController::Client_UpdateWaitingCountdown_Implementation(int32 Count)
 {
 	if (UArenaMainWidget* ArenaMainWidget = Cast<UArenaMainWidget>(GameWidget))
@@ -38,6 +27,17 @@ void AArenaPlayerController::Client_UpdateSurvivingTimer_Implementation(int32 Re
 			ArenaMainWidget->SetSurvivingTimerVisible(true);
 			ArenaMainWidget->UpdateSurvivingTimer(RemainingTime);
 		}
+	}
+}
+
+void AArenaPlayerController::Client_OnArenaPhaseChanged_Implementation(EArenaPattern NewPhase)
+{
+	switch (NewPhase)
+	{
+	case EArenaPattern::Waiting:      HandleWaiting();      break;
+	case EArenaPattern::Surviving:    HandleSurviving();    break;
+	case EArenaPattern::FloorSinking: HandleFloorSinking(); break;
+	case EArenaPattern::Finished:     HandleFinished();     break;
 	}
 }
 
@@ -72,7 +72,7 @@ void AArenaPlayerController::AcknowledgePossession(class APawn* P)
 
 	if (AArenaGameState* GS = GetWorld()->GetGameState<AArenaGameState>())
 	{
-		Local_OnArenaPhaseChanged(GS->GetCurrentPhase());
+		Client_OnArenaPhaseChanged(GS->GetCurrentPhase());
 	}
 	else
 	{

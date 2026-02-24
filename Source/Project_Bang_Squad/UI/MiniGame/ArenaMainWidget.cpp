@@ -51,28 +51,3 @@ void UArenaMainWidget::ShowRankingBoard(const TArray<AArenaPlayerState*>& Player
 		}
 	}
 }
-
-void UArenaMainWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-
-	if (AArenaGameState* GS = GetWorld()->GetGameState<AArenaGameState>())
-	{
-		EArenaPattern Phase = GS->GetCurrentPhase();
-		int32 Time = GS->GetRemainingTime();
-
-		if (Phase == EArenaPattern::Waiting)
-		{
-			UpdateWaitingCountdown(Time);
-		}
-		else if (Phase == EArenaPattern::Surviving)
-		{
-			SetSurvivingTimerVisible(Time > 0);
-			UpdateSurvivingTimer(Time);
-		}
-		else
-		{
-			SetSurvivingTimerVisible(false);
-		}
-	}
-}
