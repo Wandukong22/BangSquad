@@ -3,9 +3,9 @@
 
 #include "Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.h"
 
+#include "MiniGameState.h"
 #include "Net/UnrealNetwork.h"
 #include "Project_Bang_Squad/Game/Stage/Checkpoint.h"
-#include "Project_Bang_Squad/Game/Stage/StageGameState.h"
 
 AMiniGamePlayerState::AMiniGamePlayerState()
 {
@@ -54,11 +54,11 @@ float AMiniGamePlayerState::GetMiniGameProgressScore() const
 
 	if (GetPawn())
 	{
-		float CurrentZ = GetPawn()->GetActorLocation().Z;
-		TotalScore += (CurrentZ * 0.01f);
+		//float CurrentZ = GetPawn()->GetActorLocation().Z;
+		//TotalScore += (CurrentZ * 0.01f);
 	}
 
-	AStageGameState* GS = GetWorld()->GetGameState<AStageGameState>();
+	AInGameState* GS = GetWorld()->GetGameState<AInGameState>();
 	if (!GS) return TotalScore;
 
 	int32 NextIndex = MiniGameCheckpointIndex + 1;
@@ -66,8 +66,9 @@ float AMiniGamePlayerState::GetMiniGameProgressScore() const
 
 	if (NextCP && *NextCP && GetPawn())
 	{
-		float Dist2D = FVector::Dist2D(GetPawn()->GetActorLocation(), (*NextCP)->GetActorLocation());
-		float DistanceScore = FMath::Clamp(1.f - (Dist2D / 5000.f), 0.f, 0.99f);
+		//float Dist2D = FVector::Dist2D(GetPawn()->GetActorLocation(), (*NextCP)->GetActorLocation());
+		float Dist = FVector::Dist(GetPawn()->GetActorLocation(), (*NextCP)->GetActorLocation());
+		float DistanceScore = FMath::Clamp(1.f - (Dist / 5000.f), 0.f, 0.99f);
 		TotalScore += DistanceScore;
 	}
 	return TotalScore;

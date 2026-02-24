@@ -20,16 +20,28 @@ public:
 
 	//도착 처리
 	void OnPlayerReachedGoal(AController* ReachedPlayer, EStageIndex StageIndex);
-	
 
 protected:
-	//부활 위치 계산
+	virtual void BeginPlay() override;
 	virtual FTransform GetRespawnTransform(AController* Controller) override;
+
+private:
+	//모두 도착했는지 체크
+	void CheckAllPlayersFinished(EStageIndex StageIndex);
+
+	void EndMiniGame(EStageIndex StageIndex);
+	void TickCountdown();
 
 	//도착한 플레이어 목록
 	UPROPERTY()
 	TArray<AController*> FinishedPlayers;
 
-	//모두 도착했는지 체크
-	void CheckAllPlayersFinished(EStageIndex StageIndex);
+	FTimerHandle CountdownTimerHandle;
+	FTimerHandle ReturnTimerHandle;
+
+	UPROPERTY(EditDefaultsOnly, Category = "BS|MiniGame")
+	int32 WaitingDuration = 5;
+
+	UPROPERTY(EditDefaultsOnly, Category = "BS|MiniGame")
+	float ReturnDelay = 5.f;
 };

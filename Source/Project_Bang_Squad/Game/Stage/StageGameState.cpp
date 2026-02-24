@@ -29,10 +29,10 @@ void AStageGameState::BeginPlay()
 	}
 }
 
-void AStageGameState::RegisterCheckpoint(int32 Index, ACheckpoint* Checkpoint)
-{
-	CheckpointMap.Add(Index, Checkpoint);
-}
+//void AStageGameState::RegisterCheckpoint(int32 Index, ACheckpoint* Checkpoint)
+//{
+//	CheckpointMap.Add(Index, Checkpoint);
+//}
 
 void AStageGameState::UpdateStageCheckpoint(int32 NewIndex)
 {

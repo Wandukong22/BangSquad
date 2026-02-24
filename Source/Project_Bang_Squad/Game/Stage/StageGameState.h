@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Project_Bang_Squad/Game/Base/BSGameState.h"
+#include "Project_Bang_Squad/Game/Base/InGameState.h"
 #include "StageGameState.generated.h"
 
 class ACheckpoint;
@@ -11,7 +12,7 @@ class ACheckpoint;
  * 
  */
 UCLASS()
-class PROJECT_BANG_SQUAD_API AStageGameState : public ABSGameState
+class PROJECT_BANG_SQUAD_API AStageGameState : public AInGameState
 {
 	GENERATED_BODY()
 
@@ -24,10 +25,9 @@ protected:
 
 	virtual void BeginPlay() override;
 public:
-	UPROPERTY()
-	TMap<int32, ACheckpoint*> CheckpointMap;
-
-	void RegisterCheckpoint(int32 Index, ACheckpoint* Checkpoint);
+	//UPROPERTY()
+	//TMap<int32, ACheckpoint*> CheckpointMap;
+	//void RegisterCheckpoint(int32 Index, ACheckpoint* Checkpoint);
 
 	int32 GetStageCheckpointIndex() const { return CurrentStageCheckpointIndex; }
 	void SetStageCheckpointIndex(int32 NewIndex) { CurrentStageCheckpointIndex = NewIndex; }

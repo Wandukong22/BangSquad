@@ -18,6 +18,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ToggleShopUI();
 
+	UFUNCTION()
+	void SetGameInputEnabled(bool bEnabled);
+
+	UFUNCTION()
+	bool IsGameInputEnabled() const { return bIsGameInputEnabled; }
+
+	//TODO: StageBossPlayerController로 옮기기
 	UFUNCTION(Server, Reliable)
 	void Server_ReportQTEResult(AStage2Boss* TargetBoss, bool bSuccess);
 
@@ -42,6 +49,8 @@ protected:
 	
 	UPROPERTY()
 	TArray<TObjectPtr<UUserWidget>> ManagedWidgets; // UE5 표준: Raw Pointer 대신 TObjectPtr 사용
+
+	bool bIsGameInputEnabled = true;
 
 #pragma region Debug Codes
 public:

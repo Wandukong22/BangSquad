@@ -90,16 +90,25 @@ void AStagePlayerController::StartSpectating()
 
 void AStagePlayerController::CreateGameWidget()
 {
-	if (StageMainWidgetClass)
+	if (GameWidgetClass)
 	{
-		StageMainWidget = CreateWidget<UStageMainWidget>(this, StageMainWidgetClass);
-		if (StageMainWidget)
+		GameWidget = CreateWidget<UUserWidget>(this, GameWidgetClass);
+		if (GameWidget)
 		{
-			StageMainWidget->AddToViewport();
-
-			RegisterManagedWidget(StageMainWidget);
+			GameWidget->AddToViewport();
+			RegisterManagedWidget(GameWidget);
 		}
 	}
+	//if (StageMainWidgetClass)
+	//{
+	//	StageMainWidget = CreateWidget<UStageMainWidget>(this, StageMainWidgetClass);
+	//	if (StageMainWidget)
+	//	{
+	//		StageMainWidget->AddToViewport();
+	//
+	//		RegisterManagedWidget(StageMainWidget);
+	//	}
+	//}
 }
 
 void AStagePlayerController::SetupInputComponent()

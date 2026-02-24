@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "MiniGameWidget.generated.h"
 
+class UCountdownWidget;
 class UMiniGameRankingRow;
 class UVerticalBox;
 /**
@@ -22,6 +23,9 @@ protected:
 public:
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* RankingListContainer;
+
+	UPROPERTY(meta = (BindWidget))
+	UCountdownWidget* CountdownWidget;
 
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
 	TSubclassOf<UMiniGameRankingRow> RankingRowClass;

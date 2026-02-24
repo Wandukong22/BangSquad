@@ -30,7 +30,7 @@ public:
 	//void ServerSetNickName(const FString& InNickName);
 
 	//캐릭터 사망 시 호출
-	void StartSpectating();
+	virtual void StartSpectating();
 
 	virtual void CreateGameWidget();
 
@@ -61,13 +61,17 @@ public:
 	//첫 스폰 여부
 	bool bHasSpawnedOnce = false;
 
-private:
+protected:
 
+	//UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
+	//TSubclassOf<UStageMainWidget> StageMainWidgetClass;
+	//
+	//UPROPERTY()
+	//TObjectPtr<UStageMainWidget> StageMainWidget = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
-	TSubclassOf<UStageMainWidget> StageMainWidgetClass;
-
+	TSubclassOf<class UUserWidget> GameWidgetClass;
 	UPROPERTY()
-	TObjectPtr<UStageMainWidget> StageMainWidget = nullptr;
+	TObjectPtr<class UUserWidget> GameWidget = nullptr;
 
 	// 에디터에서 생성한 MPC 에셋을 넣을 변수
 	UPROPERTY(EditDefaultsOnly, Category = "BS|Visual")

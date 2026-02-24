@@ -117,6 +117,23 @@ void ABSPlayerController::ToggleShopUI()
 	}
 }
 
+void ABSPlayerController::SetGameInputEnabled(bool bEnabled)
+{
+	bIsGameInputEnabled = bEnabled;
+
+	if (APawn* MyPawn = GetPawn())
+	{
+		if (bEnabled)
+		{
+			MyPawn->EnableInput(this);
+		}
+		else
+		{
+			MyPawn->DisableInput(this);
+		}
+	}
+}
+
 void ABSPlayerController::ServerSetNickName_Implementation(const FString& NewName)
 {
 	// [Server] PlayerState에 닉네임 전파 (Replication 담당)

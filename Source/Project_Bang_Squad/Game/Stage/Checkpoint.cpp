@@ -4,8 +4,8 @@
 #include "Project_Bang_Squad/Game/Stage/Checkpoint.h"
 
 #include "StageGameState.h"
+#include "Project_Bang_Squad/Game/Base/InGameState.h"
 #include "Components/BoxComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.h"
 #include "Project_Bang_Squad/Game/Stage/StagePlayerState.h"
 
@@ -23,7 +23,7 @@ void ACheckpoint::BeginPlay()
 	Super::BeginPlay();
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ACheckpoint::OnOverlapBegin);
 
-	if (AStageGameState* GS = GetWorld()->GetGameState<AStageGameState>())
+	if (AInGameState* GS = GetWorld()->GetGameState<AInGameState>())
 	{
 		GS->RegisterCheckpoint(CheckpointIndex, this);
 	}

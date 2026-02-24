@@ -15,10 +15,18 @@ class PROJECT_BANG_SQUAD_API AMiniGamePlayerController : public AStagePlayerCont
 	GENERATED_BODY()
 
 public:
-	virtual void BeginPlay() override;
-	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
-	TSubclassOf<class UMiniGameWidget> MiniGameWidgetClass;
+	UFUNCTION(Client, Reliable)
+	void OnPhaseChanged(EMiniGamePhase NewPhase);
+
+	UFUNCTION(Client, Reliable)
+	void Client_UpdateCountdown(int32 Count);
 
 protected:
-	virtual void CreateGameWidget() override;
+	virtual void BeginPlay() override;
+	virtual void AcknowledgePossession(class APawn* P) override;
+
+private:
+	void HandleWaiting();
+	void HandlePlaying();
+	void HandleFinished();
 };
