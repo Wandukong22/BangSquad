@@ -145,6 +145,12 @@ public:
 
 	UFUNCTION()
 	void MoveToStage(EStageIndex InStage, EStageSection InSection);
+
+protected:
+	virtual void LoadComplete(const float LoadTime, const FString& MapName) override;
+private:
+	// 이동 중복 실행 방지용 플래그
+	bool bIsTraveling = false;
 #pragma endregion
 
 #pragma region Portal

@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "MiniGameWidget.generated.h"
 
+class AMiniGamePlayerState;
+class UMiniGameResultRow;
 class UCountdownWidget;
 class UMiniGameRankingRow;
 class UVerticalBox;
@@ -29,6 +31,15 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
 	TSubclassOf<UMiniGameRankingRow> RankingRowClass;
+
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* ResultContainer;
+
+	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
+	TSubclassOf<UMiniGameResultRow> ResultRowClass;
+
+	
+	void ShowResultBoard(const TArray<AMiniGamePlayerState*>& Players, const TArray<int32>& Ranks, const TArray<int32>& Rewards);
 
 	void UpdateRanking();
 };

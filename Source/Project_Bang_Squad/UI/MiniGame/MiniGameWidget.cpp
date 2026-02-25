@@ -5,6 +5,7 @@
 
 #include "CountdownWidget.h"
 #include "MiniGameRankingRow.h"
+#include "MiniGameResultRow.h"
 #include "Components/VerticalBox.h"
 #include "GameFramework/GameStateBase.h"
 #include "Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.h"
@@ -16,6 +17,25 @@ void UMiniGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
 	UpdateRanking();
+}
+
+void UMiniGameWidget::ShowResultBoard(const TArray<AMiniGamePlayerState*>& Players, const TArray<int32>& Ranks,
+	const TArray<int32>& Rewards)
+{
+	if (!ResultContainer || !ResultRowClass) return;
+	if (Players.Num() != Ranks.Num() || Players.Num() != Rewards.Num()) return;
+	
+	ResultContainer->ClearChildren();
+	ResultContainer->SetVisibility(ESlateVisibility::Visible);
+
+	for (int32 i = 0; i < Players.Num(); ++i)
+	{
+        if (UMiniGameResultRow* Row = CreateWidget<UMiniGameResultRow>(GetWorld(), ResultRowClass))
+        {
+        	Row->UpdateResultData(Ranks[i], Players[i], Rewards[i]);
+        	ResultContainer->AddChildToVerticalBox(Row);
+        }
+	}
 }
 
 void UMiniGameWidget::UpdateRanking()

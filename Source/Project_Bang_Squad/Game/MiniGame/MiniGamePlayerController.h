@@ -6,6 +6,7 @@
 #include "Project_Bang_Squad/Game/Stage/StagePlayerController.h"
 #include "MiniGamePlayerController.generated.h"
 
+class AMiniGamePlayerState;
 /**
  * 
  */
@@ -20,6 +21,11 @@ public:
 
 	UFUNCTION(Client, Reliable)
 	void Client_UpdateCountdown(int32 Count);
+
+	UFUNCTION(Client, Reliable)
+	void Client_ShowMiniGameResult(const TArray<AMiniGamePlayerState*>& Players,
+							   const TArray<int32>& Ranks,
+							   const TArray<int32>& Rewards);
 
 protected:
 	virtual void BeginPlay() override;

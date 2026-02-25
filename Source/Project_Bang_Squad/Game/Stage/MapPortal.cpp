@@ -92,16 +92,18 @@ void AMapPortal::BeginPlay()
 		TriggerBox->OnComponentEndOverlap.AddDynamic(this, &AMapPortal::OnOverlapEnd);
 		
 		FTimerHandle InitTimer;
-		GetWorld()->GetTimerManager().SetTimer(InitTimer, [this]()
+		TWeakObjectPtr<AMapPortal> WeakThis(this);
+		
+		GetWorld()->GetTimerManager().SetTimer(InitTimer, [WeakThis]()
 		{
-			if (IsValid(this))
+			if (WeakThis.IsValid())
 			{
 				int32 MaxPlayers = 0;
-				if (GetWorld()->GetGameState())
+				if (WeakThis->GetWorld() && WeakThis->GetWorld()->GetGameState())
 				{
-					MaxPlayers = GetWorld()->GetGameState()->PlayerArray.Num();
+					MaxPlayers = WeakThis->GetWorld()->GetGameState()->PlayerArray.Num();
 				}
-				MulticastUpdateUI(0, MaxPlayers, -1);
+				WeakThis->MulticastUpdateUI(0, MaxPlayers, -1);
 			}
 		}, 0.5f, false);
 	}

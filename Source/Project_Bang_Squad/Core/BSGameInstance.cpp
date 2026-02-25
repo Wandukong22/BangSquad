@@ -391,7 +391,9 @@ FLinearColor UBSGameInstance::GetJobColor(EJobType InJobType) const
 void UBSGameInstance::MoveToStage(EStageIndex InStage, EStageSection InSection)
 {
 	if (!MapDataAsset) return;
-
+	
+	bIsTraveling = true;
+	
 	if (GetCurrentStage() != InStage)
 	{
 		InitSavedCheckpointIndex();
@@ -422,34 +424,17 @@ void UBSGameInstance::MoveToStage(EStageIndex InStage, EStageSection InSection)
 			false
 		);
 	}
-
-	/*const FMapInfo* MapInfo = MapDataAsset->GetMapInfo(InStage, InSection);
-    
-	if (MapInfo && !MapInfo->Level.IsNull() && GetWorld())
+	else
 	{
-		FString Path = MapInfo->Level.GetLongPackageName();
+		bIsTraveling = false;
+	}
+}
 
-		//  서버가 모든 플레이어에게 '맵 정보(Enum)'만 가볍게 전달
-		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-		{
-			if (ABSPlayerController* PC = Cast<ABSPlayerController>(It->Get()))
-			{
-				// 변경된 부분: 이미지 포인터 대신 InStage, InSection 전달
-				PC->Client_ShowLoadingScreen(InStage, InSection); 
-			}
-		}
-		
-		FTimerHandle TravelTimer;
-		GetWorld()->GetTimerManager().SetTimer(
-			TravelTimer, 
-			[this, Path]()
-			{
-				GetWorld()->ServerTravel(Path + "?listen");
-			}, 
-			2.0f, 
-			false
-		);
-	}*/
+void UBSGameInstance::LoadComplete(const float LoadTime, const FString& MapName)
+{
+	Super::LoadComplete(LoadTime, MapName);
+
+	bIsTraveling = false;
 }
 
 void UBSGameInstance::MarkStageAsVisited(EStageIndex Stage, EStageSection Section)

@@ -8,7 +8,7 @@
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "Project_Bang_Squad/Game/MiniGame/ArenaPlayerState.h"
 
-void UMiniGameResultRow::UpdateResultData(int32 Rank, AArenaPlayerState* PlayerState, int32 CoinReward)
+void UMiniGameResultRow::UpdateResultData(int32 Rank, ABSPlayerState* PlayerState, int32 CoinReward)
 {
 	if (!PlayerState) return;
 

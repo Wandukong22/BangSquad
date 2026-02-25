@@ -35,6 +35,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "BS|Goal")
 	EStageIndex StageIndex = EStageIndex::Stage1;
+
+	bool bIsGoalTriggered = false;
 private:
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

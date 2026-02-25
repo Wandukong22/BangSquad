@@ -120,6 +120,38 @@ void AMiniGameMode::EndMiniGame(EStageIndex StageIndex)
 	// 보상 지급 (함수가 존재한다면 주석 해제하여 사용)
 	GiveMiniGameReward(RankedList);
 
+	TArray<AMiniGamePlayerState*> PlayerStateList;
+	TArray<int32> Ranks;
+	TArray<int32> Rewards;
+
+	for (APlayerController* PC : RankedList)
+	{
+		AMiniGamePlayerState* PS = PC->GetPlayerState<AMiniGamePlayerState>();
+		PlayerStateList.Add(PS);
+
+		int32 Rank = PS ? PS->GetMiniGameRank() : 0;
+		Ranks.Add(Rank);
+
+		int32 Coin = 0;
+		switch (Rank)
+		{
+		case 1: Coin = 100; break;
+		case 2: Coin = 70;  break;
+		case 3: Coin = 40;  break;
+		case 4: Coin = 20;  break;
+		default: break;
+		}
+		Rewards.Add(Coin);
+	}
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (AMiniGamePlayerController* PC = Cast<AMiniGamePlayerController>(It->Get()))
+		{
+			PC->Client_ShowMiniGameResult(PlayerStateList, Ranks, Rewards);
+		}
+	}
+
 	// N초 후 다음 스테이지 Main으로 이동
 	GetWorldTimerManager().SetTimer(ReturnTimerHandle, FTimerDelegate::CreateLambda([this, StageIndex]()
 	{
