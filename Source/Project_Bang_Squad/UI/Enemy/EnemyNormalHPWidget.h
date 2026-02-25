@@ -14,6 +14,7 @@ class PROJECT_BANG_SQUAD_API UEnemyNormalHPWidget : public UUserWidget
 	
 public:
 	// 캐릭터 쪽에서 이 함수를 호출해 체력바를 갱신
+	UFUNCTION()
 	void UpdateHP(float CurrentHP, float MaxHP);
 	
 protected:

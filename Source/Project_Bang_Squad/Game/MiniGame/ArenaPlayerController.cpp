@@ -4,6 +4,7 @@
 #include "ArenaPlayerController.h"
 
 #include "ArenaPlayerState.h"
+#include "EngineUtils.h"
 #include "Project_Bang_Squad/UI/MiniGame/ArenaMainWidget.h"
 
 void AArenaPlayerController::Client_UpdateWaitingCountdown_Implementation(int32 Count)
@@ -88,6 +89,17 @@ void AArenaPlayerController::HandleWaiting()
 void AArenaPlayerController::HandleSurviving()
 {
 	SetGameInputEnabled(true);
+
+	if (GetWorld())
+	{
+		for (TActorIterator<ABaseCharacter> It(GetWorld()); It; ++It)
+		{
+			if (*It)
+			{
+				It->ShowArenaHPBar();
+			}
+		}
+	}
 }
 
 void AArenaPlayerController::HandleFloorSinking()
@@ -101,4 +113,15 @@ void AArenaPlayerController::HandleFloorSinking()
 void AArenaPlayerController::HandleFinished()
 {
 	SetGameInputEnabled(false);
+
+	if (GetWorld())
+	{
+		for (TActorIterator<ABaseCharacter> It(GetWorld()); It; ++It)
+		{
+			if (*It)
+			{
+				It->HideArenaHPBar();
+			}
+		}
+	}
 }
