@@ -52,7 +52,7 @@ void AArenaMiniGameMode::TickWaitingCountdown()
 
 	int32 Current = GS->GetRemainingTime() - 1;
 	GS->SetRemainingTime(Current);
-
+	
 	//클라이언트에 카운트다운 숫자 전달
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
@@ -68,6 +68,8 @@ void AArenaMiniGameMode::TickWaitingCountdown()
 
 		GS->SetCurrentPhase(EArenaPattern::Surviving);
 		GS->SetRemainingTime(SurvivingDuration);
+		BroadcastPhaseChanged(EArenaPattern::Surviving);
+
 
 		GetWorldTimerManager().SetTimer(
 			ArenaTimerHandle,
@@ -86,6 +88,7 @@ void AArenaMiniGameMode::TickArenaTimer()
 
 	EArenaPattern Phase = GS->GetCurrentPhase();
 
+
 	if (Phase == EArenaPattern::Finished || Phase == EArenaPattern::Waiting)
 	{
 		GetWorldTimerManager().ClearTimer(ArenaTimerHandle);
@@ -94,6 +97,7 @@ void AArenaMiniGameMode::TickArenaTimer()
 
 	int32 Current = GS->GetRemainingTime() - 1;
 	GS->SetRemainingTime(Current);
+
 
 	if (Phase == EArenaPattern::Surviving)
 	{
@@ -116,6 +120,7 @@ void AArenaMiniGameMode::TickArenaTimer()
 		{
 			GS->SetCurrentPhase(EArenaPattern::FloorSinking);
 			GS->SetRemainingTime(FloorSinkingDuration);
+			BroadcastPhaseChanged(EArenaPattern::FloorSinking);
 
 			for (TActorIterator<AArenaFloor> It(GetWorld()); It; ++It)
 			{
@@ -154,6 +159,7 @@ void AArenaMiniGameMode::TickArenaTimer()
 		{
 			GS->SetRemainingTime(-1);
 		}
+		BroadcastPhaseChanged(EArenaPattern::Surviving);
 	}
 }
 
@@ -166,7 +172,8 @@ void AArenaMiniGameMode::EndArena()
 	if (!GS) return;
 
 	GS->SetCurrentPhase(EArenaPattern::Finished);
-
+	BroadcastPhaseChanged(EArenaPattern::Finished);
+	
 	// 마지막 생존자에게 1등 부여 + 데미지 막기
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
@@ -236,4 +243,15 @@ void AArenaMiniGameMode::EndArena()
 			GI->MoveToStage(EStageIndex::Stage3, EStageSection::Main);
 		}
 	}), 5.f, false);
+}
+
+void AArenaMiniGameMode::BroadcastPhaseChanged(EArenaPattern NewPhase)
+{
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (AArenaPlayerController* PC = Cast<AArenaPlayerController>(It->Get()))
+		{
+			PC->Client_OnArenaPhaseChanged(NewPhase);
+		}
+	}
 }

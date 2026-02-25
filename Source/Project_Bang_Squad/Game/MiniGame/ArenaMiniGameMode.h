@@ -24,7 +24,8 @@ private:
 	void TickWaitingCountdown();
 	void TickArenaTimer();
 	void EndArena();
-	
+	void BroadcastPhaseChanged(EArenaPattern NewPhase);
+
 	int32 AlivePlayerCount = 0;
 	FTimerHandle WaitingTimerHandle;
 	FTimerHandle ArenaTimerHandle;

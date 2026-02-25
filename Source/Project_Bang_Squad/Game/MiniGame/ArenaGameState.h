@@ -20,7 +20,7 @@ class PROJECT_BANG_SQUAD_API AArenaGameState : public ABSGameState
 {
 	GENERATED_BODY()
 public:
-	void SetCurrentPhase(EArenaPattern InPhase);
+	void SetCurrentPhase(EArenaPattern InPhase) { CurrentPhase = InPhase; }
 	EArenaPattern GetCurrentPhase() const { return CurrentPhase; }
 	
 	void SetRemainingTime(int32 InRemainingTime) { RemainingTime = InRemainingTime; }

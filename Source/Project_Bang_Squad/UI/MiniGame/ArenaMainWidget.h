@@ -29,6 +29,7 @@ public:
 	void UpdateWaitingCountdown(int32 Count);
 	void UpdateSurvivingTimer(int32 RemainingTime);
 	void SetSurvivingTimerVisible(bool bVisible);
+	void ShowFloorSinkingText();
 
 	void ShowRankingBoard(const TArray<AArenaPlayerState*>& Players, const TArray<int32>& Ranks, const TArray<int32>& CoinRewards);
 
@@ -38,6 +39,4 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
 	TSubclassOf<UMiniGameResultRow> RankingRowClass;
-
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 };

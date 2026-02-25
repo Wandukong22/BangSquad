@@ -33,6 +33,15 @@ void UArenaMainWidget::SetSurvivingTimerVisible(bool bVisible)
 	}
 }
 
+void UArenaMainWidget::ShowFloorSinkingText()
+{
+	if (SurvivingTimerText)
+	{
+		SurvivingTimerText->SetText(FText::FromString(TEXT("전장 축소중")));
+		SurvivingTimerText->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
 void UArenaMainWidget::ShowRankingBoard(const TArray<AArenaPlayerState*>& Players, const TArray<int32>& Ranks, const TArray<int32>& CoinRewards)
 {
 	if (!RankingContainer || !RankingRowClass) return;
@@ -48,31 +57,6 @@ void UArenaMainWidget::ShowRankingBoard(const TArray<AArenaPlayerState*>& Player
 		{
 			Row->UpdateResultData(Ranks[i], Players[i], CoinRewards[i]);
 			RankingContainer->AddChildToVerticalBox(Row);
-		}
-	}
-}
-
-void UArenaMainWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-
-	if (AArenaGameState* GS = GetWorld()->GetGameState<AArenaGameState>())
-	{
-		EArenaPattern Phase = GS->GetCurrentPhase();
-		int32 Time = GS->GetRemainingTime();
-
-		if (Phase == EArenaPattern::Waiting)
-		{
-			UpdateWaitingCountdown(Time);
-		}
-		else if (Phase == EArenaPattern::Surviving)
-		{
-			SetSurvivingTimerVisible(Time > 0);
-			UpdateSurvivingTimer(Time);
-		}
-		else
-		{
-			SetSurvivingTimerVisible(false);
 		}
 	}
 }
