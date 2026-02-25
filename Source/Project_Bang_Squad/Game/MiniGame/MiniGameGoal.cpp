@@ -31,6 +31,9 @@ void AMiniGameGoal::Interact_Implementation(APawn* InstigatorPawn)
 {
 	if (!HasAuthority()) return;
 
+	if (bIsGoalTriggered) return;
+	bIsGoalTriggered = true;
+	
 	UE_LOG(LogTemp, Warning, TEXT("Goal::Interact 진입 성공!"));
 	
 	if (!InstigatorPawn) return;
@@ -40,6 +43,12 @@ void AMiniGameGoal::Interact_Implementation(APawn* InstigatorPawn)
 	if (GM)
 	{
 		GM->OnPlayerReachedGoal(InstigatorPawn->GetController(), StageIndex);
+	}
+
+	InteractWidget->SetVisibility(false);
+	if (DetectSphere)
+	{
+		DetectSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 }
 
