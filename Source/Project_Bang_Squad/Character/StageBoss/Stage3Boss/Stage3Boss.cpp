@@ -331,13 +331,13 @@ float AStage3Boss::Execute_PlatformBreak()
 		Duration = PlayAnimMontage(BossData->JumpAttackMontage);
 	}
 
-	// 착지 타이밍(1.2초)에 도미노 하강 시작
+	// 착지 타이밍(2.85초)에 도미노 하강 시작
 	// (기존의 순차 하강 로직 유지)
 	FTimerHandle LandTimer;
 	GetWorldTimerManager().SetTimer(LandTimer, [this, Targets]()
 		{
 			ProcessDominoDrop(Targets, 0);
-		}, 1.2f, false);
+		}, 2.85f, false);
 
 	// 자막 출력
 	Multicast_ShowBossSubtitle(FText::FromString(TEXT("보스가 발판을 무너뜨립니다!")), 3.0f);
