@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Project_Bang_Squad/Character/MonsterBase/EnemyBaseData.h" 
@@ -125,5 +125,35 @@ public:
     // 원거리 공격 발동 몽타주
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss|Stage3_MidBoss")
     TObjectPtr<UAnimMontage> Stage3RangedAttackMontage;
+
+
+
+
+    // =============================================================
+    // [6] Stage 3 보스
+    // =============================================================
+
+    // 1. 투사체 클래스
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss|Stage3")
+    TSubclassOf<AActor> MeteorProjectileClass; // 메테오
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss|Stage3")
+    TSubclassOf<AActor> WindOrbClass; // 바람 구슬 아이템
+
+    // 2. 애니메이션 몽타주
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss|Stage3")
+    TObjectPtr<UAnimMontage> WingAttackL_Montage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss|Stage3")
+    TObjectPtr<UAnimMontage> WingAttackR_Montage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss|Stage3")
+    TObjectPtr<UAnimMontage> LaserMontage; // Spell_In -> Loop -> End
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss|Stage3")
+    TObjectPtr<UAnimMontage> MeteorMontage; // Fly_In -> Cast -> Fly_Out
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss|Stage3")
+    TObjectPtr<UAnimMontage> JumpAttackMontage; // Jump -> Landing
 
 };
