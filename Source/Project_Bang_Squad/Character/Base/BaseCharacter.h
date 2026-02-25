@@ -159,6 +159,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	class UInputAction* InteractionAction;
 
+	//위젯 띄우기 / 숨기기
+	UFUNCTION()
+	void ShowArenaHPBar();
+	UFUNCTION()
+	void HideArenaHPBar();
 protected:
 	virtual void BeginPlay() override;
 	virtual void Landed(const FHitResult& Hit) override;
@@ -292,7 +297,12 @@ protected:
 	float ZoomStep = 50.0f; // 휠 한 칸당 이동 거리
 
 	void Interact();//상호작용 함수
-	
+
+	UPROPERTY(VisibleAnywhere)
+	class UWidgetComponent* ArenaHPBarWidget;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UUserWidget> HPBarWidgetClass;
 private:
 	float OriginalBrakingDeceleration = 0.0f;
 	void ApplySlopeSlide(float DeltaTime);

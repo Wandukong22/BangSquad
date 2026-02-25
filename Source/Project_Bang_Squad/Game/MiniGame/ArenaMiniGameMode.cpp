@@ -7,6 +7,7 @@
 #include "ArenaPlayerController.h"
 #include "ArenaPlayerState.h"
 #include "EngineUtils.h"
+#include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "Project_Bang_Squad/MapPuzzle/ArenaFloor.h"
 
@@ -69,7 +70,7 @@ void AArenaMiniGameMode::TickWaitingCountdown()
 		GS->SetCurrentPhase(EArenaPattern::Surviving);
 		GS->SetRemainingTime(SurvivingDuration);
 		BroadcastPhaseChanged(EArenaPattern::Surviving);
-
+		
 
 		GetWorldTimerManager().SetTimer(
 			ArenaTimerHandle,

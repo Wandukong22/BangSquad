@@ -13,8 +13,10 @@
 #include "Kismet/GameplayStatics.h" // [필수] 데미지 처리를 위해 필요
 #include "Project_Bang_Squad/Game/Stage/StagePlayerController.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Project_Bang_Squad/Game/Base/BSPlayerState.h"
 #include "Project_Bang_Squad/Game/MiniGame/ArenaMiniGameMode.h"
+#include "Project_Bang_Squad/UI/Enemy/EnemyNormalHPWidget.h"
 
 ABaseCharacter::ABaseCharacter()
 {
@@ -97,6 +99,13 @@ ABaseCharacter::ABaseCharacter()
 		OverheadMarkerMesh->SetCollisionProfileName(TEXT("NoCollision"));
 
 		ItemAttachParent = GetMesh();
+
+	ArenaHPBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ArenaHPBarWidget"));
+	ArenaHPBarWidget->SetupAttachment(GetMesh(), FName("HeadSocket")); // 소켓 이름 맞게 수정
+	ArenaHPBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	ArenaHPBarWidget->SetDrawSize(FVector2D(150.0f, 20.0f));
+	ArenaHPBarWidget->SetRelativeLocation(FVector(30.f, 0.f, 0.f));
+	ArenaHPBarWidget->SetVisibility(false);
 }
 
 void ABaseCharacter::EquipShopItem(const FShopItemData& ItemData)
@@ -188,6 +197,66 @@ void ABaseCharacter::EquipSkin(UMaterialInterface* NewSkin)
 	if (GetMesh() && NewSkin)
 	{
 		GetMesh()->SetMaterial(0, NewSkin);
+	}
+}
+
+void ABaseCharacter::ShowArenaHPBar()
+{
+	if (IsLocallyControlled())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[%s] 본인 캐릭터 (HPBar 안 띄움)"), *GetName());
+		return;
+	}
+
+	if (ArenaHPBarWidget)
+	{
+		// [핵심 해결책] 리슨 서버 호스트 화면에 띄우기 위해 로컬 플레이어를 강제 지정
+		if (APlayerController* LocalPC = GetWorld()->GetFirstPlayerController())
+		{
+			if (ULocalPlayer* LocalPlayer = LocalPC->GetLocalPlayer())
+			{
+				ArenaHPBarWidget->SetOwnerPlayer(LocalPlayer);
+			}
+		}
+		// 2. 클래스 보장 및 위젯 켜기
+		if (ArenaHPBarWidget->GetWidgetClass() == nullptr && HPBarWidgetClass)
+		{
+			ArenaHPBarWidget->SetWidgetClass(HPBarWidgetClass);
+		}
+		
+		ArenaHPBarWidget->SetVisibility(true);
+		ArenaHPBarWidget->SetHiddenInGame(false);
+
+		// 3. 강제 초기화
+		if (!ArenaHPBarWidget->GetUserWidgetObject())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[%s] UserWidget이 없어서 InitWidget() 강제 호출"), *GetName());
+			ArenaHPBarWidget->InitWidget();
+		}
+
+		//체력 연동
+		if (UUserWidget* UserWidget = ArenaHPBarWidget->GetUserWidgetObject())
+		{
+			if (UEnemyNormalHPWidget* HPWidget = Cast<UEnemyNormalHPWidget>(UserWidget))
+			{
+				if (HealthComp)
+				{
+					HPWidget->UpdateHP(HealthComp->GetHealth(), HealthComp->GetMaxHealth());
+					
+					// 중복 방지 후 바인딩
+					HealthComp->OnHealthChanged.RemoveDynamic(HPWidget, &UEnemyNormalHPWidget::UpdateHP);
+					HealthComp->OnHealthChanged.AddDynamic(HPWidget, &UEnemyNormalHPWidget::UpdateHP);
+				}
+			}
+		}
+	}
+}
+
+void ABaseCharacter::HideArenaHPBar()
+{
+	if (ArenaHPBarWidget)
+	{
+		ArenaHPBarWidget->SetVisibility(false);
 	}
 }
 
