@@ -260,19 +260,18 @@ void UShopMainWidget::OnSlotClicked(FName ItemID, const FShopItemData& SelectedI
 
     if (bIsCurrentlySelected && bTargetOwned)
     {
+        // 내 거를 클릭했을 때
         CurrentShopState = EShopState::Selling;
         CurrentSelectedRowName = ItemID;
         SelectedSellData = SelectedItem;
 
-        Btn_Sell->SetIsEnabled(true);
-        Btn_Purchase->SetIsEnabled(false);
+        Btn_Sell->SetIsEnabled(true); // 판매 버튼 활성화
 
-        // UpdateTotalPrice()를 호출하여 UI 갱신 (기존 함수 활용)
+        UpdatePurchaseButtonState();
         UpdateTotalPrice();
     }
     else
     {
-        // 아무것도 선택 안 했거나, 안 가진 걸 선택했다면 구매 모드
         CurrentShopState = EShopState::Buying;
         Btn_Sell->SetIsEnabled(false);
         UpdatePurchaseButtonState();
