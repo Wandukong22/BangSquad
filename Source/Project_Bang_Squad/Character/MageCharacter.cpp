@@ -559,14 +559,8 @@ void AMageCharacter::ProcessSkill(FName SkillRowName, FVector TargetLocation)
           // [스킬 2 - 바위 소환 로직]
           if (SkillRowName == TEXT("Skill2")) 
           {
-             if (Skill2CastEffect)
-             {
-                // 지팡이 끝에서 마법진 이펙트 소환
-                USceneComponent* AttachTarget = CachedWeaponMesh ? (USceneComponent*)CachedWeaponMesh : (USceneComponent*)GetMesh();
-                Skill2CastComp = UGameplayStatics::SpawnEmitterAttached(
-                   Skill2CastEffect, AttachTarget, TEXT("Weapon_Root_R"),  
-                   FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
-             }
+             Multicast_PlaySkill2VFX();
+             
              if (Data->ProjectileClass)
              {
                 float Dmg = Data->GetRandomizedDamage();
@@ -828,23 +822,16 @@ void AMageCharacter::EndJobAbility()
 
 void AMageCharacter::SpawnSkill2Rock(UClass* RockClass, float DamageAmount)
 {
-    // 바위가 소환되었으므로 켜져있던 마법진(캐스팅) 이펙트를 지움 (안전하게 메모리 해제 검사)
-    if (IsValid(Skill2CastComp))
-    {
-       Skill2CastComp->DeactivateSystem(); 
-       Skill2CastComp = nullptr;
-    }
+   Multicast_StopSkill2VFX();
 
     if (!HasAuthority() || !RockClass) return;
     
-    // 바위가 소환될 거리 (전방 6m)
-    float SpawnDistance = 600.0f;
-    FVector ActorLoc = GetActorLocation();
-    FVector ForwardDir = GetActorForwardVector();
+   //  무조건 앞쪽이 아니라, 에임(크로스헤어)이 가리키는 지점을 찾습니다.
+   FVector AimLocation = GetCrosshairTargetLocation();
     
-    // 바닥을 찾기 위해 공중(2m 위)에서 아래(10m 아래)로 레이저를 쏨
-    FVector TraceStart = ActorLoc + (ForwardDir * SpawnDistance) + FVector(0.f, 0.f, 200.f);
-    FVector TraceEnd = TraceStart - FVector(0.f, 0.f, 1000.f);
+   //  에임 지점 근처의 바닥을 정밀하게 찾기 위해 위아래로 레이저를 쏩니다.
+   FVector TraceStart = AimLocation + FVector(0.f, 0.f, 500.f);
+   FVector TraceEnd = AimLocation - FVector(0.f, 0.f, 1000.f);
     
     FHitResult HitResult;
     FCollisionQueryParams Params;
@@ -1030,4 +1017,34 @@ FVector AMageCharacter::GetCrosshairTargetLocation()
 
     // 뭔가 맞았으면 그 부딪힌 좌표점 반환, 100m동안 아무것도 없었으면 100m 앞 허공 좌표 반환
     return bHit ? HitResult.ImpactPoint : TraceEnd;
+}
+
+// 모든 클라이언트에서 스킬 2 캐스팅 이펙트 켜기
+void AMageCharacter::Multicast_PlaySkill2VFX_Implementation()
+{
+   if (Skill2CastEffect)
+   {
+      USceneComponent* AttachTarget = CachedWeaponMesh ? (USceneComponent*)CachedWeaponMesh : Cast<USceneComponent>(GetMesh());
+      FName SocketName = TEXT("Weapon_Root_R"); 
+
+      Skill2CastComp = UGameplayStatics::SpawnEmitterAttached(
+         Skill2CastEffect,
+         AttachTarget,
+         SocketName,  
+         FVector::ZeroVector,
+         FRotator::ZeroRotator,
+         EAttachLocation::SnapToTarget,
+         true
+      );
+   }
+}
+
+// 모든 클라이언트에서 스킬 2 캐스팅 이펙트 끄기
+void AMageCharacter::Multicast_StopSkill2VFX_Implementation()
+{
+   if (IsValid(Skill2CastComp))
+   {
+      Skill2CastComp->DeactivateSystem(); 
+      Skill2CastComp = nullptr;
+   }
 }
