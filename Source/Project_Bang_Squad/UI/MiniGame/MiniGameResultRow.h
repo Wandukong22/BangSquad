@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "MiniGameResultRow.generated.h"
 
+class ABSPlayerState;
 class AArenaPlayerState;
 class UImage;
 class UTextBlock;
@@ -29,5 +30,5 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Txt_CoinReward;
 
-	void UpdateResultData(int32 Rank, AArenaPlayerState* PlayerState, int32 CoinReward);
+	void UpdateResultData(int32 Rank, ABSPlayerState* PlayerState, int32 CoinReward);
 };
