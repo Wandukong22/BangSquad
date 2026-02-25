@@ -33,12 +33,16 @@ void ALavaPad::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Other
 
 	if (Character && Character->GetCharacterMovement())
 	{
-		TargetCharacter = Character;
+		if (TargetCharacters.Contains(Character)) return;
 
+		TargetCharacters.Add(Character);
+		
 		Character->ApplySlowDebuff(true, SpeedMultiplier);
 
-		OriginalGroundFriction = Character->GetCharacterMovement()->GroundFriction;
-		OriginalBrakingDeceleration = Character->GetCharacterMovement()->BrakingDecelerationWalking;
+		OriginalGroundFrictions.Add(Character, Character->GetCharacterMovement()->GroundFriction);
+		OriginalBrakingDecelerations.Add(Character, Character->GetCharacterMovement()->BrakingDecelerationWalking);
+		//OriginalGroundFriction = Character->GetCharacterMovement()->GroundFriction;
+		//OriginalBrakingDeceleration = Character->GetCharacterMovement()->BrakingDecelerationWalking;
 
 		Character->GetCharacterMovement()->GroundFriction = 10.0f; 
 		Character->GetCharacterMovement()->BrakingDecelerationWalking = 8000.0f; 
@@ -55,38 +59,48 @@ void ALavaPad::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Other
 void ALavaPad::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (!OtherActor || OtherActor != TargetCharacter) return;
+	ABaseCharacter* Character = Cast<ABaseCharacter>(OtherActor);
+	if (!Character || !TargetCharacters.Contains(Character)) return;
 
-	if (TargetCharacter && TargetCharacter->GetCharacterMovement())
+	TargetCharacters.Remove(Character);
+	// 1. [속도 복구] Debuff 해제 (false)
+	Character->ApplySlowDebuff(false, 1.0f);
+	
+	// 2. [물리 복구] 원래 값으로 되돌림
+	if (float* Friction = OriginalGroundFrictions.Find(Character))
+		Character->GetCharacterMovement()->GroundFriction = *Friction;
+	if (float* Braking = OriginalBrakingDecelerations.Find(Character))
+		Character->GetCharacterMovement()->BrakingDecelerationWalking = *Braking;
+	OriginalGroundFrictions.Remove(Character);
+	OriginalBrakingDecelerations.Remove(Character);
+
+	
+	if (TargetCharacters.IsEmpty())
 	{
-		// 1. [속도 복구] Debuff 해제 (false)
-		TargetCharacter->ApplySlowDebuff(false, 1.0f);
-
-		// 2. [물리 복구] 원래 값으로 되돌림
-		TargetCharacter->GetCharacterMovement()->GroundFriction = OriginalGroundFriction;
-		TargetCharacter->GetCharacterMovement()->BrakingDecelerationWalking = OriginalBrakingDeceleration;
+		// 3. 3초 뒤 화상 종료 예약
+		GetWorldTimerManager().SetTimer(ExtinguishTimerHandle, this, &ALavaPad::StopBurn, BurnDurationAfterExit, false);
 	}
-
-	// 3. 3초 뒤 화상 종료 예약
-	GetWorldTimerManager().SetTimer(ExtinguishTimerHandle, this, &ALavaPad::StopBurn, BurnDurationAfterExit, false);
 }
 
 void ALavaPad::ApplyBurnDamage()
 {
-	// ABaseCharacter니까 IsValid 체크
-	if (TargetCharacter && IsValid(TargetCharacter))
-	{
-		UGameplayStatics::ApplyDamage(
-			TargetCharacter,
-			DamageAmount,
-			nullptr,
-			this,
-			UDamageType::StaticClass()
-		);
-	}
-	else
+	if (TargetCharacters.IsEmpty())
 	{
 		StopBurn();
+		return;
+	}
+	// ABaseCharacter니까 IsValid 체크
+	for (ABaseCharacter* Character : TargetCharacters)
+	{
+		if (IsValid(Character))
+		{
+			UGameplayStatics::ApplyDamage(
+						Character,
+						DamageAmount,
+						nullptr,
+						this,
+						UDamageType::StaticClass()
+					);		}
 	}
 }
 
@@ -94,5 +108,7 @@ void ALavaPad::StopBurn()
 {
 	GetWorldTimerManager().ClearTimer(DamageTimerHandle);
 	GetWorldTimerManager().ClearTimer(ExtinguishTimerHandle);
-	TargetCharacter = nullptr;
+	TargetCharacters.Empty();
+	OriginalGroundFrictions.Empty();
+	OriginalBrakingDecelerations.Empty();
 }
