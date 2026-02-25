@@ -106,6 +106,11 @@ ABaseCharacter::ABaseCharacter()
 	ArenaHPBarWidget->SetDrawSize(FVector2D(150.0f, 20.0f));
 	ArenaHPBarWidget->SetRelativeLocation(FVector(30.f, 0.f, 0.f));
 	ArenaHPBarWidget->SetVisibility(false);
+
+		bIsAttacking = false;           // [추가] 초기값 강제 설정
+		bIsAttackCoolingDown = false;   // [추가] 초기값 강제 설정
+		bIsDead = false;
+
 }
 
 void ABaseCharacter::EquipShopItem(const FShopItemData& ItemData)
