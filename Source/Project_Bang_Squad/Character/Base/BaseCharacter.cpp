@@ -14,6 +14,7 @@
 #include "Project_Bang_Squad/Game/Stage/StagePlayerController.h"
 #include "Components/StaticMeshComponent.h"
 #include "Project_Bang_Squad/Game/Base/BSPlayerState.h"
+#include "Project_Bang_Squad/Game/MiniGame/ArenaMiniGameMode.h"
 
 ABaseCharacter::ABaseCharacter()
 {
@@ -403,6 +404,11 @@ void ABaseCharacter::OnDeath()
 		{
 			// BossGM이 알아서 부활타이머를 돌리거나 전멸을 체크함
 			BossGM->OnPlayerDied(GetController());
+		}
+
+		if (AArenaMiniGameMode* ArenaGM = Cast<AArenaMiniGameMode>(GM))
+		{
+			ArenaGM->OnPlayerDied(GetController());
 		}
 		
 		//[B] 일반 스테이지인가? -> 관전 모드 전환

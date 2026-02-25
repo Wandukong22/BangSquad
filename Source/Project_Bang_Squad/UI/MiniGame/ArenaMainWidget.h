@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Project_Bang_Squad/UI/Stage/StageMainWidget.h"
 #include "ArenaMainWidget.generated.h"
 
 class UMiniGameResultRow;
@@ -11,11 +12,9 @@ class UVerticalBox;
 class AArenaPlayerState;
 class UTextBlock;
 class UCountdownWidget;
-/**
- * 
- */
+
 UCLASS()
-class PROJECT_BANG_SQUAD_API UArenaMainWidget : public UUserWidget
+class PROJECT_BANG_SQUAD_API UArenaMainWidget : public UStageMainWidget
 {
 	GENERATED_BODY()
 
