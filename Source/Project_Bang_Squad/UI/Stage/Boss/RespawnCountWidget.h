@@ -16,12 +16,12 @@ class PROJECT_BANG_SQUAD_API URespawnCountWidget : public UUserWidget
 
 public:
 	UFUNCTION()
-	void UpdateDeathCount(int32 CurrentLives);
+	void UpdateRespawnCount(int32 CurrentLives);
 	
 protected:
 	UPROPERTY(meta = (BindWidget))
-	class UImage* Img_Skeleton;
+	class UImage* Img_Respawn;
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* Txt_DeathCount;
+	class UTextBlock* Txt_RespawnCount;
 	
 };

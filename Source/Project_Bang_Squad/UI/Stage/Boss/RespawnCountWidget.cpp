@@ -5,11 +5,11 @@
 
 #include "Components/TextBlock.h"
 
-void URespawnCountWidget::UpdateDeathCount(int32 CurrentLives)
+void URespawnCountWidget::UpdateRespawnCount(int32 CurrentLives)
 {
-	if (Txt_DeathCount)
+	if (Txt_RespawnCount)
 	{
 		FString CountString = FString::Printf(TEXT("%d"), CurrentLives);
-		Txt_DeathCount->SetText(FText::FromString(CountString));
+		Txt_RespawnCount->SetText(FText::FromString(CountString));
 	}
 }

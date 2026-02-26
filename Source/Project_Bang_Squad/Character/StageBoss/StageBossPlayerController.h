@@ -79,11 +79,11 @@ protected:
 
 	//DeathCount UI
 	UPROPERTY(EditDefaultsOnly, Category = "UI/DeathCount")
-	TSubclassOf<class UUserWidget> DeathCountWidgetClass;
+	TSubclassOf<class UUserWidget> RespawnCountWidgetClass;
 	UPROPERTY()
-	class URespawnCountWidget* DeathCountWidget;
+	class URespawnCountWidget* RespawnCountWidget;
 
 	UFUNCTION()
-	void UpdateUI_DeathCount(int32 CurrentLives);
+	void UpdateUI_RespawnCount(int32 CurrentLives);
 	
 };

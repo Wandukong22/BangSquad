@@ -27,20 +27,20 @@ void AStageBossPlayerController::BeginPlay()
 		}
 	}
 
-	if (DeathCountWidgetClass)
+	if (RespawnCountWidgetClass)
 	{
-		DeathCountWidget = CreateWidget<URespawnCountWidget>(this, DeathCountWidgetClass);
-		if (DeathCountWidget)
+		RespawnCountWidget = CreateWidget<URespawnCountWidget>(this, RespawnCountWidgetClass);
+		if (RespawnCountWidget)
 		{
-			DeathCountWidget->AddToViewport();
+			RespawnCountWidget->AddToViewport();
 		}
 	}
 
 	//GameState 이벤트 연결
 	if (AStageBossGameState* GS = GetWorld()->GetGameState<AStageBossGameState>())
 	{
-		GS->OnTeamLivesChanged.AddDynamic(this, &AStageBossPlayerController::UpdateUI_DeathCount);
-		UpdateUI_DeathCount(GS->TeamLives);
+		GS->OnTeamLivesChanged.AddDynamic(this, &AStageBossPlayerController::UpdateUI_RespawnCount);
+		UpdateUI_RespawnCount(GS->TeamLives);
 	}
 }
 
@@ -54,10 +54,10 @@ void AStageBossPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReaso
 		QTEWidgetInstance->RemoveFromParent();
 		QTEWidgetInstance = nullptr;
 	}
-	if (DeathCountWidget)
+	if (RespawnCountWidget)
 	{
-		DeathCountWidget->RemoveFromParent();
-		DeathCountWidget = nullptr;
+		RespawnCountWidget->RemoveFromParent();
+		RespawnCountWidget = nullptr;
 	}
 }
 
@@ -143,11 +143,11 @@ void AStageBossPlayerController::Input_IndividualQTEMash(const FInputActionValue
 	Server_SubmitIndividualQTEInput();
 }
 
-void AStageBossPlayerController::UpdateUI_DeathCount(int32 CurrentLives)
+void AStageBossPlayerController::UpdateUI_RespawnCount(int32 CurrentLives)
 {
-	if (DeathCountWidget)
+	if (RespawnCountWidget)
 	{
-		DeathCountWidget->UpdateDeathCount(CurrentLives);
+		RespawnCountWidget->UpdateRespawnCount(CurrentLives);
 	}
 }
 
