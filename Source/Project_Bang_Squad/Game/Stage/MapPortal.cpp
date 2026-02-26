@@ -12,6 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
+#include "Project_Bang_Squad/MapPuzzle/Boss3Elevator.h"
 #include "Project_Bang_Squad/UI/Stage/PortalMainWidget.h"
 
 AMapPortal::AMapPortal()
@@ -119,13 +120,6 @@ void AMapPortal::BeginPlay()
 	{
 		PortalWidgetComp->InitWidget();
 		PortalWidgetComp->SetCullDistance(MaxDrawDistance);
-
-		//UPortalMainWidget* PortalUI = Cast<UPortalMainWidget>(PortalWidgetComp->GetUserWidgetObject());
-		//if (PortalUI && GetWorld()->GetGameState())
-		//{
-		//	PortalUI->InitializePortal(GetWorld()->GetGameState()->PlayerArray.Num());
-		//	PortalUI->UpdatePlayerCount(0, GetWorld()->GetGameState()->PlayerArray.Num());
-		//}
 	}
 	GetWorld()->GetTimerManager().SetTimer(CheckDistanceTimerHandle, this, &AMapPortal::CheckWidgetDistance, 0.1f, true);
 }
@@ -235,6 +229,31 @@ void AMapPortal::CheckWidgetDistance()
 	}
 }
 
+void AMapPortal::PerformLevelTravel()
+{
+	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
+	if (GI)
+	{
+		SaveAllPuzzles();
+		GI->MarkStageAsVisited(TargetStageIndex, TargetSection);
+		GI->MoveToStage(TargetStageIndex, TargetSection);
+	}
+}
+
+void AMapPortal::OnBoss3ElevatorFinished()
+{
+	PerformLevelTravel();
+}
+
+void AMapPortal::Multicast_DisablePlayersInput_Implementation()
+{
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC && PC->GetPawn())
+	{
+		PC->GetPawn()->DisableInput(PC);
+	}
+}
+
 void AMapPortal::StartCountdown()
 {
 	RemainingTime = 5;
@@ -260,13 +279,26 @@ void AMapPortal::CancelCountdown()
 
 void AMapPortal::ProcessLevelTransition()
 {
-	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-	if (GI)
+	//Stage3 Boss 맵의 경우
+	if (TargetStageIndex == EStageIndex::Stage3 && TargetSection == EStageSection::Boss)
 	{
-		SaveAllPuzzles();
-		GI->MarkStageAsVisited(TargetStageIndex, TargetSection);
-		GI->MoveToStage(TargetStageIndex, TargetSection);
+		ABoss3Elevator* Elevator = Cast<ABoss3Elevator>(UGameplayStatics::GetActorOfClass(GetWorld(), ABoss3Elevator::StaticClass()));
+
+		if (Elevator)
+		{
+			//플레이어 조작 금지
+			Multicast_DisablePlayersInput();
+
+			//Elevator->OnElevatorFinished.AddUniqueDynamic(this, &AMapPortal::OnBoss3ElevatorFinished);
+			Elevator->ActivateElevator();
+			//델리게이트 대신 타이머
+			GetWorldTimerManager().SetTimer(ElevatorTravelTimerHandle, this, &AMapPortal::PerformLevelTravel, ElevatorDuration, false);
+			return;
+		}
 	}
+
+	//일반 포탈이거나 엘리베이터 못찾으면 바로 이동
+	PerformLevelTravel();
 }
 
 void AMapPortal::UpdateCountdownText()

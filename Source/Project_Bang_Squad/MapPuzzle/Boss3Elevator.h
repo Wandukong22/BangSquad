@@ -8,6 +8,8 @@
 class UStaticMeshComponent;
 class UCurveFloat;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnElevatorFinishedSignature);
+
 UCLASS()
 class PROJECT_BANG_SQUAD_API ABoss3Elevator : public AActor
 {
@@ -16,6 +18,9 @@ class PROJECT_BANG_SQUAD_API ABoss3Elevator : public AActor
 public:
 	ABoss3Elevator();
 
+	UPROPERTY(BlueprintAssignable)
+	FOnElevatorFinishedSignature OnElevatorFinished;
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
@@ -51,6 +56,9 @@ protected:
 
 	UFUNCTION()
 	void OnTimelineFinished();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_ActivateElevator();
 
 private:
 	FVector StartLocation;
