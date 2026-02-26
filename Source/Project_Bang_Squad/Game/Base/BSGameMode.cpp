@@ -144,6 +144,24 @@ void ABSGameMode::SpawnPlayerCharacter(AController* Controller, EJobType JobType
     }
 }
 
+void ABSGameMode::RestartPlayer(AController* NewPlayer)
+{
+	Super::RestartPlayer(NewPlayer);
+
+	if (!NewPlayer) return;
+
+	EJobType JobToSpawn = EJobType::Titan; // 기본 직업 세팅
+	
+	if (ABSPlayerState* PS = NewPlayer->GetPlayerState<ABSPlayerState>())
+	{
+		JobToSpawn = PS->GetJob();
+	}
+
+	// 기존 엔진의 DefaultPawn & PlayerStart 스폰 로직 대신, 
+	// 우리가 만든 SpawnPlayerCharacter를 호출해 체크포인트 위치를 받아오도록 강제합니다.
+	SpawnPlayerCharacter(NewPlayer, JobToSpawn);
+}
+
 FTransform ABSGameMode::GetRespawnTransform(AController* Controller)
 {
     AActor* PlayerStart = FindPlayerStart(Controller);

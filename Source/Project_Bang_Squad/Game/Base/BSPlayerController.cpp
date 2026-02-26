@@ -10,6 +10,15 @@ void ABSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	for (TObjectPtr<UUserWidget> Widget : ManagedWidgets)
+	{
+		if (Widget && Widget->IsInViewport())
+		{
+			Widget->RemoveFromParent();
+		}
+	}
+	ManagedWidgets.Empty();
+	
 	if (IsLocalController())
 	{
 		if (UBSGameInstance* GI = GetGameInstance<UBSGameInstance>())

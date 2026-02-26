@@ -10,7 +10,7 @@
 class UQTEWidget;
 class UInputMappingContext;
 class UInputAction;
-class AQTE_Trap; // Àü¹æ ¼±¾ð
+class AQTE_Trap; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 UCLASS()
 class PROJECT_BANG_SQUAD_API AStageBossPlayerController : public AStagePlayerController
@@ -20,21 +20,21 @@ class PROJECT_BANG_SQUAD_API AStageBossPlayerController : public AStagePlayerCon
 public:
 	AStageBossPlayerController();
 
-	// --- [½ºÅ×ÀÌÁö 2 °³ÀÎ QTE ·ÎÁ÷ (¼­¹ö Àü¿ë)] ---
+	// --- [ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 2 ï¿½ï¿½ï¿½ï¿½ QTE ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)] ---
 	void Server_SetQTETrap(AQTE_Trap* InTrap);
 	void Server_ClearQTETrap();
 
-	// --- [½ºÅ×ÀÌÁö 2 °³ÀÎ QTE ·ÎÁ÷ (Å¬¶óÀÌ¾ðÆ® UI)] ---
+	// --- [ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 2 ï¿½ï¿½ï¿½ï¿½ QTE ï¿½ï¿½ï¿½ï¿½ (Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ® UI)] ---
 	UFUNCTION(Client, Reliable)
 	void Client_UpdateIndividualQTEUI(int32 CurrentCount, int32 MaxCount);
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override; // [º¹±¸] ±âÁ¸ EndPlay
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override; // [ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ EndPlay
 	virtual void SetupInputComponent() override;
 
 	// ==========================================
-	// [±âÁ¸] Stage 1 ±×·ì QTE (GÅ°)
+	// [ï¿½ï¿½ï¿½ï¿½] Stage 1 ï¿½×·ï¿½ QTE (GÅ°)
 	// ==========================================
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|GroupQTE")
 	TObjectPtr<UInputMappingContext> QTE_IMC;
@@ -47,12 +47,12 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void Server_SubmitQTEInput();
 
-	// [º¹±¸] ±âÁ¸ QTE À§Á¬ ÀÎ½ºÅÏ½º
+	// [ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½ï¿½ QTE ï¿½ï¿½ï¿½ï¿½ ï¿½Î½ï¿½ï¿½Ï½ï¿½
 	UPROPERTY()
 	TObjectPtr<UQTEWidget> QTEWidgetInstance;
 
 	// ==========================================
-	// [½Å±Ô] Stage 2 °³ÀÎ QTE (A/D ¿¬Å¸)
+	// [ï¿½Å±ï¿½] Stage 2 ï¿½ï¿½ï¿½ï¿½ QTE (A/D ï¿½ï¿½Å¸)
 	// ==========================================
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input|IndividualQTE")
 	TObjectPtr<UInputMappingContext> IndividualQTE_IMC;
@@ -76,4 +76,14 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI|IndividualQTE")
 	void OnUpdateIndividualQTECount(int32 CurrentCount, int32 MaxCount);
+
+	//DeathCount UI
+	UPROPERTY(EditDefaultsOnly, Category = "UI/DeathCount")
+	TSubclassOf<class UUserWidget> RespawnCountWidgetClass;
+	UPROPERTY()
+	class URespawnCountWidget* RespawnCountWidget;
+
+	UFUNCTION()
+	void UpdateUI_RespawnCount(int32 CurrentLives);
+	
 };

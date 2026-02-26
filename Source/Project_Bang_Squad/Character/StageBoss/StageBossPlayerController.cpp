@@ -4,7 +4,9 @@
 #include "Project_Bang_Squad/Character/StageBoss/StageBossGameMode.h" // [복구] 기존 게임모드 헤더
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "StageBossGameState.h"
 #include "Project_Bang_Squad/Character/StageBoss/AQTE_Trap.h"
+#include "Project_Bang_Squad/UI/Stage/Boss/RespawnCountWidget.h"
 #include "Project_Bang_Squad/UI/Stage/Boss/QTEWidget.h" // [복구] 기존 위젯 헤더
 
 AStageBossPlayerController::AStageBossPlayerController()
@@ -24,6 +26,22 @@ void AStageBossPlayerController::BeginPlay()
 			Subsystem->AddMappingContext(QTE_IMC, 1);
 		}
 	}
+
+	if (RespawnCountWidgetClass)
+	{
+		RespawnCountWidget = CreateWidget<URespawnCountWidget>(this, RespawnCountWidgetClass);
+		if (RespawnCountWidget)
+		{
+			RespawnCountWidget->AddToViewport();
+		}
+	}
+
+	//GameState 이벤트 연결
+	if (AStageBossGameState* GS = GetWorld()->GetGameState<AStageBossGameState>())
+	{
+		GS->OnTeamLivesChanged.AddDynamic(this, &AStageBossPlayerController::UpdateUI_RespawnCount);
+		UpdateUI_RespawnCount(GS->TeamLives);
+	}
 }
 
 void AStageBossPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -35,6 +53,11 @@ void AStageBossPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReaso
 	{
 		QTEWidgetInstance->RemoveFromParent();
 		QTEWidgetInstance = nullptr;
+	}
+	if (RespawnCountWidget)
+	{
+		RespawnCountWidget->RemoveFromParent();
+		RespawnCountWidget = nullptr;
 	}
 }
 
@@ -118,6 +141,14 @@ void AStageBossPlayerController::Client_UpdateIndividualQTEUI_Implementation(int
 void AStageBossPlayerController::Input_IndividualQTEMash(const FInputActionValue& Value)
 {
 	Server_SubmitIndividualQTEInput();
+}
+
+void AStageBossPlayerController::UpdateUI_RespawnCount(int32 CurrentLives)
+{
+	if (RespawnCountWidget)
+	{
+		RespawnCountWidget->UpdateRespawnCount(CurrentLives);
+	}
 }
 
 void AStageBossPlayerController::Server_SubmitIndividualQTEInput_Implementation()
