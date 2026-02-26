@@ -47,8 +47,13 @@ private:
 	float OriginalGroundFriction;
 	float OriginalBrakingDeceleration;
 
+	//UPROPERTY()
+	//ABaseCharacter* TargetCharacter; // [변경] ABaseCharacter로 저장
+
 	UPROPERTY()
-	ABaseCharacter* TargetCharacter; // [변경] ABaseCharacter로 저장
+	TSet<ABaseCharacter*> TargetCharacters;
+	TMap<ABaseCharacter*, float> OriginalGroundFrictions;
+	TMap<ABaseCharacter*, float> OriginalBrakingDecelerations;
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
