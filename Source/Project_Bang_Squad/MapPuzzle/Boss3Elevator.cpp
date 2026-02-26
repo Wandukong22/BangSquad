@@ -1,11 +1,12 @@
 ﻿#include "Boss3Elevator.h"
 #include "Components/StaticMeshComponent.h"
 #include "Curves/CurveFloat.h"
-#include "Misc/OutputDeviceNull.h" 
+#include "Misc/OutputDeviceNull.h"
 
 ABoss3Elevator::ABoss3Elevator()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	RootComponent = MeshComp;
@@ -50,10 +51,46 @@ void ABoss3Elevator::Tick(float DeltaTime)
 
 void ABoss3Elevator::ActivateElevator()
 {
-	if (bIsActivated) return;
-
+	if (!HasAuthority()) return;
+	/*if (bIsActivated)
+	{
+		OnElevatorFinished.Broadcast();
+		return;
+	}*/
 	bIsActivated = true;
+	Multicast_ActivateElevator();
+}
 
+void ABoss3Elevator::HandleTimelineProgress(float Value)
+{
+	FVector NewLoc = FMath::Lerp(StartLocation, EndLocation, Value);
+	SetActorLocation(NewLoc);
+}
+
+void ABoss3Elevator::OnTimelineFinished()
+{
+	if (HasAuthority())
+	{
+		OnElevatorFinished.Broadcast();
+	}
+
+	if (TargetMachines.Num() > 0)
+	{
+		FOutputDeviceNull Ar; // 리플렉션 호출용 빈 껍데기
+
+		for (AActor* Machine : TargetMachines)
+		{
+			if (IsValid(Machine))
+			{
+				// BP의 "Deactivate" 커스텀 이벤트를 강제로 실행
+				Machine->CallFunctionByNameWithArguments(TEXT("Deactivate"), Ar, nullptr, true);
+			}
+		}
+	}
+}
+
+void ABoss3Elevator::Multicast_ActivateElevator_Implementation()
+{
 	// [1] 엘리베이터 상승 시작
 	if (RiseCurve)
 	{
@@ -72,29 +109,6 @@ void ABoss3Elevator::ActivateElevator()
 			{
 				// "Activate"라는 이름의 커스텀 이벤트를 찾아서 실행
 				Machine->CallFunctionByNameWithArguments(TEXT("Activate"), Ar, nullptr, true);
-			}
-		}
-	}
-}
-
-void ABoss3Elevator::HandleTimelineProgress(float Value)
-{
-	FVector NewLoc = FMath::Lerp(StartLocation, EndLocation, Value);
-	SetActorLocation(NewLoc);
-}
-
-void ABoss3Elevator::OnTimelineFinished()
-{
-	if (TargetMachines.Num() > 0)
-	{
-		FOutputDeviceNull Ar; // 리플렉션 호출용 빈 껍데기
-
-		for (AActor* Machine : TargetMachines)
-		{
-			if (IsValid(Machine))
-			{
-				// BP의 "Deactivate" 커스텀 이벤트를 강제로 실행
-				Machine->CallFunctionByNameWithArguments(TEXT("Deactivate"), Ar, nullptr, true);
 			}
 		}
 	}

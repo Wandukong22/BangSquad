@@ -90,11 +90,24 @@ protected:
 
 	FTimerHandle CheckDistanceTimerHandle;
 	void CheckWidgetDistance();
+
+	//실제 맵 이동 로직 분리
+	void PerformLevelTravel();
+	//엘리베이터 연출 끝났을 때 호출될 함수
+	UFUNCTION()
+	void OnBoss3ElevatorFinished();
+	//플레이어 이동 제한
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_DisablePlayersInput();
+
+	UPROPERTY(EditAnywhere, Category = "BS|Map")
+	float ElevatorDuration = 3.f;
 private:
 	//구역 안의 플레이어
 	TSet<AActor*> OverlappingPlayers;
 
 	FTimerHandle TravelTimerHandle;
+	FTimerHandle ElevatorTravelTimerHandle;
 
 	//카운트다운 갱신용 타이머
 	FTimerHandle CountdownUpdateTimer;
