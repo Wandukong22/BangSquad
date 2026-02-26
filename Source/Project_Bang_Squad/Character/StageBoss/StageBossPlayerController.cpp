@@ -6,7 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "StageBossGameState.h"
 #include "Project_Bang_Squad/Character/StageBoss/AQTE_Trap.h"
-#include "Project_Bang_Squad/UI/Stage/Boss/DeathCountWidget.h"
+#include "Project_Bang_Squad/UI/Stage/Boss/RespawnCountWidget.h"
 #include "Project_Bang_Squad/UI/Stage/Boss/QTEWidget.h" // [복구] 기존 위젯 헤더
 
 AStageBossPlayerController::AStageBossPlayerController()
@@ -29,7 +29,7 @@ void AStageBossPlayerController::BeginPlay()
 
 	if (DeathCountWidgetClass)
 	{
-		DeathCountWidget = CreateWidget<UDeathCountWidget>(this, DeathCountWidgetClass);
+		DeathCountWidget = CreateWidget<URespawnCountWidget>(this, DeathCountWidgetClass);
 		if (DeathCountWidget)
 		{
 			DeathCountWidget->AddToViewport();

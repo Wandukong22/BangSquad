@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "DeathCountWidget.h"
+#include "RespawnCountWidget.h"
 
 #include "Components/TextBlock.h"
 
-void UDeathCountWidget::UpdateDeathCount(int32 CurrentLives)
+void URespawnCountWidget::UpdateDeathCount(int32 CurrentLives)
 {
 	if (Txt_DeathCount)
 	{

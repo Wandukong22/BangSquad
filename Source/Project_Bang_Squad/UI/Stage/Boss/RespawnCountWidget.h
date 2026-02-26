@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "DeathCountWidget.generated.h"
+#include "RespawnCountWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECT_BANG_SQUAD_API UDeathCountWidget : public UUserWidget
+class PROJECT_BANG_SQUAD_API URespawnCountWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

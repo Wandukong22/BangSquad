@@ -81,7 +81,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI/DeathCount")
 	TSubclassOf<class UUserWidget> DeathCountWidgetClass;
 	UPROPERTY()
-	class UDeathCountWidget* DeathCountWidget;
+	class URespawnCountWidget* DeathCountWidget;
 
 	UFUNCTION()
 	void UpdateUI_DeathCount(int32 CurrentLives);
