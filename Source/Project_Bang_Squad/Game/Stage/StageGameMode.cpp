@@ -12,6 +12,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/GameStateBase.h"
 #include "Checkpoint.h"
+#include "EngineUtils.h"
 #include "StageGameState.h"
 
 AStageGameMode::AStageGameMode()
@@ -39,6 +40,17 @@ FTransform AStageGameMode::GetRespawnTransform(AController* Controller)
 			if (IsValid(CP))
 			{
 				return CP->GetActorTransform();
+			}
+		}
+		else
+		{
+			for (TActorIterator<ACheckpoint> It(World); It; ++It)
+			{
+				if (It->GetCheckpointIndex() == TargetIndex)
+				{
+					GS->CheckpointMap.Add(TargetIndex, *It);
+					return It->GetActorTransform();
+				}
 			}
 		}
 	}

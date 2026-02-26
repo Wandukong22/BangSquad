@@ -20,6 +20,7 @@ public:
 
 	virtual void RequestRespawn(AController* Controller) override;
 	virtual void SpawnPlayerCharacter(AController* Controller, EJobType JobType);
+	virtual void RestartPlayer(AController* NewPlayer) override;
     
 	// =========================================================================
 	// 코인 시스템 (Banker Logic)
