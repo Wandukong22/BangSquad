@@ -25,16 +25,24 @@ FTransform AStageGameMode::GetRespawnTransform(AController* Controller)
 {
 	UWorld* World = GetWorld();
 	if (!World) return FTransform::Identity;
-
-	//스테이지에서의 체크포인트 확인
-	AStageGameState* GS = World->GetGameState<AStageGameState>();
-	if (!GS) return FindPlayerStart(Controller)->GetActorTransform();
 	
-	int32 TargetIndex = GS->GetStageCheckpointIndex();
-
+	AStageGameState* GS = World->GetGameState<AStageGameState>();
+	int32 TargetIndex = 0;
+	
+	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+	{
+		TargetIndex = GI->GetSavedCheckpointIndex();
+	}
+	if (TargetIndex == 0)
+	{
+		TargetIndex = GS->GetStageCheckpointIndex();
+	}
+	
+	//스테이지에서의 체크포인트 확인
+	
 	if (TargetIndex > 0)
 	{
-		if (GS->CheckpointMap.Contains(TargetIndex))
+		if (GS && GS->CheckpointMap.Contains(TargetIndex))
 		{
 			ACheckpoint* CP = GS->CheckpointMap[TargetIndex];
 			if (IsValid(CP))
@@ -48,7 +56,10 @@ FTransform AStageGameMode::GetRespawnTransform(AController* Controller)
 			{
 				if (It->GetCheckpointIndex() == TargetIndex)
 				{
-					GS->CheckpointMap.Add(TargetIndex, *It);
+					if (GS)
+					{
+						GS->CheckpointMap.Add(TargetIndex, *It);
+					}
 					return It->GetActorTransform();
 				}
 			}
