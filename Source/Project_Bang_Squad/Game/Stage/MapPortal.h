@@ -102,6 +102,11 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "BS|Map")
 	float ElevatorDuration = 3.f;
+
+	//포탈 재사용 관련
+	UPROPERTY(EditAnywhere, Category = "BS|Map")
+	bool bIsReusable = false;
+
 private:
 	//구역 안의 플레이어
 	TSet<AActor*> OverlappingPlayers;
