@@ -81,7 +81,7 @@ void AMapPortal::BeginPlay()
 	if (HasAuthority())
 	{
 		UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-		if (GI && GI->HasVisitedStage(TargetStageIndex, TargetSection))
+		if (!bIsReusable && GI && GI->HasVisitedStage(TargetStageIndex, TargetSection))
 		{
 			Destroy();
 			return;
