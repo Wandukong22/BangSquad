@@ -25,7 +25,16 @@ void UMiniGameRankingRow::UpdateData(int32 Rank, class AMiniGamePlayerState* Pla
 
 	if (Txt_Rank)
 	{
-		Txt_Rank->SetText(FText::AsNumber(Rank));
+		FText RankText = FText();
+		switch (Rank)
+		{
+		case 1: RankText = FText::FromString("1st"); break;
+		case 2: RankText = FText::FromString("2nd"); break;
+		case 3: RankText = FText::FromString("3rd"); break;
+		case 4: RankText = FText::FromString("4th"); break;
+		default: RankText = FText::FromString("??");
+		}
+		Txt_Rank->SetText(RankText);
 	}
 	if (Img_JobIcon)
 	{
