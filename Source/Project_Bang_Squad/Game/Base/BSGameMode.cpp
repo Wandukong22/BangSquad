@@ -146,9 +146,8 @@ void ABSGameMode::SpawnPlayerCharacter(AController* Controller, EJobType JobType
 
 void ABSGameMode::RestartPlayer(AController* NewPlayer)
 {
-	Super::RestartPlayer(NewPlayer);
-
-	if (!NewPlayer) return;
+	//Super::RestartPlayer(NewPlayer);
+	if (!NewPlayer || NewPlayer->IsPendingKillPending()) return;
 
 	EJobType JobToSpawn = EJobType::Titan; // 기본 직업 세팅
 	
