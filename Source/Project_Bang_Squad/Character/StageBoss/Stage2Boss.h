@@ -150,6 +150,9 @@ public:
     UFUNCTION(NetMulticast, Reliable)
     void Multicast_HideBossHP();
 
+    UPROPERTY(EditInstanceOnly, Category = "BS|Boss")
+    TObjectPtr<class AMapPortal> TargetPortal;
+    
 protected:
     UFUNCTION()
     void CheckMinionsStatus();
@@ -231,5 +234,6 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boss|Pattern")
     TObjectPtr<UAnimMontage> SummonPhaseMontage;
 
+    virtual void OnDeathStarted() override;
 
 };

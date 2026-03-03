@@ -14,8 +14,7 @@
 #include "Kismet/KismetSystemLibrary.h" // SphereTrace용
 #include "Project_Bang_Squad/Character/StageBoss/BossSplitPattern.h"
 #include "Components/CapsuleComponent.h"
-
-
+#include "Project_Bang_Squad/Game/Stage/MapPortal.h"
 
 
 AStage2Boss::AStage2Boss()
@@ -105,6 +104,19 @@ void AStage2Boss::OnHealthChanged(float CurrentHealth, float MaxHealth)
         {
             Multicast_HideBossHP();
         }
+    }
+}
+
+void AStage2Boss::OnDeathStarted()
+{
+    Super::OnDeathStarted();
+
+    if (!HasAuthority()) return;
+
+    // 포탈 활성화 로직
+    if (TargetPortal)
+    {
+        TargetPortal->ActivatePortal();
     }
 }
 
