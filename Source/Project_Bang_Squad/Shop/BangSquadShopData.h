@@ -44,42 +44,40 @@ struct FShopItemData : public FTableRowBase
 public:
 	// --- 기본 정보 ---
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Common Info")
-	FText ItemName;
+	FText ItemName = FText::GetEmpty();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Common Info", meta = (MultiLine = true))
-	FText Description;
+	FText Description = FText::GetEmpty();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Common Info")
-	UTexture2D* Icon;
+	UTexture2D* Icon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Common Info")
-	EItemType ItemType;
+	EItemType ItemType = EItemType::None;
 
-	// ★ [핵심] 직업 제한 (드롭다운으로 선택 가능)
+	// 직업 제한 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Requirement")
 	ECharacterJob RequiredJob = ECharacterJob::Common;
 
 	// --- 장식/가격 정보 ---
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cosmetic Info")
-	EItemRarity Rarity;
+	EItemRarity Rarity = EItemRarity::Default;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cosmetic Info")
-	int32 Price;
-
-	// --- 1. 부착형 장식 (투구 등) ---
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visual - HeadGear")
-	UStaticMesh* StaticMesh;
+	int32 Price = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visual - HeadGear")
-	USkeletalMesh* SkeletalMesh;
+	UStaticMesh* StaticMesh = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visual - HeadGear")
-	UAnimationAsset* IdleAnimation;
+	USkeletalMesh* SkeletalMesh = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visual - HeadGear")
+	UAnimationAsset* IdleAnimation = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visual - HeadGear")
 	FTransform AdjustTransform = FTransform::Identity;
 
-	// --- 2. 스킨형 (재질 변경) ---
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visual - Skin")
-	UMaterialInterface* SkinMaterial;
+	UMaterialInterface* SkinMaterial = nullptr;
 };
