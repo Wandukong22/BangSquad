@@ -9,6 +9,7 @@
 #include "EngineUtils.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
+#include "Project_Bang_Squad/Data/DataAsset/CoinRewardDataAsset.h"
 #include "Project_Bang_Squad/MapPuzzle/ArenaFloor.h"
 
 AArenaMiniGameMode::AArenaMiniGameMode()
@@ -215,13 +216,15 @@ void AArenaMiniGameMode::EndArena()
 		Ranks.Add(CurrentRank);
 
 		int32 RewardCoin = 0;
-		switch (CurrentRank)
+		if (RewardDataAsset && RewardDataAsset->RewardMap.Contains(CurrentStageIndex))
 		{
-		case 1: RewardCoin = 100; break;
-		case 2: RewardCoin = 70;  break;
-		case 3: RewardCoin = 40;  break;
-		case 4: RewardCoin = 20;  break;
-		default: break;
+			const TArray<int32>& MiniGameRewards = RewardDataAsset->RewardMap[CurrentStageIndex].MiniGameRankRewards;
+			
+			// 배열 인덱스 안전 검사 (1등은 인덱스 0)
+			if (MiniGameRewards.IsValidIndex(CurrentRank - 1))
+			{
+				RewardCoin = MiniGameRewards[CurrentRank - 1];
+			}
 		}
 		Rewards.Add(RewardCoin);
 	}

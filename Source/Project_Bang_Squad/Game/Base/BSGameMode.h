@@ -62,8 +62,7 @@ protected:
 	//코인들의 정보를 담아놓은 DataAsset
 	UPROPERTY(EditDefaultsOnly, Category = "BS|Coin")
 	class UCoinRewardDataAsset* RewardDataAsset;
-
-private:
+	
 	UPROPERTY()
 	EStageIndex CurrentStageIndex = EStageIndex::None;
 };

@@ -9,6 +9,7 @@
 #include "MiniGameState.h"
 #include "GameFramework/Character.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
+#include "Project_Bang_Squad/Data/DataAsset/CoinRewardDataAsset.h"
 #include "Project_Bang_Squad/Game/Stage/Checkpoint.h"
 #include "Project_Bang_Squad/Game/Stage/StageGameState.h"
 #include "Project_Bang_Squad/Game/Stage/StagePlayerController.h"
@@ -133,13 +134,14 @@ void AMiniGameMode::EndMiniGame(EStageIndex StageIndex)
 		Ranks.Add(Rank);
 
 		int32 Coin = 0;
-		switch (Rank)
+		if (RewardDataAsset && RewardDataAsset->RewardMap.Contains(CurrentStageIndex))
 		{
-		case 1: Coin = 100; break;
-		case 2: Coin = 70;  break;
-		case 3: Coin = 40;  break;
-		case 4: Coin = 20;  break;
-		default: break;
+			const TArray<int32>& MiniGameRewards = RewardDataAsset->RewardMap[CurrentStageIndex].MiniGameRankRewards;
+			
+			if (MiniGameRewards.IsValidIndex(Rank - 1))
+			{
+				Coin = MiniGameRewards[Rank - 1];
+			}
 		}
 		Rewards.Add(Coin);
 	}
