@@ -67,24 +67,28 @@ void ABSGameMode::GiveStageClearReward()
 	SaveAllPlayerCoins();
 }
 
-void ABSGameMode::GiveMiniGameReward(const TArray<APlayerController*>& RankedPlayers)
+TArray<int32> ABSGameMode::GiveMiniGameReward(const TArray<APlayerController*>& RankedPlayers)
 {
-	if (!RewardDataAsset || !RewardDataAsset->RewardMap.Contains(CurrentStageIndex)) return;
+	TArray<int32> GivenRewards;
+	if (!RewardDataAsset || !RewardDataAsset->RewardMap.Contains(CurrentStageIndex)) return GivenRewards;
 
 	const TArray<int32>& Rewards = RewardDataAsset->RewardMap[CurrentStageIndex].MiniGameRankRewards;
 	for (int32 i = 0; i < RankedPlayers.Num(); i++)
 	{
-		if (i >= Rewards.Num()) break;
+		int32 Coin = Rewards.IsValidIndex(i) ? Rewards[i] : 0;
+		GivenRewards.Add(Coin);
 
 		if (APlayerController* PC = RankedPlayers[i])
 		{
 			if (ABSPlayerState* BSPS = PC->GetPlayerState<ABSPlayerState>())
 			{
-				BSPS->AddCoin(Rewards[i]);
+				BSPS->AddCoin(Coin);
 			}
 		}
 	}
 	SaveAllPlayerCoins();
+
+	return GivenRewards;
 }
 
 //void ABSGameMode::GiveStageClearReward(int32 Amount)

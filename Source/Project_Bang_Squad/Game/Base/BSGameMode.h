@@ -33,17 +33,11 @@ public:
 	virtual void Logout(AController* Exiting) override;
     
 	// 스테이지 클리어 보상 (자식 게임 모드에서 호출)
-	
-	//UFUNCTION(BlueprintCallable, Category = "BS|Coin")
-	//void GiveStageClearReward(int32 Amount = 100);
 	UFUNCTION()
 	void GiveStageClearReward();
-	UFUNCTION()
-	void GiveMiniGameReward(const TArray<APlayerController*>& RankedPlayers);
-    
 	// 미니게임 보상 (순위별)
-	//UFUNCTION(BlueprintCallable, Category = "BS|Coin")
-	//void GiveMiniGameReward(const TArray<APlayerController*>& RankedPlayers);
+	UFUNCTION()
+	TArray<int32> GiveMiniGameReward(const TArray<APlayerController*>& RankedPlayers);
     
 	// 강제 저장
 	//

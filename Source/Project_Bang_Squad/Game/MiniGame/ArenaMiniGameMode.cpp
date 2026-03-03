@@ -215,28 +215,15 @@ void AArenaMiniGameMode::EndArena()
 			RankedPCs.Add(ArenaPS->GetPlayerController());
 		}
 	}
-	GiveMiniGameReward(RankedPCs);
+	
 
 	//순위 및 코인 보상 데이터 분리
 	TArray<int32> Ranks;
-	TArray<int32> Rewards;
+	TArray<int32> Rewards = GiveMiniGameReward(RankedPCs);
 	for (AArenaPlayerState* ArenaPS : PlayerList)
 	{
 		int32 CurrentRank = ArenaPS->GetArenaRank();
 		Ranks.Add(CurrentRank);
-
-		int32 RewardCoin = 0;
-		if (RewardDataAsset && RewardDataAsset->RewardMap.Contains(CurrentStageIndex))
-		{
-			const TArray<int32>& MiniGameRewards = RewardDataAsset->RewardMap[CurrentStageIndex].MiniGameRankRewards;
-			
-			// 배열 인덱스 안전 검사 (1등은 인덱스 0)
-			if (MiniGameRewards.IsValidIndex(CurrentRank - 1))
-			{
-				RewardCoin = MiniGameRewards[CurrentRank - 1];
-			}
-		}
-		Rewards.Add(RewardCoin);
 	}
 	
 	
