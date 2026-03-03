@@ -27,6 +27,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -54,8 +55,11 @@ public:
 
 private:
 	//이미 올라갔는지 체크
+	UPROPERTY(ReplicatedUsing = OnRep_HasArrived)
 	bool bHasArrived = false;
-	
+	UFUNCTION()
+	void OnRep_HasArrived();
+
 	bool bIsRising = false;
 	float CurrentCurveTime = 0.0f;
 	float MaxCurveTime = 0.0f;
