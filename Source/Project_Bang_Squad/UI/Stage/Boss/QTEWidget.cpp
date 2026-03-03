@@ -17,7 +17,6 @@ void UQTEWidget::NativeConstruct()
 		KeyCountText->SetText(FText::AsNumber(0));
 	}
 
-	SetVisibility(ESlateVisibility::Hidden);
 	// [추가] 게임스테이트 찾아서 "QTE 켜졌니?" 방송 구독
 	if (auto* GS = GetWorld()->GetGameState<AStageBossGameState>())
 	{
@@ -31,6 +30,7 @@ void UQTEWidget::NativeConstruct()
 			HandleQTEStateChanged(true);
 		}
 	}
+	HideWidget();
 }
 
 //void UQTEWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -70,8 +70,6 @@ void UQTEWidget::UpdateKeyCount(int32 KeyCount)
 			if (KeyCount > 0)
 			{
 				ShowWidget();
-				//CurrentAnimTime = 0.f;
-				//bIsAnimating = true;
 				PlayComboAnimation();
 			}
 			else
@@ -82,6 +80,7 @@ void UQTEWidget::UpdateKeyCount(int32 KeyCount)
 			LastKeyCount = KeyCount;
 		}
 	}
+	HideWidget();
 }
 
 void UQTEWidget::SetTargetPlayerState(class AStageBossPlayerState* InTargetPlayerState)
