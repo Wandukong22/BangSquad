@@ -13,7 +13,7 @@ struct FCoinRewardData
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 StageClearReward;
+	int32 StageClearReward = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<int32> MiniGameRankRewards;
