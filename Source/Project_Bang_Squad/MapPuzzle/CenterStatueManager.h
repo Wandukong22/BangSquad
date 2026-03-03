@@ -115,4 +115,10 @@ private:
 	// 회전 계산용
 	FQuat StartQuat;
 	FQuat EndQuat;
+
+	UPROPERTY(ReplicatedUsing = OnRep_IsDestroyed)
+	bool bIsDestroyed = false;
+
+	UFUNCTION()
+	void OnRep_IsDestroyed();
 };

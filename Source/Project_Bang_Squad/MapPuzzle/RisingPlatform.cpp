@@ -29,8 +29,7 @@ void ARisingPlatform::LoadActorData(const FActorSaveData& InData)
 
 		if (bHasArrived)
 		{
-			bIsRising = false;
-			SetActorLocation(EndLocation);
+			OnRep_HasArrived();
 		}
 	}
 }
@@ -50,11 +49,14 @@ void ARisingPlatform::BeginPlay()
 	}
 	
 	//저장된 데이터 확인
-	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+	if (HasAuthority())
 	{
-		if (FActorSaveData* SavedData = GI->GetDataFromInstance(PuzzleID))
+		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 		{
-			LoadActorData(*SavedData);
+			if (FActorSaveData* SavedData = GI->GetDataFromInstance(PuzzleID))
+			{
+				LoadActorData(*SavedData);
+			}
 		}
 	}
 }
@@ -109,6 +111,21 @@ void ARisingPlatform::Tick(float DeltaTime)
 			}
 			*/
 		}
+	}
+}
+
+void ARisingPlatform::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ARisingPlatform, bHasArrived);
+}
+
+void ARisingPlatform::OnRep_HasArrived()
+{
+	if (bHasArrived)
+	{
+		bIsRising = false;
+		SetActorLocation(EndLocation);
 	}
 }
 

@@ -44,6 +44,7 @@ void ACenterStatueManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(ACenterStatueManager, bLeftActive);
 	DOREPLIFETIME(ACenterStatueManager, bRightActive);
 	DOREPLIFETIME(ACenterStatueManager, bPuzzleCompleted);
+	DOREPLIFETIME(ACenterStatueManager, bIsDestroyed);
 }
 
 void ACenterStatueManager::SaveActorData(FActorSaveData& OutData)
@@ -52,7 +53,7 @@ void ACenterStatueManager::SaveActorData(FActorSaveData& OutData)
 	OutData.BoolData.Add("bRightActive", bRightActive);
 	OutData.BoolData.Add("bPuzzleCompleted", bPuzzleCompleted);
 
-	bool bIsDestroyed = (StatueMesh == nullptr || !StatueMesh->IsVisible());
+	bIsDestroyed = (StatueMesh == nullptr || !StatueMesh->IsVisible());
 	OutData.BoolData.Add("bIsDestroyed", bIsDestroyed);
 }
 
@@ -67,11 +68,10 @@ void ACenterStatueManager::LoadActorData(const FActorSaveData& InData)
 	
 	if (InData.BoolData.Contains("bIsDestroyed"))
 	{
-		bool bDestroyed = InData.BoolData["bIsDestroyed"];
-		if (bDestroyed && StatueMesh)
+		bIsDestroyed = InData.BoolData["bIsDestroyed"];
+		if (bIsDestroyed)
 		{
-			StatueMesh->DestroyComponent();
-			StatueMesh = nullptr;
+			OnRep_IsDestroyed();
 		}
 	}
 }
@@ -241,11 +241,17 @@ void ACenterStatueManager::StartDestroyTimer()
 	Multicast_DestroyStatueMesh();
 }
 
-void ACenterStatueManager::Multicast_DestroyStatueMesh_Implementation()
+void ACenterStatueManager::OnRep_IsDestroyed()
 {
-	if (StatueMesh)
+	if (bIsDestroyed && StatueMesh)
 	{
 		StatueMesh->DestroyComponent();
 		StatueMesh = nullptr;
 	}
+}
+
+void ACenterStatueManager::Multicast_DestroyStatueMesh_Implementation()
+{
+	bIsDestroyed = true;
+	OnRep_IsDestroyed();
 }
