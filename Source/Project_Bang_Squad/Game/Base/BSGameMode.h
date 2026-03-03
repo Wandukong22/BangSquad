@@ -25,6 +25,7 @@ public:
 	// =========================================================================
 	// 코인 시스템 (Banker Logic)
 	// =========================================================================
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	// 접속 시 코인 로드
 	virtual void PostLogin(APlayerController* NewPlayer) override;
     
@@ -32,13 +33,11 @@ public:
 	virtual void Logout(AController* Exiting) override;
     
 	// 스테이지 클리어 보상 (자식 게임 모드에서 호출)
-	
-	UFUNCTION(BlueprintCallable, Category = "BS|Coin")
-	void GiveStageClearReward(int32 Amount = 100);
-    
+	UFUNCTION()
+	void GiveStageClearReward();
 	// 미니게임 보상 (순위별)
-	UFUNCTION(BlueprintCallable, Category = "BS|Coin")
-	void GiveMiniGameReward(const TArray<APlayerController*>& RankedPlayers);
+	UFUNCTION()
+	TArray<int32> GiveMiniGameReward(const TArray<APlayerController*>& RankedPlayers);
     
 	// 강제 저장
 	//
@@ -53,4 +52,11 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "BS|Spawn")
 	float BaseRespawnTime = 3.f;
 	virtual float GetRespawnDelay(AController* Controller) { return BaseRespawnTime; }
+
+	//코인들의 정보를 담아놓은 DataAsset
+	UPROPERTY(EditDefaultsOnly, Category = "BS|Coin")
+	class UCoinRewardDataAsset* RewardDataAsset;
+	
+	UPROPERTY()
+	EStageIndex CurrentStageIndex = EStageIndex::None;
 };

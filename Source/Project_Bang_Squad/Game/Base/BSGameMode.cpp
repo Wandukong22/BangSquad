@@ -3,6 +3,7 @@
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/GameStateBase.h"
+#include "Project_Bang_Squad/Data/DataAsset/CoinRewardDataAsset.h"
 
 ABSGameMode::ABSGameMode()
 {
@@ -23,8 +24,8 @@ void ABSGameMode::PostLogin(APlayerController* NewPlayer)
 		if (ABSPlayerState* PS = NewPlayer->GetPlayerState<ABSPlayerState>())
 		{
 			// 복잡한 UniqueId 지우고 그냥 이름 쓰기
-			FString UserKey = PS->GetPlayerName(); 
-            
+			FString UserKey = PS->GetPlayerName();
+
 			int32 SavedCoin = GI->LoadCoinFromInstance(UserKey);
 			PS->SetCoin(SavedCoin);
 		}
@@ -48,57 +49,99 @@ void ABSGameMode::Logout(AController* Exiting)
 	Super::Logout(Exiting);
 }
 
-void ABSGameMode::GiveStageClearReward(int32 Amount)
+void ABSGameMode::GiveStageClearReward()
 {
-	if (!GameState)
-	{
-		return;
-	}
+	if (!GameState || !RewardDataAsset) return;
 
-	UE_LOG(LogTemp, Warning, TEXT("💰 보상 지급 시작! 인원수: %d"), GameState->PlayerArray.Num());
+	if (!RewardDataAsset->RewardMap.Contains(CurrentStageIndex)) return;
+
+	int32 RewardAmount = RewardDataAsset->RewardMap[CurrentStageIndex].StageClearReward;
 
 	for (APlayerState* PS : GameState->PlayerArray)
 	{
-		ABSPlayerState* BSPS = Cast<ABSPlayerState>(PS);
-		if (BSPS)
+		if (ABSPlayerState* BSPS = Cast<ABSPlayerState>(PS))
 		{
-			BSPS->AddCoin(Amount);
-			UE_LOG(LogTemp, Warning, TEXT("✅ %s 에게 %d 코인 지급 완료!"), *PS->GetPlayerName(), Amount);
+			BSPS->AddCoin(RewardAmount);
 		}
 	}
 	SaveAllPlayerCoins();
 }
 
-void ABSGameMode::GiveMiniGameReward(const TArray<APlayerController*>& RankedPlayers)
+TArray<int32> ABSGameMode::GiveMiniGameReward(const TArray<APlayerController*>& RankedPlayers)
 {
-    TArray<int32> Rewards = {100, 70, 40, 20}; // 1~4등 보상
-    
-    for (int32 i = 0; i < RankedPlayers.Num(); i++)
-    {
-       if (i >= Rewards.Num()) break;
-       
-       if (APlayerController* PC = RankedPlayers[i])
-       {
-          if (ABSPlayerState* BSPS = PC->GetPlayerState<ABSPlayerState>())
-          {
-             BSPS->AddCoin(Rewards[i]);
-             
-             if (GEngine)
-             {
-                FString Msg = FString::Printf(TEXT("🏆 순위: %d등 | 보상: %d 코인 지급!"), i + 1, Rewards[i]);
-                GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, Msg);
-             }
-                
-             UE_LOG(LogTemp, Warning, TEXT("💰 [BSGameMode] Player(%s) finished Rank %d. Reward: %d Coin"), 
-                *PC->GetName(), i + 1, Rewards[i]);
-          }
-       }
-    }
-    
-    // 함수 이름 통일 (Players -> Player)
-    SaveAllPlayerCoins();
-    UE_LOG(LogTemp, Warning, TEXT("💾 [BSGameMode] All Coins Saved to GameInstance!"));
+	TArray<int32> GivenRewards;
+	if (!RewardDataAsset || !RewardDataAsset->RewardMap.Contains(CurrentStageIndex)) return GivenRewards;
+
+	const TArray<int32>& Rewards = RewardDataAsset->RewardMap[CurrentStageIndex].MiniGameRankRewards;
+	for (int32 i = 0; i < RankedPlayers.Num(); i++)
+	{
+		int32 Coin = Rewards.IsValidIndex(i) ? Rewards[i] : 0;
+		GivenRewards.Add(Coin);
+
+		if (APlayerController* PC = RankedPlayers[i])
+		{
+			if (ABSPlayerState* BSPS = PC->GetPlayerState<ABSPlayerState>())
+			{
+				BSPS->AddCoin(Coin);
+			}
+		}
+	}
+	SaveAllPlayerCoins();
+
+	return GivenRewards;
 }
+
+//void ABSGameMode::GiveStageClearReward(int32 Amount)
+//{
+//	if (!GameState)
+//	{
+//		return;
+//	}
+//
+//	UE_LOG(LogTemp, Warning, TEXT("💰 보상 지급 시작! 인원수: %d"), GameState->PlayerArray.Num());
+//
+//	for (APlayerState* PS : GameState->PlayerArray)
+//	{
+//		ABSPlayerState* BSPS = Cast<ABSPlayerState>(PS);
+//		if (BSPS)
+//		{
+//			BSPS->AddCoin(Amount);
+//			UE_LOG(LogTemp, Warning, TEXT("✅ %s 에게 %d 코인 지급 완료!"), *PS->GetPlayerName(), Amount);
+//		}
+//	}
+//	SaveAllPlayerCoins();
+//}
+//
+//void ABSGameMode::GiveMiniGameReward(const TArray<APlayerController*>& RankedPlayers)
+//{
+//    TArray<int32> Rewards = {100, 70, 40, 20}; // 1~4등 보상
+//    
+//    for (int32 i = 0; i < RankedPlayers.Num(); i++)
+//    {
+//       if (i >= Rewards.Num()) break;
+//       
+//       if (APlayerController* PC = RankedPlayers[i])
+//       {
+//          if (ABSPlayerState* BSPS = PC->GetPlayerState<ABSPlayerState>())
+//          {
+//             BSPS->AddCoin(Rewards[i]);
+//             
+//             if (GEngine)
+//             {
+//                FString Msg = FString::Printf(TEXT("🏆 순위: %d등 | 보상: %d 코인 지급!"), i + 1, Rewards[i]);
+//                GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, Msg);
+//             }
+//                
+//             UE_LOG(LogTemp, Warning, TEXT("💰 [BSGameMode] Player(%s) finished Rank %d. Reward: %d Coin"), 
+//                *PC->GetName(), i + 1, Rewards[i]);
+//          }
+//       }
+//    }
+
+// 함수 이름 통일 (Players -> Player)
+//SaveAllPlayerCoins();
+//UE_LOG(LogTemp, Warning, TEXT("💾 [BSGameMode] All Coins Saved to GameInstance!"));
+//}
 
 // 코인 저장 기능
 void ABSGameMode::SaveAllPlayerCoins()
@@ -110,7 +153,6 @@ void ABSGameMode::SaveAllPlayerCoins()
 	{
 		if (ABSPlayerState* BSPS = Cast<ABSPlayerState>(PS))
 		{
-			
 			FString UserKey = BSPS->GetPlayerName();
 
 			GI->SaveCoinToInstance(UserKey, BSPS->GetCoin());
@@ -121,27 +163,28 @@ void ABSGameMode::SaveAllPlayerCoins()
 
 void ABSGameMode::SpawnPlayerCharacter(AController* Controller, EJobType JobType)
 {
-    if (!Controller) return;
-    UBSGameInstance* GI = GetBSGameInstance();
-    if (!GI) return;
-    
-    TSubclassOf<ACharacter> PawnClass = GI->GetCharacterClass(JobType);
-    if (!PawnClass) return;
-    
-    if (APawn* OldPawn = Controller->GetPawn())
-    {
-       OldPawn->Destroy();
-    }
+	if (!Controller) return;
+	UBSGameInstance* GI = GetBSGameInstance();
+	if (!GI) return;
 
-    FTransform SpawnTransform = GetRespawnTransform(Controller);
+	TSubclassOf<ACharacter> PawnClass = GI->GetCharacterClass(JobType);
+	if (!PawnClass) return;
 
-    FActorSpawnParameters SpawnParams;
-    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	if (APawn* OldPawn = Controller->GetPawn())
+	{
+		OldPawn->Destroy();
+	}
 
-    if (APawn* NewPawn = GetWorld()->SpawnActor<APawn>(PawnClass, SpawnTransform.GetLocation(), SpawnTransform.GetRotation().Rotator(), SpawnParams))
-    {
-       Controller->Possess(NewPawn);
-    }
+	FTransform SpawnTransform = GetRespawnTransform(Controller);
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	if (APawn* NewPawn = GetWorld()->SpawnActor<APawn>(PawnClass, SpawnTransform.GetLocation(),
+	                                                   SpawnTransform.GetRotation().Rotator(), SpawnParams))
+	{
+		Controller->Possess(NewPawn);
+	}
 }
 
 void ABSGameMode::RestartPlayer(AController* NewPlayer)
@@ -150,7 +193,7 @@ void ABSGameMode::RestartPlayer(AController* NewPlayer)
 	if (!NewPlayer || NewPlayer->IsPendingKillPending()) return;
 
 	EJobType JobToSpawn = EJobType::Titan; // 기본 직업 세팅
-	
+
 	if (ABSPlayerState* PS = NewPlayer->GetPlayerState<ABSPlayerState>())
 	{
 		JobToSpawn = PS->GetJob();
@@ -161,51 +204,61 @@ void ABSGameMode::RestartPlayer(AController* NewPlayer)
 	SpawnPlayerCharacter(NewPlayer, JobToSpawn);
 }
 
+void ABSGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+	Super::InitGame(MapName, Options, ErrorMessage);
+
+	if (UBSGameInstance* GI = GetBSGameInstance())
+	{
+		CurrentStageIndex = GI->GetCurrentStage();
+	}
+}
+
 FTransform ABSGameMode::GetRespawnTransform(AController* Controller)
 {
-    AActor* PlayerStart = FindPlayerStart(Controller);
-    if (PlayerStart)
-    {
-       return PlayerStart->GetActorTransform();
-    }
-    return FTransform::Identity;
+	AActor* PlayerStart = FindPlayerStart(Controller);
+	if (PlayerStart)
+	{
+		return PlayerStart->GetActorTransform();
+	}
+	return FTransform::Identity;
 }
 
 void ABSGameMode::RequestRespawn(AController* Controller)
 {
-    if (!Controller) return;
+	if (!Controller) return;
 
-    float WaitTime = GetRespawnDelay(Controller);
+	float WaitTime = GetRespawnDelay(Controller);
 
-    if (ABSPlayerState* PS = Controller->GetPlayerState<ABSPlayerState>())
-    {
-       float ServerTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
-       PS->SetRespawnEndTime(ServerTime + WaitTime);
-    }
-    
-    FTimerHandle RespawnTimerHandle;
-    FTimerDelegate RespawnDelegate;
-    RespawnDelegate.BindUObject(this, &ABSGameMode::ExecuteRespawn, Controller);
+	if (ABSPlayerState* PS = Controller->GetPlayerState<ABSPlayerState>())
+	{
+		float ServerTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+		PS->SetRespawnEndTime(ServerTime + WaitTime);
+	}
 
-    GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, RespawnDelegate, WaitTime, false);
+	FTimerHandle RespawnTimerHandle;
+	FTimerDelegate RespawnDelegate;
+	RespawnDelegate.BindUObject(this, &ABSGameMode::ExecuteRespawn, Controller);
+
+	GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, RespawnDelegate, WaitTime, false);
 }
 
 
 void ABSGameMode::ExecuteRespawn(AController* Controller)
 {
-    if (!Controller) return;
+	if (!Controller) return;
 
-    EJobType JobToSpawn = EJobType::Titan;
-    
-    if (ABSPlayerState* PS = Controller->GetPlayerState<ABSPlayerState>())
-    {
-       JobToSpawn = PS->GetJob();
-    }
+	EJobType JobToSpawn = EJobType::Titan;
 
-    SpawnPlayerCharacter(Controller, JobToSpawn);
+	if (ABSPlayerState* PS = Controller->GetPlayerState<ABSPlayerState>())
+	{
+		JobToSpawn = PS->GetJob();
+	}
+
+	SpawnPlayerCharacter(Controller, JobToSpawn);
 }
 
 UBSGameInstance* ABSGameMode::GetBSGameInstance() const
 {
-    return Cast<UBSGameInstance>(GetGameInstance());
+	return Cast<UBSGameInstance>(GetGameInstance());
 }

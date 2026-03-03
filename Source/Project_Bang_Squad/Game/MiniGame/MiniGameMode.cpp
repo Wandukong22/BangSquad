@@ -9,6 +9,7 @@
 #include "MiniGameState.h"
 #include "GameFramework/Character.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
+#include "Project_Bang_Squad/Data/DataAsset/CoinRewardDataAsset.h"
 #include "Project_Bang_Squad/Game/Stage/Checkpoint.h"
 #include "Project_Bang_Squad/Game/Stage/StageGameState.h"
 #include "Project_Bang_Squad/Game/Stage/StagePlayerController.h"
@@ -118,30 +119,15 @@ void AMiniGameMode::EndMiniGame(EStageIndex StageIndex)
 	}
 
 	// 보상 지급 (함수가 존재한다면 주석 해제하여 사용)
-	GiveMiniGameReward(RankedList);
-
 	TArray<AMiniGamePlayerState*> PlayerStateList;
 	TArray<int32> Ranks;
-	TArray<int32> Rewards;
+	TArray<int32> Rewards = GiveMiniGameReward(RankedList);
 
 	for (APlayerController* PC : RankedList)
 	{
 		AMiniGamePlayerState* PS = PC->GetPlayerState<AMiniGamePlayerState>();
 		PlayerStateList.Add(PS);
-
-		int32 Rank = PS ? PS->GetMiniGameRank() : 0;
-		Ranks.Add(Rank);
-
-		int32 Coin = 0;
-		switch (Rank)
-		{
-		case 1: Coin = 100; break;
-		case 2: Coin = 70;  break;
-		case 3: Coin = 40;  break;
-		case 4: Coin = 20;  break;
-		default: break;
-		}
-		Rewards.Add(Coin);
+		Ranks.Add(PS ? PS->GetMiniGameRank() : 0);
 	}
 
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)

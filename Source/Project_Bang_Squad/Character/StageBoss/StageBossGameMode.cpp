@@ -232,7 +232,7 @@ void AStageBossGameMode::EndStage(bool bIsVictory)
 		UE_LOG(LogTemp, Warning, TEXT("Boss Cleared! Victory!"));
 		// �¸� �� �θ��� �������� �̵� ���� Ȱ�� ����
 		// ClearStageAndMove(EStageIndex::Stage2); 
-		GiveStageClearReward(100);
+		GiveStageClearReward();
 	}
 	else
 	{

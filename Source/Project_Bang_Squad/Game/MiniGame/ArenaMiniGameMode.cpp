@@ -9,6 +9,7 @@
 #include "EngineUtils.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
+#include "Project_Bang_Squad/Data/DataAsset/CoinRewardDataAsset.h"
 #include "Project_Bang_Squad/MapPuzzle/ArenaFloor.h"
 
 AArenaMiniGameMode::AArenaMiniGameMode()
@@ -205,27 +206,27 @@ void AArenaMiniGameMode::EndArena()
 	{
 		return A.GetArenaRank() < B.GetArenaRank();
 	});
+	//정렬된 순서대로 PlayerController 배열 생성 및 보상 지급 함수 호출
+	TArray<APlayerController*> RankedPCs;
+	for (AArenaPlayerState* ArenaPS : PlayerList)
+	{
+		if (ArenaPS && ArenaPS->GetPlayerController())
+		{
+			RankedPCs.Add(ArenaPS->GetPlayerController());
+		}
+	}
+	
 
 	//순위 및 코인 보상 데이터 분리
 	TArray<int32> Ranks;
-	TArray<int32> Rewards;
+	TArray<int32> Rewards = GiveMiniGameReward(RankedPCs);
 	for (AArenaPlayerState* ArenaPS : PlayerList)
 	{
 		int32 CurrentRank = ArenaPS->GetArenaRank();
 		Ranks.Add(CurrentRank);
-
-		int32 RewardCoin = 0;
-		switch (CurrentRank)
-		{
-		case 1: RewardCoin = 100; break;
-		case 2: RewardCoin = 70;  break;
-		case 3: RewardCoin = 40;  break;
-		case 4: RewardCoin = 20;  break;
-		default: break;
-		}
-		Rewards.Add(RewardCoin);
 	}
-
+	
+	
 	//모든 클라이언트에게 확정된 배열 쏘기
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
