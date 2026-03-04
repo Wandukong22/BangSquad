@@ -60,3 +60,93 @@ void UArenaMainWidget::ShowRankingBoard(const TArray<AArenaPlayerState*>& Player
 		}
 	}
 }
+
+void UArenaMainWidget::UpdatePartyList()
+{
+	if (!PlayerListContainer || !PlayerRowClass) return;
+
+	AGameStateBase* GS = GetWorld()->GetGameState<AGameStateBase>();
+	if (!GS) return;
+
+	APlayerState* MyPS = GetOwningPlayerState();
+	int32 CurrentChildIndex = 0;
+
+	// 4. 플레이어 목록 순회하며 생성
+	for (APlayerState* PS : GS->PlayerArray)
+	{
+		if (!PS) continue;
+		if (PS == MyPS)
+		{
+			//내 정보 업데이트
+			if (MyInfoRow)
+			{
+				MyInfoRow->SetTargetPlayerState(PS);
+				MyInfoRow->SetWidgetMode(ERowMode::Stage);
+				MyInfoRow->SetVisibility(ESlateVisibility::Visible);
+			}
+			continue;
+		}
+		// 팀원 위젯 처리
+		UPlayerRow* Row = nullptr;
+		
+		if (CurrentChildIndex < PlayerListContainer->GetChildrenCount())
+		{
+			Row = Cast<UPlayerRow>(PlayerListContainer->GetChildAt(CurrentChildIndex));
+		}
+		if (!Row)
+		{
+			Row = CreateWidget<UPlayerRow>(this, PlayerRowClass);
+			if (Row)
+			{
+				PlayerListContainer->AddChild(Row);
+			}
+		}
+
+		if (Row)
+		{
+			//누구 정보인지 타겟 설정
+			Row->SetTargetPlayerState(PS);
+			CurrentChildIndex++;
+		}
+	}
+}
+
+void UArenaMainWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+	CachedPlayerCount = 0;
+}
+
+void UArenaMainWidget::NativeTick(const FGeometry& MyGeometry, float DeltaTime)
+{
+	Super::NativeTick(MyGeometry, DeltaTime);
+
+	if (AGameStateBase* GS = GetWorld()->GetGameState<AGameStateBase>())
+	{
+		bool bNeedUpdate = false;
+
+		//전체 플레이어 수 변경 감지
+		if (GS->PlayerArray.Num() != CachedPlayerCount)
+		{
+			bNeedUpdate = true;
+		}
+		else
+		{
+			//1초마다 UI 개수 정합성 체크
+			static float TimeAccumulator = 0.f;
+			TimeAccumulator += DeltaTime;
+			
+			if (TimeAccumulator > 1.f)
+			{
+				TimeAccumulator = 0.f;
+				bNeedUpdate = true;
+			}
+		}
+
+		if (bNeedUpdate)
+		{
+			UpdatePartyList();
+			CachedPlayerCount = GS->PlayerArray.Num();
+		}
+	}
+}

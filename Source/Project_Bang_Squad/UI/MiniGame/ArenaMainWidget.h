@@ -14,7 +14,7 @@ class UTextBlock;
 class UCountdownWidget;
 
 UCLASS()
-class PROJECT_BANG_SQUAD_API UArenaMainWidget : public UStageMainWidget
+class PROJECT_BANG_SQUAD_API UArenaMainWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
@@ -25,6 +25,15 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* SurvivingTimerText;
 
+	UPROPERTY(meta = (BindWidget))
+	UPlayerRow* MyInfoRow;
+	
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* PlayerListContainer;
+
+	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
+	TSubclassOf<UPlayerRow> PlayerRowClass;
+
 	void UpdateWaitingCountdown(int32 Count);
 	void UpdateSurvivingTimer(int32 RemainingTime);
 	void SetSurvivingTimerVisible(bool bVisible);
@@ -32,10 +41,22 @@ public:
 
 	void ShowRankingBoard(const TArray<AArenaPlayerState*>& Players, const TArray<int32>& Ranks, const TArray<int32>& CoinRewards);
 
+
+	void UpdatePartyList();
+	
 protected:
+	
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* RankingContainer;
 
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
 	TSubclassOf<UMiniGameResultRow> RankingRowClass;
+
+	virtual void NativeConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float DeltaTime) override;
+
+private:
+	int32 CachedPlayerCount = 0;
+	// 현재 연결된 캐릭터 캐싱 (중복 바인딩 방지)
+	TWeakObjectPtr<ABaseCharacter> CachedCharacter;
 };
