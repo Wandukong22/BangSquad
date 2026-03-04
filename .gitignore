@@ -22,6 +22,9 @@ Plugins/**/Binaries/*
 
 # Build output
 Build/*
+!Build/Windows/
+Build/Windows/*
+!Build/Windows/Application.ico
 
 # Saved / Intermediate / Cache
 Saved/*
