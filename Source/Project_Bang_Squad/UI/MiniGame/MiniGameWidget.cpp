@@ -6,8 +6,10 @@
 #include "CountdownWidget.h"
 #include "MiniGameRankingRow.h"
 #include "MiniGameResultRow.h"
+#include "Components/Image.h"
 #include "Components/VerticalBox.h"
 #include "GameFramework/GameStateBase.h"
+#include "Project_Bang_Squad/Data/DataAsset/BSMapData.h"
 #include "Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.h"
 #include "Project_Bang_Squad/Game/MiniGame/MiniGameState.h"
 #include "Project_Bang_Squad/Game/Stage/StagePlayerState.h"
@@ -19,11 +21,43 @@ void UMiniGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	UpdateRanking();
 }
 
+void UMiniGameWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	if (Img_ResultTitle)
+	{
+		Img_ResultTitle->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
 void UMiniGameWidget::ShowResultBoard(const TArray<AMiniGamePlayerState*>& Players, const TArray<int32>& Ranks,
-	const TArray<int32>& Rewards)
+                                      const TArray<int32>& Rewards)
 {
 	if (!ResultContainer || !ResultRowClass) return;
 	if (Players.Num() != Ranks.Num() || Players.Num() != Rewards.Num()) return;
+
+	// 배경 이미지 세팅
+	if (Img_ResultTitle)
+	{
+		Img_ResultTitle->SetVisibility(ESlateVisibility::Visible);
+		
+		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+		{
+			// (주의: 프로젝트의 GameInstance 또는 GameState 구현에 맞게 현재 스테이지 정보를 가져오세요)
+			EStageIndex CurrentStage = GI->GetCurrentStage(); 
+			UBSMapData* MapData = GI->GetMapData(); 
+
+			if (MapData)
+			{
+				// 추가하신 헬퍼 함수를 통해 텍스처를 바로 받아옵니다.
+				if (UTexture2D* ResultTex = MapData->GetMiniGameResultImage(CurrentStage, EStageSection::MiniGame))
+				{
+					Img_ResultTitle->SetBrushFromTexture(ResultTex);
+				}
+			}
+		}
+	}
 	
 	ResultContainer->ClearChildren();
 	ResultContainer->SetVisibility(ESlateVisibility::Visible);

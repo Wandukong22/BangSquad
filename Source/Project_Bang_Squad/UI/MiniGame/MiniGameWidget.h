@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "MiniGameWidget.generated.h"
 
+class UImage;
 class AMiniGamePlayerState;
 class UMiniGameResultRow;
 class UCountdownWidget;
@@ -21,6 +22,7 @@ class PROJECT_BANG_SQUAD_API UMiniGameWidget : public UUserWidget
 
 protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	virtual void NativeConstruct() override;
 
 public:
 	UPROPERTY(meta = (BindWidget))
@@ -38,6 +40,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
 	TSubclassOf<UMiniGameResultRow> ResultRowClass;
 
+	UPROPERTY(meta = (BindWidget))
+	UImage* Img_ResultTitle;
 	
 	void ShowResultBoard(const TArray<AMiniGamePlayerState*>& Players, const TArray<int32>& Ranks, const TArray<int32>& Rewards);
 

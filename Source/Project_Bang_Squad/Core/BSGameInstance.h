@@ -138,11 +138,13 @@ public:
 #pragma endregion
 
 #pragma region Map Data
-
-public:
+private:
 	UPROPERTY(EditDefaultsOnly, Category = "BS|Data")
 	TObjectPtr<UBSMapData> MapDataAsset;
-
+	
+public:
+	UBSMapData* GetMapData() const;
+	
 	UFUNCTION()
 	void MoveToStage(EStageIndex InStage, EStageSection InSection);
 

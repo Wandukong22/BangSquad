@@ -388,6 +388,11 @@ FLinearColor UBSGameInstance::GetJobColor(EJobType InJobType) const
 	return FLinearColor::White;
 }
 
+UBSMapData* UBSGameInstance::GetMapData() const
+{
+	return MapDataAsset;
+}
+
 void UBSGameInstance::MoveToStage(EStageIndex InStage, EStageSection InSection)
 {
 	if (!MapDataAsset) return;
