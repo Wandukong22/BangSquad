@@ -41,17 +41,17 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void PlayComboAnimation();
-private:
-	//bool bIsAnimating = false;
-	//float CurrentAnimTime = 0.f;
-	//
-	//const float AnimDuration = 0.2f;
-	//const float MaxScale = 1.5f;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayBlinkAnimation();
+private:
 	bool bIsInitialized = false;
 
 	UPROPERTY()
 	TWeakObjectPtr<AStageBossPlayerState> TargetPlayerState;
 
 	int32 LastKeyCount = -1;
+
+	//5초 대기 타이머 핸들
+	FTimerHandle HideTimerHandle;
 };

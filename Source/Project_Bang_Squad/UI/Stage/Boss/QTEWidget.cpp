@@ -16,6 +16,7 @@ void UQTEWidget::NativeConstruct()
 		KeyCountText->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
 		KeyCountText->SetText(FText::AsNumber(0));
 	}
+	HideWidget();
 
 	// [추가] 게임스테이트 찾아서 "QTE 켜졌니?" 방송 구독
 	if (auto* GS = GetWorld()->GetGameState<AStageBossGameState>())
@@ -30,7 +31,7 @@ void UQTEWidget::NativeConstruct()
 			HandleQTEStateChanged(true);
 		}
 	}
-	HideWidget();
+
 }
 
 //void UQTEWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -80,7 +81,6 @@ void UQTEWidget::UpdateKeyCount(int32 KeyCount)
 			LastKeyCount = KeyCount;
 		}
 	}
-	HideWidget();
 }
 
 void UQTEWidget::SetTargetPlayerState(class AStageBossPlayerState* InTargetPlayerState)
@@ -112,10 +112,13 @@ void UQTEWidget::HandleQTEStateChanged(bool bIsActive)
 {
 	if (bIsActive)
 	{
+		GetWorld()->GetTimerManager().ClearTimer(HideTimerHandle);
 		ShowWidget(); // 켜기
 	}
 	else
 	{
-		//HideWidget(); // 끄기
+		PlayBlinkAnimation();
+		
+		GetWorld()->GetTimerManager().SetTimer(HideTimerHandle, this, &UQTEWidget::HideWidget, 5.f, false);
 	}
 }

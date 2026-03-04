@@ -25,6 +25,10 @@ void UPlayerRow::NativeConstruct()
 	{
 		ProfileMaterial = Img_Profile->GetDynamicMaterial();
 	}
+	if (QTEWidget)
+	{
+		QTEWidget->HideWidget();
+	}
 }
 
 void UPlayerRow::SetWidgetMode(ERowMode NewMode)
