@@ -112,10 +112,13 @@ void UQTEWidget::HandleQTEStateChanged(bool bIsActive)
 {
 	if (bIsActive)
 	{
+		GetWorld()->GetTimerManager().ClearTimer(HideTimerHandle);
 		ShowWidget(); // 켜기
 	}
 	else
 	{
-		//HideWidget(); // 끄기
+		PlayBlinkAnimation();
+		
+		GetWorld()->GetTimerManager().SetTimer(HideTimerHandle, this, &UQTEWidget::HideWidget, 5.f, false);
 	}
 }
