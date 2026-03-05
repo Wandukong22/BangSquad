@@ -73,7 +73,7 @@ void UArenaMainWidget::ShowRankingBoard(EStageIndex Stage, const TArray<AArenaPl
 	{
 		if (UMiniGameResultRow* Row = CreateWidget<UMiniGameResultRow>(GetWorld(), RankingRowClass))
 		{
-			Row->UpdateResultData(Ranks[i], Players[i], CoinRewards[i]);
+			Row->UpdateResultData(Ranks[i], Players[i], CoinRewards[i], Stage);
 			RankingContainer->AddChildToVerticalBox(Row);
 		}
 	}

@@ -65,7 +65,7 @@ void UMiniGameWidget::ShowResultBoard(EStageIndex Stage, const TArray<AMiniGameP
 	{
         if (UMiniGameResultRow* Row = CreateWidget<UMiniGameResultRow>(GetWorld(), ResultRowClass))
         {
-        	Row->UpdateResultData(Ranks[i], Players[i], Rewards[i]);
+        	Row->UpdateResultData(Ranks[i], Players[i], Rewards[i], Stage);
         	ResultContainer->AddChildToVerticalBox(Row);
         }
 	}

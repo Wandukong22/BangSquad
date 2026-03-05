@@ -8,7 +8,7 @@
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "Project_Bang_Squad/Game/MiniGame/ArenaPlayerState.h"
 
-void UMiniGameResultRow::UpdateResultData(int32 Rank, ABSPlayerState* PlayerState, int32 CoinReward)
+void UMiniGameResultRow::UpdateResultData(int32 Rank, ABSPlayerState* PlayerState, int32 CoinReward, EStageIndex StageIndex)
 {
 	if (!PlayerState) return;
 
@@ -66,6 +66,19 @@ void UMiniGameResultRow::UpdateResultData(int32 Rank, ABSPlayerState* PlayerStat
 		else
 		{
 			Img_Rank->SetVisibility(ESlateVisibility::Hidden); // 예외 처리
+		}
+	}
+
+	if (RowTextures.Contains(StageIndex))
+	{
+		if (UTexture2D* FoundTex = RowTextures[StageIndex])
+		{
+			Img_RowIcon->SetBrushFromTexture(FoundTex);
+			Img_RowIcon->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			Img_RowIcon->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Project_Bang_Squad/Core/BSGameTypes.h"
 #include "MiniGameResultRow.generated.h"
 
 class ABSPlayerState;
@@ -34,8 +35,14 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UImage* Img_Rank;
 
+	UPROPERTY(meta = (BindWidget))
+	UImage* Img_RowIcon;
+
+	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
+	TMap<EStageIndex, UTexture2D*> RowTextures;
+
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
 	TArray<UTexture2D*> RankTextures;
 	
-	void UpdateResultData(int32 Rank, ABSPlayerState* PlayerState, int32 CoinReward);
+	void UpdateResultData(int32 Rank, ABSPlayerState* PlayerState, int32 CoinReward, EStageIndex StageIndex);
 };
