@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -34,11 +34,6 @@ public:
 	
 	//UI 갱신 요청
 	void RefreshLobbyUI();
-
-	// 입력(ESC 등)이 들어왔을 때 호출할 함수
-	UFUNCTION(BlueprintCallable)
-	void RequestSkipVideo();
-
 protected:
 	
 	UFUNCTION(Server, Reliable)
@@ -54,9 +49,6 @@ protected:
 	void Client_JobSelectFailed(EJobType FailedJob);
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-	UFUNCTION(Server, Reliable)
-	void ServerRequestSkipVideo();
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
@@ -74,16 +66,6 @@ private:
 
 	UFUNCTION()
 	void OnLobbyPhaseChanged(ELobbyPhase NewPhase);
-
-	// 영상 재생용 UI 위젯
-	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
-	TSubclassOf<class UUserWidget> VideoWidgetClass;
-
-	UPROPERTY()
-	class UUserWidget* VideoWidget = nullptr;
-
-	// 한 명이 여러 번 투표하는 것 방지
-	bool bHasVotedSkip = false;
 
 protected:
 	virtual void SetupInputComponent() override;

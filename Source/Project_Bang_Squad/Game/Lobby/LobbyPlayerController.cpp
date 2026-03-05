@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Project_Bang_Squad/Game/Lobby/LobbyPlayerController.h"
@@ -157,26 +157,6 @@ void ALobbyPlayerController::OnLobbyPhaseChanged(ELobbyPhase NewPhase)
 				JobSelectWidget->UpdateJobAvailability(GS->GetTakenJobs());
 		}
 	}
-	else if (NewPhase == ELobbyPhase::GameStarting)
-	{
-		// 기존 UI 숨기기
-		if (JobSelectWidget) JobSelectWidget->SetVisibility(ESlateVisibility::Hidden);
-		if (LobbyMainWidget) LobbyMainWidget->SetVisibility(ESlateVisibility::Hidden);
-
-		SetMenuState(false);
-
-		// 영상 위젯 생성 및 띄우기
-		if (!VideoWidget && VideoWidgetClass)
-		{
-			VideoWidget = CreateWidget<UUserWidget>(this, VideoWidgetClass);
-		}
-
-		if (VideoWidget)
-		{
-			VideoWidget->AddToViewport(100);
-			bHasVotedSkip = false; // 투표 상태 초기화
-		}
-	}
 }
 
 void ALobbyPlayerController::SetupInputComponent()
@@ -275,29 +255,6 @@ void ALobbyPlayerController::ServerConfirmedJob_Implementation(EJobType FinalJob
 		else
 		{
 			UE_LOG(LogTemp, Log, TEXT("[Server] 직업 확정 성공: %d"), (uint8)FinalJob);
-		}
-	}
-}
-
-void ALobbyPlayerController::RequestSkipVideo()
-{
-	ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>();
-	// 영상 재생 중일 때만 스킵 가능하게 방어
-	if (GS && GS->CurrentPhase == ELobbyPhase::GameStarting)
-	{
-		ServerRequestSkipVideo();
-	}
-}
-
-void ALobbyPlayerController::ServerRequestSkipVideo_Implementation()
-{
-	if (!bHasVotedSkip)
-	{
-		bHasVotedSkip = true;
-
-		if (ALobbyGameMode* GM = GetWorld()->GetAuthGameMode<ALobbyGameMode>())
-		{
-			GM->RegisterSkipVote();
 		}
 	}
 }
