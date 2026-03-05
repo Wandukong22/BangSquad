@@ -90,3 +90,19 @@ float AStageGameMode::GetRespawnDelay(AController* Controller)
 
 	return FinalTime;
 }
+
+void AStageGameMode::RestartPlayer(AController* NewPlayer)
+{
+	//Super::RestartPlayer(NewPlayer);
+
+	if (NewPlayer == nullptr || NewPlayer->IsPendingKillPending())
+	{
+		return;
+	}
+
+	// 이미 구현해두신 체크포인트/리스폰 위치를 가져옵니다.
+	FTransform SpawnTransform = GetRespawnTransform(NewPlayer);
+    
+	// 기본 FindPlayerStart 대신, 특정 위치에서 플레이어를 다시 시작시킵니다.
+	RestartPlayerAtTransform(NewPlayer, SpawnTransform);
+}
