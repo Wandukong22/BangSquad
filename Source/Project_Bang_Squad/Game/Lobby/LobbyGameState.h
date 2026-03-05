@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -17,6 +17,7 @@ enum class ELobbyPhase : uint8
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLobbyPhaseChanged, ELobbyPhase, NewPhase);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTakenJobsChanged, const TArray<EJobType>&, TakenJobs);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSkipVoteChanged, int32, CurrentVotes, int32, TotalVotes);
 
 UCLASS()
 class PROJECT_BANG_SQUAD_API ALobbyGameState : public ABSGameState
@@ -48,6 +49,17 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnTakenJobsChanged OnTakenJobsChanged;
+
+	// 현재 스킵을 누른 인원 수
+	UPROPERTY(ReplicatedUsing = OnRep_SkipVoteCount, BlueprintReadOnly)
+	int32 SkipVoteCount = 0;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnSkipVoteChanged OnSkipVoteChanged;
+
+	UFUNCTION()
+	void OnRep_SkipVoteCount();
+
 protected:
 	UFUNCTION()
 	void OnRep_CurrentPhase();
