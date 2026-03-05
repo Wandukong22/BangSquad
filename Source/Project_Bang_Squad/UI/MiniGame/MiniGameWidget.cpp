@@ -31,7 +31,7 @@ void UMiniGameWidget::NativeConstruct()
 	}
 }
 
-void UMiniGameWidget::ShowResultBoard(const TArray<AMiniGamePlayerState*>& Players, const TArray<int32>& Ranks,
+void UMiniGameWidget::ShowResultBoard(EStageIndex Stage, const TArray<AMiniGamePlayerState*>& Players, const TArray<int32>& Ranks,
                                       const TArray<int32>& Rewards)
 {
 	if (!ResultContainer || !ResultRowClass) return;
@@ -47,11 +47,10 @@ void UMiniGameWidget::ShowResultBoard(const TArray<AMiniGamePlayerState*>& Playe
 			// (주의: 프로젝트의 GameInstance 또는 GameState 구현에 맞게 현재 스테이지 정보를 가져오세요)
 			EStageIndex CurrentStage = GI->GetCurrentStage(); 
 			UBSMapData* MapData = GI->GetMapData(); 
-
 			if (MapData)
 			{
 				// 추가하신 헬퍼 함수를 통해 텍스처를 바로 받아옵니다.
-				if (UTexture2D* ResultTex = MapData->GetMiniGameResultImage(CurrentStage, EStageSection::MiniGame))
+			if (UTexture2D* ResultTex = MapData->GetMiniGameResultImage(Stage, EStageSection::MiniGame))
 				{
 					Img_ResultTitle->SetBrushFromTexture(ResultTex);
 				}

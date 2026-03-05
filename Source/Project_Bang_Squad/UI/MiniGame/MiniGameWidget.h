@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Project_Bang_Squad/Core/BSGameTypes.h"
 #include "MiniGameWidget.generated.h"
 
 class UImage;
@@ -43,7 +44,7 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UImage* Img_ResultTitle;
 	
-	void ShowResultBoard(const TArray<AMiniGamePlayerState*>& Players, const TArray<int32>& Ranks, const TArray<int32>& Rewards);
+	void ShowResultBoard(EStageIndex Stage, const TArray<AMiniGamePlayerState*>& Players, const TArray<int32>& Ranks, const TArray<int32>& Rewards);
 
 	void UpdateRanking();
 };

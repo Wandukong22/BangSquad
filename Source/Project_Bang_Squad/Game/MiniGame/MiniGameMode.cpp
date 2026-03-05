@@ -134,7 +134,7 @@ void AMiniGameMode::EndMiniGame(EStageIndex StageIndex)
 	{
 		if (AMiniGamePlayerController* PC = Cast<AMiniGamePlayerController>(It->Get()))
 		{
-			PC->Client_ShowMiniGameResult(PlayerStateList, Ranks, Rewards);
+			PC->Client_ShowMiniGameResult(StageIndex, PlayerStateList, Ranks, Rewards);
 		}
 	}
 
