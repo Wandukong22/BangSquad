@@ -28,12 +28,12 @@ void AMiniGamePlayerController::Client_UpdateCountdown_Implementation(int32 Coun
 	}
 }
 
-void AMiniGamePlayerController::Client_ShowMiniGameResult_Implementation(const TArray<AMiniGamePlayerState*>& Players,
-	const TArray<int32>& Ranks, const TArray<int32>& Rewards)
+void AMiniGamePlayerController::Client_ShowMiniGameResult_Implementation(EStageIndex Stage,
+	const TArray<AMiniGamePlayerState*>& Players, const TArray<int32>& Ranks, const TArray<int32>& Rewards)
 {
 	if (UMiniGameWidget* MiniWidget = Cast<UMiniGameWidget>(GameWidget))
 	{
-		MiniWidget->ShowResultBoard(Players, Ranks, Rewards);
+		MiniWidget->ShowResultBoard(Stage, Players, Ranks, Rewards);
 	}
 }
 

@@ -232,7 +232,7 @@ void AArenaMiniGameMode::EndArena()
 	{
 		if (AArenaPlayerController* PC = Cast<AArenaPlayerController>(It->Get()))
 		{
-			PC->Client_ShowArenaResult(PlayerList, Ranks, Rewards);
+			PC->Client_ShowArenaResult(CurrentStageIndex, PlayerList, Ranks, Rewards);
 		}
 	}
 	

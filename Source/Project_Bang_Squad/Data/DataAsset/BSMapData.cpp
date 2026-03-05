@@ -30,3 +30,9 @@ FString UBSMapData::GetMapDisplayName(EStageIndex StageIndex, EStageSection Sect
 	const FMapInfo* Info = GetMapInfo(StageIndex, Section);
 	return Info ? Info->DisplayName.ToString() : FString();
 }
+
+UTexture2D* UBSMapData::GetMiniGameResultImage(EStageIndex StageIndex, EStageSection Section) const
+{
+	const FMapInfo* Info = GetMapInfo(StageIndex, Section);
+	return Info ? Info->MiniGameResultImage : nullptr;
+}

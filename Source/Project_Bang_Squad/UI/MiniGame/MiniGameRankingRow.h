@@ -16,8 +16,14 @@ class PROJECT_BANG_SQUAD_API UMiniGameRankingRow : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	//UPROPERTY(meta = (BindWidget))
+	//class UTextBlock* Txt_Rank;
+
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* Txt_Rank;
+	class UImage* Img_Rank;
+
+	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
+	TArray<UTexture2D*> RankTextures;
 	
 	UPROPERTY(meta = (BindWidget))
 	class UImage* Img_JobIcon;
