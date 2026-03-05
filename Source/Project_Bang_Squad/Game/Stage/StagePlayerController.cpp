@@ -248,3 +248,24 @@ void AStagePlayerController::ServerRequestSpawn_Implementation(EJobType Job)
 		}
 	}
 }
+
+
+void AStagePlayerController::Client_PlayEndingVideo_Implementation()
+{
+	if (GameWidget) GameWidget->SetVisibility(ESlateVisibility::Hidden);
+
+	if (!EndingVideoWidget && EndingVideoWidgetClass)
+	{
+		EndingVideoWidget = CreateWidget<UUserWidget>(this, EndingVideoWidgetClass);
+	}
+
+	if (EndingVideoWidget)
+	{
+		EndingVideoWidget->AddToViewport(100);
+
+		// 조작 차단 및 마우스 표시
+		FInputModeUIOnly UIInputMode;
+		SetInputMode(UIInputMode);
+		bShowMouseCursor = true;
+	}
+}

@@ -1,4 +1,4 @@
-#include "Project_Bang_Squad/Character/StageBoss/StageBossGameMode.h"
+﻿#include "Project_Bang_Squad/Character/StageBoss/StageBossGameMode.h"
 
 #include "StageBossGameState.h"
 #include "StageBossPlayerState.h"
@@ -230,9 +230,10 @@ void AStageBossGameMode::EndStage(bool bIsVictory)
 	if (bIsVictory)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Boss Cleared! Victory!"));
-		// �¸� �� �θ��� �������� �̵� ���� Ȱ�� ����
 		// ClearStageAndMove(EStageIndex::Stage2); 
 		GiveStageClearReward();
+
+		OnBossDefeated();
 	}
 	else
 	{

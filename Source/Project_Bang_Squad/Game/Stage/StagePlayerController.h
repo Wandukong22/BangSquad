@@ -34,6 +34,9 @@ public:
 
 	virtual void CreateGameWidget();
 
+	UFUNCTION(Client, Reliable)
+	void Client_PlayEndingVideo();
+
 protected:
 	virtual void SetupInputComponent() override;
 
@@ -76,4 +79,10 @@ protected:
 	// 에디터에서 생성한 MPC 에셋을 넣을 변수
 	UPROPERTY(EditDefaultsOnly, Category = "BS|Visual")
 	TObjectPtr<class UMaterialParameterCollection> WorldSettingsMPC;
+
+	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
+	TSubclassOf<class UUserWidget> EndingVideoWidgetClass;
+
+	UPROPERTY()
+	class UUserWidget* EndingVideoWidget = nullptr;
 };
