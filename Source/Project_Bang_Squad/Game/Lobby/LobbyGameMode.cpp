@@ -6,6 +6,7 @@
 #include "LobbyGameState.h"
 #include "LobbyPlayerController.h"
 #include "LobbyPlayerState.h"
+#include "LobbyGameState.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/GameStateBase.h"
 
@@ -131,21 +132,63 @@ void ALobbyGameMode::CheckConfirmedJob()
 		}
 	}
 	
-	//모두 직업 확정 완료
+	////모두 직업 확정 완료
+	//if (ConfirmedCount == TotalPlayers)
+	//{
+	//	//상태 변경
+	//	if (GS)
+	//		GS->SetLobbyPhase(ELobbyPhase::GameStarting);
+
+	//	//상태 동기화 시간 벌기 위해 1초 뒤 이동
+	//	FTimerHandle TravelTimer;
+	//	GetWorldTimerManager().SetTimer(TravelTimer, [this, WeakThis = TWeakObjectPtr<ALobbyGameMode>(this)]()
+	//	{
+	//		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+	//		{
+	//			GI->MoveToStage(EStageIndex::Stage1, EStageSection::Main);
+	//		}
+	//	}, 1.f, false);
+	//}
+
 	if (ConfirmedCount == TotalPlayers)
 	{
-		//상태 변경
 		if (GS)
-			GS->SetLobbyPhase(ELobbyPhase::GameStarting);
-
-		//상태 동기화 시간 벌기 위해 1초 뒤 이동
-		FTimerHandle TravelTimer;
-		GetWorldTimerManager().SetTimer(TravelTimer, [this, WeakThis = TWeakObjectPtr<ALobbyGameMode>(this)]()
 		{
-			if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
-			{
-				GI->MoveToStage(EStageIndex::Stage1, EStageSection::Main);
-			}
-		}, 1.f, false);
+			GS->SetLobbyPhase(ELobbyPhase::GameStarting);
+			GS->SkipVoteCount = 0; // 혹시 모르니 투표수 0으로 초기화
+		}
+
+		float VideoDuration = 29.0f; // 🎬 영상 길이에 맞춰 세팅하세요!
+
+		// ForceStartGame을 호출하는 타이머 실행
+		GetWorldTimerManager().SetTimer(VideoTravelTimerHandle, this, &ALobbyGameMode::ForceStartGame, VideoDuration, false);
+	}
+}
+
+
+void ALobbyGameMode::RegisterSkipVote()
+{
+	ALobbyGameState* GS = GetGameState<ALobbyGameState>();
+	if (GS)
+	{
+		GS->SkipVoteCount++;
+		GS->OnRep_SkipVoteCount(); // 서버 컴퓨터의 UI도 즉시 갱신되도록 강제 호출
+
+		// 만장일치 확인
+		if (GS->SkipVoteCount >= GS->PlayerArray.Num())
+		{
+			ForceStartGame();
+		}
+	}
+}
+
+void ALobbyGameMode::ForceStartGame()
+{
+	// 돌고 있던 영상 대기 타이머 강제 취소
+	GetWorldTimerManager().ClearTimer(VideoTravelTimerHandle);
+
+	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+	{
+		GI->MoveToStage(EStageIndex::Stage1, EStageSection::Main);
 	}
 }

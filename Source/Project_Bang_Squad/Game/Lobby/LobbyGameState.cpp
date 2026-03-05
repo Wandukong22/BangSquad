@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Project_Bang_Squad/Game/Lobby/LobbyGameState.h"
@@ -14,6 +14,7 @@ void ALobbyGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ALobbyGameState, CurrentPhase);
 	DOREPLIFETIME(ALobbyGameState, TakenJobs);
+	DOREPLIFETIME(ALobbyGameState, SkipVoteCount);
 }
 
 void ALobbyGameState::SetLobbyPhase(ELobbyPhase NewPhase)
@@ -60,4 +61,10 @@ void ALobbyGameState::OnRep_CurrentPhase()
 {
 	//모든 클라이언트(UI)에게 알림
 	OnLobbyPhaseChanged.Broadcast(CurrentPhase);
+}
+
+void ALobbyGameState::OnRep_SkipVoteCount()
+{
+	// UI에 현재 투표수와 전체 플레이어 수를 전달
+	OnSkipVoteChanged.Broadcast(SkipVoteCount, PlayerArray.Num());
 }
