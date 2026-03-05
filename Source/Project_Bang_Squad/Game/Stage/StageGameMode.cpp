@@ -93,8 +93,6 @@ float AStageGameMode::GetRespawnDelay(AController* Controller)
 
 void AStageGameMode::RestartPlayer(AController* NewPlayer)
 {
-	//Super::RestartPlayer(NewPlayer);
-
 	if (NewPlayer == nullptr || NewPlayer->IsPendingKillPending())
 	{
 		return;
@@ -105,4 +103,44 @@ void AStageGameMode::RestartPlayer(AController* NewPlayer)
     
 	// 기본 FindPlayerStart 대신, 특정 위치에서 플레이어를 다시 시작시킵니다.
 	RestartPlayerAtTransform(NewPlayer, SpawnTransform);
+}
+
+void AStageGameMode::OnBossDefeated()
+{
+	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
+	if (!GI) return;
+
+	// ✨ 스테이지 3 보스를 잡은 경우에만 엔딩 실행
+	if (GI->GetCurrentStage() == EStageIndex::Stage3)
+	{
+		// 5초 뒤 엔딩 영상 시작
+		GetWorldTimerManager().SetTimer(EndingTimerHandle, this, &AStageGameMode::StartEndingVideo, 5.0f, false);
+	}
+	else
+	{
+		// 스테이지 1, 2 보스라면 일반적인 스테이지 클리어 로직 처리 (예: 포탈 생성 등)
+		UE_LOG(LogTemp, Log, TEXT("스테이지 3이 아니므로 엔딩을 재생하지 않습니다."));
+	}
+}
+
+void AStageGameMode::StartEndingVideo()
+{
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (AStagePlayerController* PC = Cast<AStagePlayerController>(It->Get()))
+		{
+			PC->Client_PlayEndingVideo(); // 클라이언트 화면에 영상 출력
+		}
+	}
+
+	GetWorldTimerManager().SetTimer(EndingTimerHandle, this, &AStageGameMode::ReturnToMainMenu, EndingVideoDuration, false);
+}
+
+void AStageGameMode::ReturnToMainMenu()
+{
+	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+	{
+		GI->ResetAllGameData(); // 데이터 초기화
+		GI->MoveToStage(EStageIndex::Lobby, EStageSection::Main); // 로비로 이동
+	}
 }
