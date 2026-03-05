@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
@@ -458,4 +458,27 @@ uint32 UBSGameInstance::GetStageKey(EStageIndex Stage, EStageSection Section) co
 {
 	//비트 연산으로 두 값 섞어서 고유 ID 생성
 	return ((uint32)Stage << 16) | (uint32)Section;
+}
+
+void UBSGameInstance::ResetAllGameData()
+{
+	// 1. 캐릭터 및 인벤토리 데이터 초기화
+	PlayerJob = EJobType::None;
+	SavedPlayerCoins.Empty();
+
+	// 2. 몬스터 및 스테이지 진행 데이터 초기화
+	DeadMonsterIDs.Empty();
+	VisitedStageKeys.Empty();
+	StageSaveData.Empty();
+
+	// 3. 체크포인트 및 스테이지 정보 초기화
+	CurrentStage = EStageIndex::None;
+	SavedCheckpointIndex = 0;
+
+	// 4. 컷신 시청 기록 초기화
+	bIsStage1CutscenePlayed = false;
+	bIsStage2CutscenePlayed = false;
+	bIsStage3CutscenePlayed = false;
+
+	UE_LOG(LogTemp, Warning, TEXT("모든 게임 데이터가 초기화되었습니다."));
 }

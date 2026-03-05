@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -256,6 +256,10 @@ public:
 	// 스테이지 번호가 아닌, 맵 데이터에 있는 이미지 자체를 받는다.
 	UFUNCTION(BlueprintCallable, Category = "UI|Loading")
 	void ShowLoadingScreen(UTexture2D* LoadingImage);
+
+	// 엔딩 후 모든 데이터를 초기화하는 함수
+	UFUNCTION(BlueprintCallable, Category = "BS|System")
+	void ResetAllGameData();
 
 #pragma region Save Actor
 

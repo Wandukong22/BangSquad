@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Project_Bang_Squad/Game/Stage/StageGameMode.h"
@@ -89,4 +89,44 @@ float AStageGameMode::GetRespawnDelay(AController* Controller)
 	}
 
 	return FinalTime;
+}
+
+void AStageGameMode::OnBossDefeated()
+{
+	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
+	if (!GI) return;
+
+	// ✨ 스테이지 3 보스를 잡은 경우에만 엔딩 실행
+	if (GI->GetCurrentStage() == EStageIndex::Stage3)
+	{
+		// 5초 뒤 엔딩 영상 시작
+		GetWorldTimerManager().SetTimer(EndingTimerHandle, this, &AStageGameMode::StartEndingVideo, 5.0f, false);
+	}
+	else
+	{
+		// 스테이지 1, 2 보스라면 일반적인 스테이지 클리어 로직 처리 (예: 포탈 생성 등)
+		UE_LOG(LogTemp, Log, TEXT("스테이지 3이 아니므로 엔딩을 재생하지 않습니다."));
+	}
+}
+
+void AStageGameMode::StartEndingVideo()
+{
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (AStagePlayerController* PC = Cast<AStagePlayerController>(It->Get()))
+		{
+			PC->Client_PlayEndingVideo(); // 클라이언트 화면에 영상 출력
+		}
+	}
+
+	GetWorldTimerManager().SetTimer(EndingTimerHandle, this, &AStageGameMode::ReturnToMainMenu, EndingVideoDuration, false);
+}
+
+void AStageGameMode::ReturnToMainMenu()
+{
+	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+	{
+		GI->ResetAllGameData(); // 데이터 초기화
+		GI->MoveToStage(EStageIndex::Lobby, EStageSection::Main); // 로비로 이동
+	}
 }
