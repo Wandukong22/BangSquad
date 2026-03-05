@@ -25,7 +25,7 @@ public:
 	virtual void StartSpectating() override;
 
 	UFUNCTION(Client, Reliable)
-	void Client_ShowArenaResult(const TArray<class AArenaPlayerState*>& Players, const TArray<int32>& Ranks, const TArray<int32>& Rewards);
+	void Client_ShowArenaResult(EStageIndex Stage, const TArray<class AArenaPlayerState*>& Players, const TArray<int32>& Ranks, const TArray<int32>& Rewards);
 protected:
 	virtual void BeginPlay() override;
 	virtual void AcknowledgePossession(class APawn* P) override;

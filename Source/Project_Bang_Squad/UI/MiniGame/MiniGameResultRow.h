@@ -19,8 +19,8 @@ class PROJECT_BANG_SQUAD_API UMiniGameResultRow : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* Txt_Rank;
+	//UPROPERTY(meta = (BindWidget))
+	//UTextBlock* Txt_Rank;
 	UPROPERTY(meta = (BindWidget))
 	UImage* Img_JobIcon;
 	UPROPERTY(meta = (BindWidget))
@@ -30,5 +30,12 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Txt_CoinReward;
 
+	//순위 아이콘들
+	UPROPERTY(meta = (BindWidget))
+	UImage* Img_Rank;
+
+	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
+	TArray<UTexture2D*> RankTextures;
+	
 	void UpdateResultData(int32 Rank, ABSPlayerState* PlayerState, int32 CoinReward);
 };

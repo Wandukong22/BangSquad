@@ -34,12 +34,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
 	TSubclassOf<UPlayerRow> PlayerRowClass;
 
+	UPROPERTY(meta = (BindWidget))
+	UImage* Img_ResultTitle;
+
 	void UpdateWaitingCountdown(int32 Count);
 	void UpdateSurvivingTimer(int32 RemainingTime);
 	void SetSurvivingTimerVisible(bool bVisible);
 	void ShowFloorSinkingText();
 
-	void ShowRankingBoard(const TArray<AArenaPlayerState*>& Players, const TArray<int32>& Ranks, const TArray<int32>& CoinRewards);
+	void ShowRankingBoard(EStageIndex Stage, const TArray<AArenaPlayerState*>& Players, const TArray<int32>& Ranks, const TArray<int32>& CoinRewards);
 
 
 	void UpdatePartyList();
