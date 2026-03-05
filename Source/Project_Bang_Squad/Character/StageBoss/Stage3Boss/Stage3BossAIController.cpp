@@ -10,7 +10,7 @@ AStage3BossAIController::AStage3BossAIController()
 	// 왜 이렇게 짰는지: [멀티플레이어 동기화] 
 	// AIController는 기본적으로 서버에만 존재하지만, 향후 멀티플레이 환경에서 
 	// AI가 플레이어의 상태(PlayerState)나 어그로 수치를 참조해야 할 때를 대비해 활성화해 둡니다.
-	bWantsPlayerState = true;
+	bWantsPlayerState = false;
 }
 
 void AStage3BossAIController::OnPossess(APawn* InPawn)
