@@ -23,6 +23,10 @@ struct FMapInfo
 	FText DisplayName = FText();
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UTexture2D* LoadingImage = nullptr;
+
+	// 미니게임 결과 이미지 추가
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UTexture2D* MiniGameResultImage = nullptr;
 };
 
 UCLASS()
@@ -37,4 +41,6 @@ public:
 	const FMapInfo* GetMapInfo(EStageIndex StageIndex, EStageSection Section) const;
 	FString GetMapPath(EStageIndex StageIndex, EStageSection Section) const;
 	FString GetMapDisplayName(EStageIndex StageIndex, EStageSection Section) const;
+
+	UTexture2D* GetMiniGameResultImage(EStageIndex StageIndex, EStageSection Section) const;
 };

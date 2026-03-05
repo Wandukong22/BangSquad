@@ -160,9 +160,9 @@ void ABSPlayerController::Client_ShowLoadingScreen_Implementation(EStageIndex St
 	if (UBSGameInstance* GI = GetGameInstance<UBSGameInstance>())
 	{
 		// 내 컴퓨터에 있는 데이터 에셋에서 넘어갈 맵의 정보 찾기
-		if (GI->MapDataAsset)
+		if (GI->GetMapData())
 		{
-			const FMapInfo* MapInfo = GI->MapDataAsset->GetMapInfo(Stage, Section);
+			const FMapInfo* MapInfo = GI->GetMapData()->GetMapInfo(Stage, Section);
             
 			// 이미지가 정상적으로 들어있다면 띄우기
 			if (MapInfo && MapInfo->LoadingImage)

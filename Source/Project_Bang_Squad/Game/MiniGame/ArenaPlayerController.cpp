@@ -48,12 +48,12 @@ void AArenaPlayerController::StartSpectating()
 	ViewNextPlayer();
 }
 
-void AArenaPlayerController::Client_ShowArenaResult_Implementation(const TArray<class AArenaPlayerState*>& Players,
-	const TArray<int32>& Ranks, const TArray<int32>& Rewards)
+void AArenaPlayerController::Client_ShowArenaResult_Implementation(EStageIndex Stage,
+	const TArray<class AArenaPlayerState*>& Players, const TArray<int32>& Ranks, const TArray<int32>& Rewards)
 {
 	if (UArenaMainWidget* ArenaMainWidget = Cast<UArenaMainWidget>(GameWidget))
 	{
-		ArenaMainWidget->ShowRankingBoard(Players, Ranks, Rewards);
+		ArenaMainWidget->ShowRankingBoard(Stage, Players, Ranks, Rewards);
 	}
 }
 

@@ -23,7 +23,7 @@ public:
 	void Client_UpdateCountdown(int32 Count);
 
 	UFUNCTION(Client, Reliable)
-	void Client_ShowMiniGameResult(const TArray<AMiniGamePlayerState*>& Players,
+	void Client_ShowMiniGameResult(EStageIndex Stage, const TArray<AMiniGamePlayerState*>& Players,
 							   const TArray<int32>& Ranks,
 							   const TArray<int32>& Rewards);
 

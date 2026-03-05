@@ -8,14 +8,14 @@
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "Project_Bang_Squad/Game/MiniGame/ArenaPlayerState.h"
 
-void UMiniGameResultRow::UpdateResultData(int32 Rank, ABSPlayerState* PlayerState, int32 CoinReward)
+void UMiniGameResultRow::UpdateResultData(int32 Rank, ABSPlayerState* PlayerState, int32 CoinReward, EStageIndex StageIndex)
 {
 	if (!PlayerState) return;
 
-	if (Txt_Rank)
+	/*if (Txt_Rank)
 	{
 		Txt_Rank->SetText(FText::AsNumber(Rank));
-	}
+	}*/
 
 	if (Txt_Nickname)
 	{
@@ -43,8 +43,42 @@ void UMiniGameResultRow::UpdateResultData(int32 Rank, ABSPlayerState* PlayerStat
 		{
 			if (UTexture2D* FoundTexture = GI->GetJobIcon(PlayerState->GetJob()))
 			{
-				Img_JobIcon->SetBrushFromTexture(FoundTexture);
+				//Img_JobIcon->SetBrushFromTexture(FoundTexture);
+				if (UMaterialInstanceDynamic* DynamicMat = Img_JobIcon->GetDynamicMaterial())
+				{
+					// "TextureParameterName" 부분은 실제 머티리얼의 텍스처 파라미터 이름으로 변경해주세요.
+					DynamicMat->SetTextureParameterValue(FName("ProfileImage"), FoundTexture);
+				}
 			}
+		}
+	}
+
+	if (Img_Rank)
+	{
+		int32 TexIndex = Rank - 1; 
+
+		// 배열 범위 안에 있고, 텍스처가 할당되어 있는지 확인
+		if (RankTextures.IsValidIndex(TexIndex) && RankTextures[TexIndex])
+		{
+			Img_Rank->SetBrushFromTexture(RankTextures[TexIndex]);
+			Img_Rank->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			Img_Rank->SetVisibility(ESlateVisibility::Hidden); // 예외 처리
+		}
+	}
+
+	if (RowTextures.Contains(StageIndex))
+	{
+		if (UTexture2D* FoundTex = RowTextures[StageIndex])
+		{
+			Img_RowIcon->SetBrushFromTexture(FoundTex);
+			Img_RowIcon->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			Img_RowIcon->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }

@@ -22,8 +22,22 @@ void UMiniGameRankingRow::UpdateData(int32 Rank, class AMiniGamePlayerState* Pla
 		}
 	}
 	TargetPlayerState = PlayerState;
+	if (Img_Rank)
+	{
+		int32 TexIndex = Rank - 1; 
 
-	if (Txt_Rank)
+		// 배열 범위 안에 있고, 텍스처가 할당되어 있는지 확인
+		if (RankTextures.IsValidIndex(TexIndex) && RankTextures[TexIndex])
+		{
+			Img_Rank->SetBrushFromTexture(RankTextures[TexIndex]);
+			Img_Rank->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			Img_Rank->SetVisibility(ESlateVisibility::Hidden); // 예외 처리
+		}
+	}
+	/*if (Txt_Rank)
 	{
 		FText RankText = FText();
 		switch (Rank)
@@ -35,7 +49,7 @@ void UMiniGameRankingRow::UpdateData(int32 Rank, class AMiniGamePlayerState* Pla
 		default: RankText = FText::FromString("??");
 		}
 		Txt_Rank->SetText(RankText);
-	}
+	}*/
 	if (Img_JobIcon)
 	{
 		EJobType CurrentJob = PlayerState->GetJob();
