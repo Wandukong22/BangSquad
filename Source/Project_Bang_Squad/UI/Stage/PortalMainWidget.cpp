@@ -5,6 +5,7 @@
 
 #include "PortalSlot.h"
 #include "Components/HorizontalBox.h"
+#include "Components/HorizontalBoxSlot.h"
 #include "Components/TextBlock.h"
 
 void UPortalMainWidget::InitializePortal(int32 MaxPlayers)
@@ -19,7 +20,17 @@ void UPortalMainWidget::InitializePortal(int32 MaxPlayers)
 		UPortalSlot* NewSlot = CreateWidget<UPortalSlot>(GetWorld(), SlotWidgetClass);
 		if (NewSlot)
 		{
-			HBox_Slots->AddChildToHorizontalBox(NewSlot);
+			UHorizontalBoxSlot* BoxSlot = HBox_Slots->AddChildToHorizontalBox(NewSlot);
+			if (BoxSlot)
+			{
+				FSlateChildSize SizeRule;
+				SizeRule.SizeRule = ESlateSizeRule::Automatic; 
+				BoxSlot->SetSize(SizeRule);
+				BoxSlot->SetHorizontalAlignment(HAlign_Center);
+				BoxSlot->SetVerticalAlignment(VAlign_Center);
+			}
+			
+			//HBox_Slots->AddChildToHorizontalBox(NewSlot);
 			NewSlot->SetActive(false);
 			SlotWidgets.Add(NewSlot);
 		}

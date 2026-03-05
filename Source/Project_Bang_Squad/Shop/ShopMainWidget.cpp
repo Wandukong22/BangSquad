@@ -280,7 +280,7 @@ void UShopMainWidget::OnSlotClicked(FName ItemID, const FShopItemData& SelectedI
 
 void UShopMainWidget::UpdateMannequinPreview(const FShopItemData& SelectedItem)
 {
-    if (ShopStudioInstance)
+    if (IsValid(ShopStudioInstance))
     {
         UChildActorComponent* ChildComp = ShopStudioInstance->FindComponentByClass<UChildActorComponent>();
         if (ChildComp)
@@ -295,7 +295,7 @@ void UShopMainWidget::UpdateMannequinPreview(const FShopItemData& SelectedItem)
 
 void UShopMainWidget::UpdateSkinPreview(const FShopItemData& SelectedSkin)
 {
-    if (ShopStudioInstance)
+    if (IsValid(ShopStudioInstance))
     {
         UChildActorComponent* ChildComp = ShopStudioInstance->FindComponentByClass<UChildActorComponent>();
         if (ChildComp)
