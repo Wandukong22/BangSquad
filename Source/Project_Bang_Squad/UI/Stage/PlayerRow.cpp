@@ -7,6 +7,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
 #include "Project_Bang_Squad/Character/Component/HealthComponent.h"
+#include "Project_Bang_Squad/Character/StageBoss/StageBossGameState.h"
 #include "Project_Bang_Squad/Character/StageBoss/StageBossPlayerState.h"
 #include "Project_Bang_Squad/Game/Stage/StagePlayerState.h"
 
@@ -78,9 +79,18 @@ void UPlayerRow::SetTargetPlayerState(class APlayerState* InPlayerState)
 
 		if (QTEWidget)
 		{
-			if (AStageBossPlayerState* BossPS = Cast<AStageBossPlayerState>(TargetPlayerState.Get()))
+			// 현재 월드가 보스 게임스테이트를 쓰는지 확인 (일반 맵에서는 QTE 비활성화)
+			if (GetWorld()->GetGameState<AStageBossGameState>())
 			{
-				QTEWidget->SetTargetPlayerState(BossPS);
+				if (AStageBossPlayerState* BossPS = Cast<AStageBossPlayerState>(TargetPlayerState.Get()))
+				{
+					QTEWidget->SetTargetPlayerState(BossPS);
+				}
+			}
+			else
+			{
+				// 보스 맵이 아니면 확실하게 숨겨둠
+				QTEWidget->HideWidget(); 
 			}
 		}
 
