@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h" // 헤더 추가
 #include "DrawDebugHelpers.h"
+#include "StageBossGameMode.h"
 #include "Blueprint/UserWidget.h"
 #include "Project_Bang_Squad/Character/StageBoss/AQTE_Trap.h" // (경로가 폴더 안에 있다면 "Project_Bang_Squad/Character/StageBoss/AQTE_Trap.h" 로 맞춰주세요)
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
@@ -121,6 +122,11 @@ void AStage2Boss::OnDeathStarted()
 
     Multicast_HideBossHP();
     Multicast_ShowBossSubtitle(FText::FromString(TEXT("거미 여왕을 물리쳤습니다! 열린 포탈을 타고 다음 스테이지로 이동하세요!")), 5.0f);
+
+    if (AStageBossGameMode* GM = GetWorld()->GetAuthGameMode<AStageBossGameMode>())
+    {
+        GM->OnBossKilled();
+    }
     
     // 포탈 활성화 로직
     if (TargetPortal)
