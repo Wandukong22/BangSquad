@@ -37,18 +37,9 @@ void ARisingPlatform::LoadActorData(const FActorSaveData& InData)
 void ARisingPlatform::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	//이미 올라간 상태면 위치 보정
-	if (bHasArrived)
-	{
-		EndLocation = GetActorLocation();
-		StartLocation = EndLocation - FVector(0, 0, RiseHeight);
-	}
-	else
-	{
-		StartLocation = GetActorLocation();
-		EndLocation = StartLocation + FVector(0, 0, RiseHeight);
-	}
+
+	StartLocation = GetActorLocation();
+	EndLocation = StartLocation + FVector(0, 0, RiseHeight);
 	
 	if (RiseCurve)
 	{
@@ -67,6 +58,10 @@ void ARisingPlatform::BeginPlay()
 				LoadActorData(*SavedData);
 			}
 		}
+	}
+	if (bHasArrived)
+	{
+		SetActorLocation(EndLocation);
 	}
 }
 
