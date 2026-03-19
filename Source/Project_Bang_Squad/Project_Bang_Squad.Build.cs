@@ -20,6 +20,7 @@ public class Project_Bang_Squad : ModuleRules
             "Slate",
             "SlateCore",
             "OnlineSubsystem",
+            "OnlineSubsystemSteam",
             "OnlineSubsystemUtils",
             "AIModule",
             "NavigationSystem",

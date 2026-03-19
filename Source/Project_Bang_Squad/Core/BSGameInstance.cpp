@@ -315,6 +315,10 @@ void UBSGameInstance::CreateSession()
 		{
 			SessionSettings.bIsLANMatch = false;
 			SessionSettings.bUsesPresence = true; // 스팀 설정
+
+			SessionSettings.bAllowJoinInProgress = true;
+			SessionSettings.bAllowJoinViaPresence = true;
+			SessionSettings.bUseLobbiesIfAvailable = true;
 		}
 
 		// 인원수 적용
