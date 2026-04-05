@@ -5,13 +5,14 @@
 #include "Project_Bang_Squad/UI/Menu/MainMenu.h"
 #include "OnlineSessionSettings.h"
 #include "OnlineSubsystem.h"
+#include "OnlineSubsystemUtils.h"
 #include "Project_Bang_Squad/Data/DataAsset/BSJobData.h"
 #include "Project_Bang_Squad/Data/DataAsset/BSMapData.h"
 #include "Project_Bang_Squad/Game/Base/BSPlayerController.h"
 
 const static FName SESSION_NAME = TEXT("GameSession");
-const static FName SESSION_SETTINGS_KEY = TEXT("FREE");
-
+const static FName SESSION_SETTINGS_KEY = TEXT("SERVER_NAME");
+const static FName HOST_NAME_KEY = TEXT("HOST_NAME");
 
 UBSGameInstance::UBSGameInstance()
 {
@@ -24,7 +25,7 @@ void UBSGameInstance::Init()
 {
 	Super::Init();
 
-	IOnlineSubsystem* OSS = IOnlineSubsystem::Get();
+	IOnlineSubsystem* OSS = Online::GetSubsystem(GetWorld());
 	if (OSS)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OSS : %s is Avaliable."), *OSS->GetSubsystemName().ToString());
@@ -37,6 +38,10 @@ void UBSGameInstance::Init()
 				this, &UBSGameInstance::OnDestroySessionComplete);
 			SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UBSGameInstance::OnFindSessionComplete);
 			SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &UBSGameInstance::OnJoinSessionComplete);
+			SessionInterface->OnStartSessionCompleteDelegates.AddUObject(
+				this, &UBSGameInstance::OnStartSessionComplete);
+			SessionInterface->OnSessionUserInviteAcceptedDelegates.AddUObject(
+				this, &UBSGameInstance::OnSessionUserInviteAccepted);
 		}
 	}
 	else
@@ -69,7 +74,7 @@ void UBSGameInstance::LoadMainMenu()
 	MainMenu->StartUp();
 }
 
-void UBSGameInstance::Host(FString ServerName, int32 MaxPlayers, FString HostName)
+void UBSGameInstance::Host(const FString& ServerName, int32 MaxPlayers, const FString& HostName)
 {
 	DesiredServerName = ServerName;
 	DesiredMaxPlayers = MaxPlayers;
@@ -83,8 +88,7 @@ void UBSGameInstance::Host(FString ServerName, int32 MaxPlayers, FString HostNam
 
 	if (SessionInterface.IsValid())
 	{
-		auto AlreadyExsistingSession = SessionInterface->GetNamedSession(SESSION_NAME);
-		if (AlreadyExsistingSession)
+		if (SessionInterface->GetNamedSession(SESSION_NAME))
 		{
 			SessionInterface->DestroySession(SESSION_NAME);
 		}
@@ -131,7 +135,7 @@ void UBSGameInstance::RefreshServerList()
 	{
 		SessionSearch->MaxSearchResults = 100;
 
-		FString SubsystemName = IOnlineSubsystem::Get()->GetSubsystemName().ToString();
+		FString SubsystemName = Online::GetSubsystem(GetWorld())->GetSubsystemName().ToString();
 
 		if (SubsystemName == "NULL")
 		{
@@ -164,20 +168,22 @@ void UBSGameInstance::ShowLoadingScreen(UTexture2D* LoadingImage)
 	if (LoadingWidgetClass && LoadingImage && GetWorld())
 	{
 		if (UUserWidget* LoadingUI = CreateWidget<UUserWidget>(this, LoadingWidgetClass))
-			// 위젯 블루프린트의 이벤트를 호출하여 이미지 전달
+		// 위젯 블루프린트의 이벤트를 호출하여 이미지 전달
 		{
-			UFunction* Func =LoadingUI->FindFunction(FName("SetLoadingImage"));
+			UFunction* Func = LoadingUI->FindFunction(FName("SetLoadingImage"));
 			if (Func)
 			{
-				struct { UTexture2D* img; } Params;
+				struct
+				{
+					UTexture2D* img;
+				} Params;
 				Params.img = LoadingImage;
 				LoadingUI->ProcessEvent(Func, &Params);
 			}
-			
+
 			// 화면 꽉 차게 제일 위에 띄움
 			LoadingUI->AddToViewport(9999);
 		}
-			
 	}
 }
 
@@ -198,7 +204,7 @@ void UBSGameInstance::OnDestroySessionComplete(FName InSessionName, bool IsSucce
 	}
 }
 
-void UBSGameInstance::OnFindSessionComplete(bool IsSuccess)
+void UBSGameInstance::OnFindSessionComplete(const bool IsSuccess) const
 {
 	// 위젯이 살아있는지 확인 (크래시 방지)
 	if (MainMenu == nullptr || !MainMenu->IsValidLowLevel())
@@ -218,15 +224,13 @@ void UBSGameInstance::OnFindSessionComplete(bool IsSuccess)
 
 			// 기본값은 OwningUserName
 			ServerData.HostUserName = SearchResult.Session.OwningUserName;
-
-			// 방 이름
-			FString ServerName;
+			
+			FString ServerName; // 방 이름
 			if (SearchResult.Session.SessionSettings.Get(SESSION_SETTINGS_KEY, ServerName))
 				ServerData.Name = ServerName;
-
-			// 닉네임("HOST_NAME") 꺼내오기
-			FString HostName;
-			if (SearchResult.Session.SessionSettings.Get(FName("HOST_NAME"), HostName))
+			
+			FString HostName; //닉네임
+			if (SearchResult.Session.SessionSettings.Get(HOST_NAME_KEY, HostName))
 			{
 				ServerData.HostUserName = HostName;
 			}
@@ -264,16 +268,16 @@ void UBSGameInstance::OnJoinSessionComplete(FName InSessionName, EOnJoinSessionC
 		UE_LOG(LogTemp, Error, TEXT("Could not convert IP Address"));
 		return;
 	}
-
-	// 포트가 0번이면 17777로 강제 변경
-	if (Address.EndsWith(":0"))
+	FString SubsystemName = Online::GetSubsystem(GetWorld())->GetSubsystemName().ToString();
+	
+	// NULL 상황에 포트가 0번이면 17777로 강제 변경
+	if (SubsystemName == "NULL" && Address.EndsWith(":0"))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("포트가 0번으로 감지됨. 17777로 강제 보정합니다."));
 		Address = Address.Replace(TEXT(":0"), TEXT(":17777"));
 	}
 
-	UEngine* Engine = GetEngine();
-	if (Engine)
+	if (UEngine* Engine = GetEngine())
 	{
 		Engine->AddOnScreenDebugMessage(0, 5, FColor::Green, FString::Printf(TEXT("Joining To %s"), *Address));
 	}
@@ -291,57 +295,80 @@ void UBSGameInstance::OnJoinSessionComplete(FName InSessionName, EOnJoinSessionC
 	}
 }
 
+void UBSGameInstance::OnStartSessionComplete(FName InSessionName, bool IsSuccess)
+{
+	if (IsSuccess)
+	{
+		UE_LOG(LogTemp, Error, TEXT("세션 시작 실패: %s"), *InSessionName.ToString());
+	}
+}
+
 void UBSGameInstance::OnNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType,
-	const FString& ErrorString)
+                                       const FString& ErrorString)
 {
 	OpenMainMenuLevel();
 }
 
+void UBSGameInstance::OnSessionUserInviteAccepted(bool bWasSuccessful, int32 ControllerId,
+                                                  TSharedPtr<const FUniqueNetId> UserId,
+                                                  const FOnlineSessionSearchResult& InviteResult)
+{
+	if (!bWasSuccessful || !InviteResult.IsValid()) return;
+
+	if (SessionInterface->GetNamedSession(SESSION_NAME))
+	{
+		bIsGoingToHost = false;
+		SessionInterface->DestroySession(SESSION_NAME);
+	}
+
+	SessionInterface->JoinSession(ControllerId, SESSION_NAME, InviteResult);
+}
+
 void UBSGameInstance::CreateSession()
 {
-	if (SessionInterface.IsValid())
+	if (!SessionInterface.IsValid()) return;
+	FOnlineSessionSettings SessionSettings;
+
+	const IOnlineSubsystem* Subsystem = Online::GetSubsystem(GetWorld());
+	if (!Subsystem) return;
+
+	const FName SubsystemName = Subsystem->GetSubsystemName();
+	
+	if (SubsystemName == NAME_None || SubsystemName == "NULL") 
 	{
-		FOnlineSessionSettings SessionSettings;
-
-		// 서브시스템 이름 확인
-		FString SubsystemName = IOnlineSubsystem::Get()->GetSubsystemName().ToString();
-
-		if (SubsystemName == "NULL")
-		{
-			SessionSettings.bIsLANMatch = true;
-			SessionSettings.bUsesPresence = false; // LAN 설정
-		}
-		else
-		{
-			SessionSettings.bIsLANMatch = false;
-			SessionSettings.bUsesPresence = true; // 스팀 설정
-
-			SessionSettings.bAllowJoinInProgress = true;
-			SessionSettings.bAllowJoinViaPresence = true;
-			SessionSettings.bUseLobbiesIfAvailable = true;
-		}
-
-		// 인원수 적용
-		SessionSettings.NumPublicConnections = DesiredMaxPlayers;
-		SessionSettings.bShouldAdvertise = true;
-
-		// 방 이름 저장
-		SessionSettings.Set(SESSION_SETTINGS_KEY, DesiredServerName,
-							EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-
-		// ✨ 닉네임 저장! ("HOST_NAME" 키)
-		SessionSettings.Set(FName("HOST_NAME"), DesiredHostName,
-							EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-
-		// 메인 메뉴 위젯 정리
-		if (MainMenu)
-		{
-			MainMenu->Shutdown();
-			MainMenu = nullptr;
-		}
-
-		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
+		SessionSettings.bIsLANMatch = true; //LAN
+		SessionSettings.bUsesPresence = false;
 	}
+	else
+	{
+		SessionSettings.bIsLANMatch = false; //Steam
+		SessionSettings.bUsesPresence = true; //Steam 프로필 연동 (플레이 중 상태)
+		SessionSettings.bUseLobbiesIfAvailable = true; //최신 로비 시스템 우선적 사용
+		SessionSettings.bAllowInvites = true; //스팀 게임 초대 기능
+	}
+	
+	//공통 세팅
+	SessionSettings.bAllowJoinInProgress = true; //진행 중 참가 허용
+	SessionSettings.bShouldAdvertise = true; //공개 검색 허용
+	SessionSettings.NumPublicConnections = DesiredMaxPlayers;
+
+	//서버 목록 UI 연동을 위한 세션 메타데이터(방 제목, 닉네임) 패킹
+	SessionSettings.Set(SESSION_SETTINGS_KEY, DesiredServerName,
+	                    EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	SessionSettings.Set(HOST_NAME_KEY, DesiredHostName,
+	                    EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+
+	//메인 메뉴 위젯 정리
+#pragma region MainMenu Widget Cleaning
+	if (MainMenu)
+	{
+		MainMenu->Shutdown();
+		MainMenu = nullptr;
+	}
+#pragma endregion
+
+	//비동기 세션 생성 요청
+	SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 }
 
 void UBSGameInstance::StartSession()
@@ -400,9 +427,9 @@ UBSMapData* UBSGameInstance::GetMapData() const
 void UBSGameInstance::MoveToStage(EStageIndex InStage, EStageSection InSection)
 {
 	if (!MapDataAsset) return;
-	
+
 	bIsTraveling = true;
-	
+
 	if (GetCurrentStage() != InStage)
 	{
 		InitSavedCheckpointIndex();
@@ -418,18 +445,18 @@ void UBSGameInstance::MoveToStage(EStageIndex InStage, EStageSection InSection)
 			if (ABSPlayerController* PC = Cast<ABSPlayerController>(It->Get()))
 			{
 				// 변경된 부분: 이미지 포인터 대신 InStage, InSection 전달
-				PC->Client_ShowLoadingScreen(InStage, InSection); 
+				PC->Client_ShowLoadingScreen(InStage, InSection);
 			}
 		}
-		
+
 		FTimerHandle TravelTimer;
 		GetWorld()->GetTimerManager().SetTimer(
-			TravelTimer, 
+			TravelTimer,
 			[this, Path]()
 			{
 				GetWorld()->ServerTravel(Path + "?listen");
-			}, 
-			2.0f, 
+			},
+			2.0f,
 			false
 		);
 	}

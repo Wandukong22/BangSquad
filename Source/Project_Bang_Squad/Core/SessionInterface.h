@@ -18,8 +18,7 @@ class PROJECT_BANG_SQUAD_API ISessionInterface
 	GENERATED_BODY()
 
 public:
-	virtual void Host(FString ServerName, int32 MaxPlayers, FString HostName) = 0;
+	virtual void Host(const FString& ServerName, int32 MaxPlayers, const FString& HostName) = 0;
 	virtual void Join(uint32 Index) = 0;
 	virtual void RefreshServerList() = 0;
-	virtual void OpenMainMenuLevel() = 0;
 };

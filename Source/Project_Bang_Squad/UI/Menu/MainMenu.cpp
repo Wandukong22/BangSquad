@@ -88,16 +88,13 @@ void UMainMenu::SetServerList(TArray<FServerData> InServerData)
 		UServerRow* ServerRow = CreateWidget<UServerRow>(World, ServerRowClass);
 
 		if (!ServerRow) continue;
-
-		// ✨ [여기가 중요합니다!] 이 코드가 없어서 터지는 겁니다. ✨
-		// ServerName이 연결 안 됐으면 절대 건드리지 마세요.
+		
 		if (ServerRow->ServerName == nullptr)
 		{
-			UE_LOG(LogTemp, Error, TEXT("🚨 [CRITICAL] ServerRow의 ServerName 연결 실패! (WB_ServerRow 확인 필요)"));
+			UE_LOG(LogTemp, Error, TEXT("ServerRow's ServerName is null."));
 			return;
 		}
 
-		// 안전지대
 		ServerRow->ServerName->SetText(FText::FromString(ServerData.Name));
 		ServerRow->HostUser->SetText(FText::FromString(ServerData.HostUserName));
 

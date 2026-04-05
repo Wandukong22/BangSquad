@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "Project_Bang_Squad/UI/Base/BaseMenu.h"
 #include "MainMenu.generated.h"
 

@@ -44,16 +44,16 @@ public:
 	void LoadMainMenu();
 
 #pragma region SessionInterface Codes
-	virtual void Host(FString ServerName, int32 MaxPlayers, FString HostName) override;
+	virtual void Host(const FString& ServerName, int32 MaxPlayers, const FString& HostName) override;
 
 	UFUNCTION(Exec)
-	void Join(uint32 Index) override;
+	virtual void Join(uint32 Index) override;
 
 	UFUNCTION(Exec)
-	void RefreshServerList() override;
+	virtual void RefreshServerList() override;
 
-	void OpenMainMenuLevel() override;
 #pragma endregion
+	void OpenMainMenuLevel();
 
 	// Host 호출 흐름 제어용 플래그
 	bool bIsGoingToHost = false;
@@ -67,10 +67,17 @@ private:
 	// 세션 콜백들
 	void OnCreateSessionComplete(FName InSessionName, bool IsSuccess);
 	void OnDestroySessionComplete(FName InSessionName, bool IsSuccess);
-	void OnFindSessionComplete(bool IsSuccess);
+	void OnFindSessionComplete(bool IsSuccess) const;
 	void OnJoinSessionComplete(FName InSessionName, EOnJoinSessionCompleteResult::Type InResult);
+	void OnStartSessionComplete(FName InSessionName, bool IsSuccess);
 	void OnNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType,
 	                      const FString& ErrorString);
+	void OnSessionUserInviteAccepted(
+		bool bWasSuccessful,
+		int32 ControllerId,
+		TSharedPtr<const FUniqueNetId> UserId,
+		const FOnlineSessionSearchResult& InviteResult
+	);
 
 	void CreateSession();
 
@@ -138,18 +145,20 @@ public:
 #pragma endregion
 
 #pragma region Map Data
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "BS|Data")
 	TObjectPtr<UBSMapData> MapDataAsset;
-	
+
 public:
 	UBSMapData* GetMapData() const;
-	
+
 	UFUNCTION()
 	void MoveToStage(EStageIndex InStage, EStageSection InSection);
 
 protected:
 	virtual void LoadComplete(const float LoadTime, const FString& MapName) override;
+
 private:
 	// 이동 중복 실행 방지용 플래그
 	bool bIsTraveling = false;
@@ -195,6 +204,7 @@ private:
 #pragma endregion
 
 #pragma region Cutscene Data
+
 public:
 	// 스테이지 1 컷신 시청 여부
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BS|CutScene")
@@ -208,7 +218,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BS|CutScene")
 	bool bIsStage3CutscenePlayed = false;
 #pragma endregion
-	
+
 public:
 	//UFUNCTION()
 	//FORCEINLINE EStageIndex GetCurrentStage() const { return CurrentStage; }
@@ -246,13 +256,13 @@ public:
 		return 0;
 		//return 1000;
 	}
-	
+
 	// =========================================================================
 	//  로딩 UI 시스템
 	// =========================================================================
 	UPROPERTY(EditAnywhere, Category = "UI|Loading")
 	TSubclassOf<class UUserWidget> LoadingWidgetClass;
-	
+
 	// 스테이지 번호가 아닌, 맵 데이터에 있는 이미지 자체를 받는다.
 	UFUNCTION(BlueprintCallable, Category = "UI|Loading")
 	void ShowLoadingScreen(UTexture2D* LoadingImage);
