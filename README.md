@@ -55,7 +55,7 @@
 
 ---
 
-## 내가 담당한 기능
+## 담당한 기능
 
 ### 1. Multiplayer Session
 
