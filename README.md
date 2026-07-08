@@ -55,7 +55,7 @@
 
 ---
 
-## 담당한 기능
+## 내가 담당한 기능
 
 ### 1. Multiplayer Session
 
@@ -150,9 +150,12 @@ JoinSession
 
 ### 관련 코드
 
-- `BSGameInstance`
-- Session Create / Find / Join 로직
-- Server List Widget 연동 코드
+- [BSGameInstance.h](./Source/Project_Bang_Squad/Core/BSGameInstance.h)
+- [BSGameInstance.cpp](./Source/Project_Bang_Squad/Core/BSGameInstance.cpp)
+- [SessionInterface.h](./Source/Project_Bang_Squad/Core/SessionInterface.h)
+- [SessionInterface.cpp](./Source/Project_Bang_Squad/Core/SessionInterface.cpp)
+- [MainMenu.cpp](./Source/Project_Bang_Squad/UI/Menu/MainMenu.cpp)
+- [ServerRow.cpp](./Source/Project_Bang_Squad/UI/Menu/ServerRow.cpp)
 
 ---
 
@@ -188,9 +191,13 @@ Late Join 플레이어도 접속 시점의 로비 Phase를 복원할 수 있습�
 
 ### 관련 코드
 
-- `LobbyGameMode`
-- `LobbyGameState`
-- `LobbyPlayerController`
+- [LobbyGameMode.h](./Source/Project_Bang_Squad/Game/Lobby/LobbyGameMode.h)
+- [LobbyGameMode.cpp](./Source/Project_Bang_Squad/Game/Lobby/LobbyGameMode.cpp)
+- [LobbyGameState.h](./Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.h)
+- [LobbyGameState.cpp](./Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.cpp)
+- [LobbyPlayerController.h](./Source/Project_Bang_Squad/Game/Lobby/LobbyPlayerController.h)
+- [LobbyPlayerController.cpp](./Source/Project_Bang_Squad/Game/Lobby/LobbyPlayerController.cpp)
+- [LobbyMainWidget.cpp](./Source/Project_Bang_Squad/UI/Lobby/LobbyMainWidget.cpp)
 
 ---
 
@@ -220,6 +227,16 @@ Client Job Request
 공용 상태와 개인 상태, 로컬 복원 데이터를 분리하여  
 직업 선택과 맵 전환을 안정적으로 처리했습니다.
 
+### 관련 코드
+
+- [LobbyGameMode.cpp](./Source/Project_Bang_Squad/Game/Lobby/LobbyGameMode.cpp)
+- [LobbyGameState.h](./Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.h)
+- [LobbyGameState.cpp](./Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.cpp)
+- [LobbyPlayerState.h](./Source/Project_Bang_Squad/Game/Lobby/LobbyPlayerState.h)
+- [LobbyPlayerState.cpp](./Source/Project_Bang_Squad/Game/Lobby/LobbyPlayerState.cpp)
+- [JobSelectWidget.cpp](./Source/Project_Bang_Squad/UI/Lobby/JobSelectWidget.cpp)
+- [JobButton.cpp](./Source/Project_Bang_Squad/UI/Lobby/JobButton.cpp)
+
 ---
 
 ### 4. DataAsset 기반 스테이지 이동
@@ -243,6 +260,16 @@ Portal Enter
 
 따라서 단순 데이터 중심의 DataTable보다  
 Asset 참조 관리가 편리한 DataAsset을 사용했습니다.
+
+### 관련 코드
+
+- [StageGameMode.h](./Source/Project_Bang_Squad/Game/Stage/StageGameMode.h)
+- [StageGameMode.cpp](./Source/Project_Bang_Squad/Game/Stage/StageGameMode.cpp)
+- [MapPortal.h](./Source/Project_Bang_Squad/Game/Stage/MapPortal.h)
+- [MapPortal.cpp](./Source/Project_Bang_Squad/Game/Stage/MapPortal.cpp)
+- [BSMapData.h](./Source/Project_Bang_Squad/Data/DataAsset/BSMapData.h)
+- [BSMapData.cpp](./Source/Project_Bang_Squad/Data/DataAsset/BSMapData.cpp)
+- [PortalMainWidget.cpp](./Source/Project_Bang_Squad/UI/Stage/PortalMainWidget.cpp)
 
 ---
 
@@ -278,6 +305,14 @@ struct FActorSaveData
 };
 ```
 
+### 관련 코드
+
+- [SaveInterface.h](./Source/Project_Bang_Squad/Game/Interface/SaveInterface.h)
+- [SaveInterface.cpp](./Source/Project_Bang_Squad/Game/Interface/SaveInterface.cpp)
+- [StageGameMode.cpp](./Source/Project_Bang_Squad/Game/Stage/StageGameMode.cpp)
+- [StageGameState.cpp](./Source/Project_Bang_Squad/Game/Stage/StageGameState.cpp)
+- [Checkpoint.cpp](./Source/Project_Bang_Squad/Game/Stage/Checkpoint.cpp)
+
 ---
 
 ### 6. 서버 기반 실시간 순위 계산
@@ -305,6 +340,16 @@ CheckPoint Progress
 - 클라이언트는 복제된 상태를 바탕으로 UI 갱신
 - 최종 결과 UI만 각 클라이언트에 전달
 
+### 관련 코드
+
+- [MiniGameMode.h](./Source/Project_Bang_Squad/Game/MiniGame/MiniGameMode.h)
+- [MiniGameMode.cpp](./Source/Project_Bang_Squad/Game/MiniGame/MiniGameMode.cpp)
+- [MiniGameState.h](./Source/Project_Bang_Squad/Game/MiniGame/MiniGameState.h)
+- [MiniGameState.cpp](./Source/Project_Bang_Squad/Game/MiniGame/MiniGameState.cpp)
+- [MiniGamePlayerState.h](./Source/Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.h)
+- [MiniGamePlayerState.cpp](./Source/Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.cpp)
+- [MiniGameRankingRow.cpp](./Source/Project_Bang_Squad/UI/MiniGame/MiniGameRankingRow.cpp)
+
 ---
 
 ### 7. Arena Phase 상태 머신
@@ -330,6 +375,17 @@ Waiting
 Phase 상태는 `GameState`에 복제하고,  
 UI 반응은 `PlayerController` RPC로 분리하여  
 상태 관리와 화면 처리를 독립적으로 유지했습니다.
+
+### 관련 코드
+
+- [ArenaMiniGameMode.h](./Source/Project_Bang_Squad/Game/MiniGame/ArenaMiniGameMode.h)
+- [ArenaMiniGameMode.cpp](./Source/Project_Bang_Squad/Game/MiniGame/ArenaMiniGameMode.cpp)
+- [ArenaGameState.h](./Source/Project_Bang_Squad/Game/MiniGame/ArenaGameState.h)
+- [ArenaGameState.cpp](./Source/Project_Bang_Squad/Game/MiniGame/ArenaGameState.cpp)
+- [ArenaPlayerController.h](./Source/Project_Bang_Squad/Game/MiniGame/ArenaPlayerController.h)
+- [ArenaPlayerController.cpp](./Source/Project_Bang_Squad/Game/MiniGame/ArenaPlayerController.cpp)
+- [ArenaMainWidget.cpp](./Source/Project_Bang_Squad/UI/MiniGame/ArenaMainWidget.cpp)
+- [ArenaFloor.cpp](./Source/Project_Bang_Squad/MapPuzzle/ArenaFloor.cpp)
 
 ---
 
@@ -428,23 +484,26 @@ flowchart TD
 
 아래 순서로 보면 전체 구조를 빠르게 파악할 수 있습니다.
 
-1. `BSGameInstance`
+1. [BSGameInstance](./Source/Project_Bang_Squad/Core/BSGameInstance.cpp)
 세션 생성, 검색, 참가와 Travel 흐름
 
-2. `LobbyGameMode`
+2. [LobbyGameMode](./Source/Project_Bang_Squad/Game/Lobby/LobbyGameMode.cpp)
 Lobby Phase 전환과 직업 선택 서버 검증
 
-3. `LobbyGameState`
+3. [LobbyGameState](./Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.cpp)
 `CurrentPhase` RepNotify와 전체 직업 점유 상태
 
-4. `LobbyPlayerState`
+4. [LobbyPlayerState](./Source/Project_Bang_Squad/Game/Lobby/LobbyPlayerState.cpp)
 플레이어별 확정 직업과 Late Join 대응 데이터
 
-5. `StageGameMode`
+5. [StageGameMode](./Source/Project_Bang_Squad/Game/Stage/StageGameMode.cpp)
 스테이지 이동, 체크포인트, 리스폰, 오브젝트 상태 복원
 
-6. `MiniGameGameState`
-실시간 순위 계산과 Arena Phase 상태 머신
+6. [MiniGameState](./Source/Project_Bang_Squad/Game/MiniGame/MiniGameState.cpp)
+실시간 순위 계산과 미니게임 상태 동기화
+
+7. [ArenaGameState](./Source/Project_Bang_Squad/Game/MiniGame/ArenaGameState.cpp)
+Arena Phase 상태 머신과 전장 상태 관리
 
 ---
 
