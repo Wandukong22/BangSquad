@@ -13,8 +13,6 @@
   <a href="YOUTUBE_LINK">🎬 플레이 영상</a>
   &nbsp; | &nbsp;
   <a href="PORTFOLIO_PDF_LINK">📄 기술 문서 PDF</a>
-  &nbsp; | &nbsp;
-  <a href="REPOSITORY_LINK">💻 GitHub Repository</a>
 </p>
 
 ---
