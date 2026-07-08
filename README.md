@@ -156,6 +156,9 @@ JoinSession
 - [SessionInterface.cpp](./Source/Project_Bang_Squad/Core/SessionInterface.cpp)
 - [MainMenu.cpp](./Source/Project_Bang_Squad/UI/Menu/MainMenu.cpp)
 - [ServerRow.cpp](./Source/Project_Bang_Squad/UI/Menu/ServerRow.cpp)
+- [CreateSession 완료 후 ServerTravel](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L190-L197)
+- [FindSession 결과를 서버 목록 DTO로 변환](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L207-L252)
+- [JoinSession 완료 후 ClientTravel](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L254-L295)
 
 ---
 
@@ -198,6 +201,8 @@ Late Join 플레이어도 접속 시점의 로비 Phase를 복원할 수 있습�
 - [LobbyPlayerController.h](./Source/Project_Bang_Squad/Game/Lobby/LobbyPlayerController.h)
 - [LobbyPlayerController.cpp](./Source/Project_Bang_Squad/Game/Lobby/LobbyPlayerController.cpp)
 - [LobbyMainWidget.cpp](./Source/Project_Bang_Squad/UI/Lobby/LobbyMainWidget.cpp)
+- [CurrentPhase 복제와 서버 수동 OnRep 호출](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.cpp#L20-L27)
+- [OnRep_CurrentPhase / OnRep_TakenJobs 브로드캐스트](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.cpp#L55-L64)
 
 ---
 
@@ -236,6 +241,8 @@ Client Job Request
 - [LobbyPlayerState.cpp](./Source/Project_Bang_Squad/Game/Lobby/LobbyPlayerState.cpp)
 - [JobSelectWidget.cpp](./Source/Project_Bang_Squad/UI/Lobby/JobSelectWidget.cpp)
 - [JobButton.cpp](./Source/Project_Bang_Squad/UI/Lobby/JobButton.cpp)
+- [서버 권한 기반 직업 확정 검증](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Game/Lobby/LobbyGameMode.cpp#L20-L66)
+- [TakenJobs 변경에 따라 버튼 상태 갱신](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/UI/Lobby/JobSelectWidget.cpp#L38-L116)
 
 ---
 
@@ -270,6 +277,8 @@ Asset 참조 관리가 편리한 DataAsset을 사용했습니다.
 - [BSMapData.h](./Source/Project_Bang_Squad/Data/DataAsset/BSMapData.h)
 - [BSMapData.cpp](./Source/Project_Bang_Squad/Data/DataAsset/BSMapData.cpp)
 - [PortalMainWidget.cpp](./Source/Project_Bang_Squad/UI/Stage/PortalMainWidget.cpp)
+- [포탈 카운트다운과 레벨 전환 처리](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Game/Stage/MapPortal.cpp#L145-L317)
+- [DataAsset 맵 정보 구조와 조회 함수](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Data/DataAsset/BSMapData.h#L10-L46)
 
 ---
 
@@ -312,6 +321,9 @@ struct FActorSaveData
 - [StageGameMode.cpp](./Source/Project_Bang_Squad/Game/Stage/StageGameMode.cpp)
 - [StageGameState.cpp](./Source/Project_Bang_Squad/Game/Stage/StageGameState.cpp)
 - [Checkpoint.cpp](./Source/Project_Bang_Squad/Game/Stage/Checkpoint.cpp)
+- [ISaveInterface 계약 정의](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Game/Interface/SaveInterface.h#L10-L37)
+- [포탈 이동 직전 퍼즐 상태 저장](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Game/Stage/MapPortal.cpp#L59-L75)
+- [저장 대상 객체의 Save/Load 구현 예시](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/MapPuzzle/CenterStatueManager.cpp#L50-L60)
 
 ---
 
@@ -349,6 +361,8 @@ CheckPoint Progress
 - [MiniGamePlayerState.h](./Source/Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.h)
 - [MiniGamePlayerState.cpp](./Source/Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.cpp)
 - [MiniGameRankingRow.cpp](./Source/Project_Bang_Squad/UI/MiniGame/MiniGameRankingRow.cpp)
+- [체크포인트 + 거리 기반 진행 점수 계산](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.cpp#L38-L75)
+- [UI에서 진행 점수 기준 실시간 정렬](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/UI/MiniGame/MiniGameWidget.cpp#L74-L123)
 
 ---
 
@@ -386,6 +400,8 @@ UI 반응은 `PlayerController` RPC로 분리하여
 - [ArenaPlayerController.cpp](./Source/Project_Bang_Squad/Game/MiniGame/ArenaPlayerController.cpp)
 - [ArenaMainWidget.cpp](./Source/Project_Bang_Squad/UI/MiniGame/ArenaMainWidget.cpp)
 - [ArenaFloor.cpp](./Source/Project_Bang_Squad/MapPuzzle/ArenaFloor.cpp)
+- [Arena 상태 복제 필드](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Game/MiniGame/ArenaGameState.cpp#L10-L17)
+- [Arena Phase RepNotify 진입점](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Game/MiniGame/ArenaGameState.cpp#L19-L21)
 
 ---
 
