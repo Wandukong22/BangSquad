@@ -78,7 +78,7 @@ void UMainMenu::SetServerList(TArray<FServerData> InServerData)
 	// 1. 데이터 0개면 종료
 	if (InServerData.Num() == 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("세션 0개 발견. 목록 갱신 종료."));
+		UE_LOG(LogTemp, Warning, TEXT("0 sessions found. End of list update."));
 		return;
 	}
 

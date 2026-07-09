@@ -230,16 +230,11 @@ void UBSGameInstance::OnFindSessionComplete(const bool IsSuccess) const
 				ServerData.Name = ServerName;
 			
 			FString HostName; //닉네임
+			ServerData.HostUserName = SearchResult.Session.OwningUserName;
+			
 			if (SearchResult.Session.SessionSettings.Get(HOST_NAME_KEY, HostName))
 			{
 				ServerData.HostUserName = HostName;
-			}
-			else
-			{
-				if (ServerData.HostUserName.IsEmpty())
-				{
-					ServerData.HostUserName = TEXT("Unknown");
-				}
 			}
 
 			ServerNames.Add(ServerData);
@@ -257,7 +252,7 @@ void UBSGameInstance::OnJoinSessionComplete(FName InSessionName, EOnJoinSessionC
 
 	if (InResult != EOnJoinSessionCompleteResult::Success)
 	{
-		UE_LOG(LogTemp, Error, TEXT("❌ 세션 접속 실패! 결과 코드: %d"), (int32)InResult);
+		UE_LOG(LogTemp, Error, TEXT("Session Connection failed. Result Code: %d"), (int32)InResult);
 		return;
 	}
 
@@ -273,13 +268,7 @@ void UBSGameInstance::OnJoinSessionComplete(FName InSessionName, EOnJoinSessionC
 	// NULL 상황에 포트가 0번이면 17777로 강제 변경
 	if (SubsystemName == "NULL" && Address.EndsWith(":0"))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("포트가 0번으로 감지됨. 17777로 강제 보정합니다."));
 		Address = Address.Replace(TEXT(":0"), TEXT(":17777"));
-	}
-
-	if (UEngine* Engine = GetEngine())
-	{
-		Engine->AddOnScreenDebugMessage(0, 5, FColor::Green, FString::Printf(TEXT("Joining To %s"), *Address));
 	}
 
 	APlayerController* PC = GetFirstLocalPlayerController();
@@ -355,6 +344,7 @@ void UBSGameInstance::CreateSession()
 	//서버 목록 UI 연동을 위한 세션 메타데이터(방 제목, 닉네임) 패킹
 	SessionSettings.Set(SESSION_SETTINGS_KEY, DesiredServerName,
 	                    EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	
 	SessionSettings.Set(HOST_NAME_KEY, DesiredHostName,
 	                    EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
