@@ -1,6 +1,6 @@
 # BangSquad
 
-> **Unreal Engine 5 기반 Listen Server 4인 협동 액션 RPG**  
+> **Unreal Engine 5.5 기반 Listen Server 4인 협동 액션 RPG**<br>
 > 세션 생성부터 로비, 스테이지, 미니게임까지 멀티플레이 상태 일관성을 유지하는 협동 플레이 구조를 구현한 팀 프로젝트입니다.
 
 <p align="center">
@@ -31,25 +31,24 @@
 - RepNotify 기반 로비 상태 동기화
 - 서버 권한 기반 직업 선택 검증
 - 스테이지 전환과 오브젝트 상태 복원
-- 미니게임 실시간 순위 계산과 Arena 상태 머신
+- 미니게임 실시간 순위 계산과 Arena Phase 전환 및 상태 복제
 
 ---
 
-## 내 역할
+## 프로젝트 정보
 
 | 항목 | 내용 |
 |---|---|
-| 프로젝트명 | BangSquad |
 | 프로젝트 유형 | 기업협약 팀 프로젝트 |
-| 장르 | 3D 협동 액션 RPG |
 | 개발 기간 | 2025.12.22 ~ 2026.03.06 (75일) |
 | 개발 인원 | 개발 4명 / 기획 1명 |
+| 장르 | 3D 협동 액션 RPG |
 | 플랫폼 | Windows PC |
-| 엔진 | Unreal Engine 5 |
-| 언어 | C++ |
-| 네트워크 | Listen Server, OnlineSubsystem, Replication, RPC |
+| 담당 역할 | 멀티플레이 구조 및 상태 동기화 |
 
 ### 담당 범위
+
+아래 내용은 팀 전체 기능 중 제가 직접 구현한 멀티플레이 및 상태 동기화 영역입니다.
 
 - 멀티플레이 세션 생성, 검색, 참가
 - LAN / Steam 환경 분기
@@ -59,7 +58,7 @@
 - 체크포인트, 리스폰, 관전 시스템
 - `ISaveInterface` 기반 오브젝트 상태 저장 및 복원
 - 미니게임 실시간 순위 계산
-- Arena Phase 상태 머신 구현
+- Arena Phase 전환 로직 및 상태 복제
 
 ---
 
@@ -88,7 +87,7 @@ JoinSession
 
 - [BSGameInstance.cpp](./Source/Project_Bang_Squad/Core/BSGameInstance.cpp)
 - [MainMenu.cpp](./Source/Project_Bang_Squad/UI/Menu/MainMenu.cpp)
-- [CreateSession 완료 후 ServerTravel](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L190-L197)
+- [CreateSession 완료 후 ServerTravel](https://github.com/dpdnjs512/BangSquad/blob/main/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L190-L197)
 
 ### 2. RepNotify 기반 로비 상태 동기화
 
@@ -99,7 +98,7 @@ JoinSession
 
 - [LobbyGameMode.cpp](./Source/Project_Bang_Squad/Game/Lobby/LobbyGameMode.cpp)
 - [LobbyGameState.cpp](./Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.cpp)
-- [OnRep_CurrentPhase / OnRep_TakenJobs 브로드캐스트](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.cpp#L55-L64)
+- [OnRep_CurrentPhase / OnRep_TakenJobs 브로드캐스트](https://github.com/dpdnjs512/BangSquad/blob/main/Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.cpp#L55-L64)
 
 ### 3. 서버 권한 기반 직업 선택
 
@@ -114,7 +113,7 @@ JoinSession
 - [LobbyGameMode.cpp](./Source/Project_Bang_Squad/Game/Lobby/LobbyGameMode.cpp)
 - [LobbyPlayerState.cpp](./Source/Project_Bang_Squad/Game/Lobby/LobbyPlayerState.cpp)
 - [JobSelectWidget.cpp](./Source/Project_Bang_Squad/UI/Lobby/JobSelectWidget.cpp)
-- [서버 권한 기반 직업 확정 검증](https://github.com/Wandukong22/BangSquad/blob/main/Source/Project_Bang_Squad/Game/Lobby/LobbyGameMode.cpp#L20-L66)
+- [서버 권한 기반 직업 확정 검증](https://github.com/dpdnjs512/BangSquad/blob/main/Source/Project_Bang_Squad/Game/Lobby/LobbyGameMode.cpp#L20-L66)
 
 ### 4. DataAsset 기반 스테이지 전환
 
@@ -154,13 +153,15 @@ ISaveInterface Actor Collect
 ### 6. 미니게임 순위 계산과 Arena 상태 머신
 
 미니게임 순위는 **체크포인트 진행도 + 다음 체크포인트까지 거리**를 조합한 점수로 계산했고,  
-Arena 미니게임은 `Waiting → Surviving → FloorSinking → Finished` 흐름의 상태 머신으로 구성했습니다.
+Arena 미니게임은 `Waiting → Surviving → FloorSinking → Finished` 흐름으로 구성했습니다.
+서버의 `ArenaMiniGameMode`가 Phase 전환 조건과 단계별 처리를 담당하고, `ArenaGameState`가 현재 Phase와 남은 시간, 가라앉을 바닥 번호를 복제합니다.
 
 관련 코드
 
 - [MiniGamePlayerState.cpp](./Source/Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.cpp)
 - [MiniGameWidget.cpp](./Source/Project_Bang_Squad/UI/MiniGame/MiniGameWidget.cpp)
-- [ArenaGameState.cpp](./Source/Project_Bang_Squad/Game/MiniGame/ArenaGameState.cpp)
+- [ArenaMiniGameMode.cpp](./Source/Project_Bang_Squad/Game/MiniGame/ArenaMiniGameMode.cpp) — Phase 전환 조건과 단계별 처리
+- [ArenaGameState.cpp](./Source/Project_Bang_Squad/Game/MiniGame/ArenaGameState.cpp) — Phase, 남은 시간, 바닥 번호 복제
 
 ---
 
@@ -239,8 +240,11 @@ flowchart TD
 5. [MiniGamePlayerState](./Source/Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.cpp)
 미니게임 진행 점수 계산 로직
 
-6. [ArenaGameState](./Source/Project_Bang_Squad/Game/MiniGame/ArenaGameState.cpp)
-Arena 상태 복제
+6. [ArenaMiniGameMode](./Source/Project_Bang_Squad/Game/MiniGame/ArenaMiniGameMode.cpp)
+Arena Phase 전환 조건과 단계별 처리
+
+7. [ArenaGameState](./Source/Project_Bang_Squad/Game/MiniGame/ArenaGameState.cpp)
+Arena Phase, 남은 시간, 바닥 번호 복제
 
 ---
 
@@ -248,13 +252,13 @@ Arena 상태 복제
 
 | 분류 | 사용 기술 |
 |---|---|
-| Engine | Unreal Engine 5 |
+| Engine | Unreal Engine 5.5 |
 | Language | C++ |
 | IDE | Rider |
-| Network | Listen Server |
+| Architecture | Listen Server |
 | Online | OnlineSubsystem LAN / Steam |
+| Networking | Replication / RPC |
 | Data | DataAsset |
-| Framework | Unreal Gameplay Framework |
 | Version Control | GitHub |
 
 ---
