@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="YOUTUBE_LINK">🎬 플레이 영상</a>
+  <a href="https://youtu.be/ivm0kIhvQbI?si=TF-mExUzUVXaH8-i">🎬 플레이 영상</a>
   &nbsp; | &nbsp;
   <a href="PORTFOLIO_PDF_LINK">📄 기술 문서 PDF</a>
 </p>
