@@ -4,15 +4,17 @@
 > 세션 생성부터 로비, 스테이지, 미니게임까지 멀티플레이 상태 일관성을 유지하는 협동 플레이 구조를 구현한 팀 프로젝트입니다.
 
 <p align="center">
-  <a href="YOUTUBE_LINK">
-    <img src="THUMBNAIL_OR_GIF_PATH" alt="BangSquad Gameplay" width="820">
+  <a href="https://youtu.be/ivm0kIhvQbI?si=t5cMN_6NRb55eGpj">
+    <img src="https://img.youtube.com/vi/ivm0kIhvQbI/maxresdefault.jpg"
+         alt="BangSquad 플레이 영상"
+         width="100%">
   </a>
 </p>
 
 <p align="center">
-  <a href="https://youtu.be/ivm0kIhvQbI?si=TF-mExUzUVXaH8-i">🎬 플레이 영상</a>
+  <a href="https://youtu.be/ivm0kIhvQbI?si=t5cMN_6NRb55eGpj">🎬 플레이 영상</a>
   &nbsp; | &nbsp;
-  <a href="PORTFOLIO_PDF_LINK">📄 기술 문서 PDF</a>
+  <a href="./docs/BangSquad_Technical_Document.pdf">📄 기술 문서 PDF</a>
 </p>
 
 ---
