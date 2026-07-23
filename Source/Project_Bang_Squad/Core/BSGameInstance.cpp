@@ -104,13 +104,6 @@ void UBSGameInstance::Join(uint32 Index)
 	if (!SessionInterface.IsValid()) return;
 	if (!SessionSearch.IsValid()) return;
 
-	// 조인하러 떠날 때 위젯 포인터 끊기
-	if (MainMenu)
-	{
-		MainMenu->Shutdown();
-		MainMenu = nullptr;
-	}
-
 	if (SessionSearch->SearchResults.Num() > (int32)Index)
 		SessionInterface->JoinSession(0, SESSION_NAME, SessionSearch->SearchResults[Index]);
 	else
@@ -286,10 +279,13 @@ void UBSGameInstance::OnJoinSessionComplete(FName InSessionName, EOnJoinSessionC
 
 void UBSGameInstance::OnStartSessionComplete(FName InSessionName, bool IsSuccess)
 {
-	if (IsSuccess)
+	if (!IsSuccess)
 	{
 		UE_LOG(LogTemp, Error, TEXT("세션 시작 실패: %s"), *InSessionName.ToString());
+		return;
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("세션 시작 성공: %s"), *InSessionName.ToString());
 }
 
 void UBSGameInstance::OnNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType,

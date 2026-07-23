@@ -3,8 +3,6 @@
 
 #include "ArenaGameState.h"
 
-#include "ArenaPlayerController.h"
-#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 void AArenaGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -14,8 +12,4 @@ void AArenaGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AArenaGameState, CurrentPhase);
 	DOREPLIFETIME(AArenaGameState, RemainingTime);
 	DOREPLIFETIME(AArenaGameState, CurrentSinkingFloor);
-}
-
-void AArenaGameState::OnRep_CurrentPhase(EArenaPattern OldPhase)
-{
 }

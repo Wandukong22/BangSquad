@@ -4,14 +4,6 @@
 > 세션 생성부터 로비, 스테이지, 미니게임까지 멀티플레이 상태 일관성을 유지하는 협동 플레이 구조를 구현한 팀 프로젝트입니다.
 
 <p align="center">
-  <a href="https://youtu.be/ivm0kIhvQbI?si=t5cMN_6NRb55eGpj">
-    <img src="https://img.youtube.com/vi/ivm0kIhvQbI/maxresdefault.jpg"
-         alt="BangSquad 플레이 영상"
-         width="100%">
-  </a>
-</p>
-
-<p align="center">
   <a href="https://youtu.be/ivm0kIhvQbI?si=t5cMN_6NRb55eGpj">🎬 플레이 영상</a>
   &nbsp; | &nbsp;
   <a href="./docs/BangSquad_Technical_Document.pdf">📄 기술 문서 PDF</a>
@@ -52,8 +44,7 @@
 
 아래 내용은 팀 전체 기능 중 제가 직접 구현한 멀티플레이 및 상태 동기화 영역입니다.
 
-- 멀티플레이 세션 생성, 검색, 참가
-- LAN / Steam 환경 분기
+- OnlineSubsystem 기반 LAN 세션 생성, 검색, 참가
 - 로비 Phase 동기화와 Ready 흐름 처리
 - 서버 권한 기반 직업 선택 및 중복 방지
 - Portal 기반 스테이지 전환
@@ -89,12 +80,12 @@ JoinSession
 
 - [BSGameInstance.cpp](./Source/Project_Bang_Squad/Core/BSGameInstance.cpp)
 - [MainMenu.cpp](./Source/Project_Bang_Squad/UI/Menu/MainMenu.cpp)
-- [CreateSession 완료 후 ServerTravel](https://github.com/dpdnjs512/BangSquad/blob/main/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L190-L197)
+- [CreateSession 완료 후 ServerTravel](https://github.com/dpdnjs512/BangSquad/blob/main/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L183-L190)
 
 ### 2. RepNotify 기반 로비 상태 동기화
 
 로비는 `PreviewJob → SelectJob → GameStarting` 순서로 진행되며,  
-현재 상태를 `LobbyGameState`에 저장하고 `RepNotify`로 복제해 Late Join 플레이어도 현재 상태를 복원할 수 있게 했습니다.
+현재 상태를 `LobbyGameState`에 저장하고 `RepNotify`로 복제해, 복제된 Phase와 직업 점유 상태를 기준으로 로비 UI를 초기화하도록 구성했습니다.
 
 관련 코드
 
@@ -128,7 +119,7 @@ JoinSession
 관련 코드
 
 - [MapPortal.cpp](./Source/Project_Bang_Squad/Game/Stage/MapPortal.cpp)
-- [StageGameMode.cpp](./Source/Project_Bang_Squad/Game/Stage/StageGameMode.cpp)
+- [BSGameInstance.cpp](./Source/Project_Bang_Squad/Core/BSGameInstance.cpp) — DataAsset 조회와 ServerTravel
 - [BSMapData.h](./Source/Project_Bang_Squad/Data/DataAsset/BSMapData.h)
 
 ### 5. 오브젝트 상태 저장 및 복원
@@ -155,7 +146,8 @@ ISaveInterface Actor Collect
 ### 6. 미니게임 순위 계산과 Arena 상태 머신
 
 미니게임 순위는 **체크포인트 진행도 + 다음 체크포인트까지 거리**를 조합한 점수로 계산했고,  
-Arena 미니게임은 `Waiting → Surviving → FloorSinking → Finished` 흐름으로 구성했습니다.
+Arena 미니게임의 진행 상태를 `Waiting`, `Surviving`, `FloorSinking`, `Finished`로 구분했습니다.
+생존 중에는 `Surviving`과 `FloorSinking` 단계를 반복합니다.
 서버의 `ArenaMiniGameMode`가 Phase 전환 조건과 단계별 처리를 담당하고, `ArenaGameState`가 현재 Phase와 남은 시간, 가라앉을 바닥 번호를 복제합니다.
 
 관련 코드
@@ -211,42 +203,15 @@ flowchart TD
     F --> G[Preview Job]
     G --> H[Select Job]
     H --> I[Game Starting]
-    I --> J[Stage 1]
-    J --> K{Mini Game Entry}
-    K -->|Yes| L[Mini Game]
-    L --> M[Return to Stage]
-    K -->|No| N[Boss Portal]
-    M --> N
-    N --> O[Boss Battle]
-    O --> P[Ending]
+    I --> J[Stage]
+    J --> K[Mini Game]
+    K --> L[Return to Stage]
+    L --> M[Boss Battle]
+    M --> N{Stage 3 Boss?}
+    N -->|No| O[Next Stage]
+    O --> J
+    N -->|Yes| P[Ending]
 ```
-
----
-
-## 코드 리뷰 가이드
-
-아래 순서로 보면 제가 담당한 멀티플레이 흐름을 빠르게 파악할 수 있습니다.
-
-1. [BSGameInstance](./Source/Project_Bang_Squad/Core/BSGameInstance.cpp)
-세션 생성, 검색, 참가와 Travel 흐름
-
-2. [LobbyGameMode](./Source/Project_Bang_Squad/Game/Lobby/LobbyGameMode.cpp)
-로비 진행 제어와 직업 선택 서버 검증
-
-3. [LobbyGameState](./Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.cpp)
-`CurrentPhase`, `TakenJobs` 복제와 Delegate 브로드캐스트
-
-4. [MapPortal](./Source/Project_Bang_Squad/Game/Stage/MapPortal.cpp)
-전원 진입 확인, 카운트다운, 저장, 맵 전환
-
-5. [MiniGamePlayerState](./Source/Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.cpp)
-미니게임 진행 점수 계산 로직
-
-6. [ArenaMiniGameMode](./Source/Project_Bang_Squad/Game/MiniGame/ArenaMiniGameMode.cpp)
-Arena Phase 전환 조건과 단계별 처리
-
-7. [ArenaGameState](./Source/Project_Bang_Squad/Game/MiniGame/ArenaGameState.cpp)
-Arena Phase, 남은 시간, 바닥 번호 복제
 
 ---
 
@@ -258,7 +223,7 @@ Arena Phase, 남은 시간, 바닥 번호 복제
 | Language | C++ |
 | IDE | Rider |
 | Architecture | Listen Server |
-| Online | OnlineSubsystem LAN / Steam |
+| Online | OnlineSubsystem LAN |
 | Networking | Replication / RPC |
 | Data | DataAsset |
 | Version Control | GitHub |

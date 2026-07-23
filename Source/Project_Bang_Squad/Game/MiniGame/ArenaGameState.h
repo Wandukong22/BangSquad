@@ -32,10 +32,7 @@ public:
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UFUNCTION()
-	void OnRep_CurrentPhase(EArenaPattern OldPhase);
-	
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentPhase)
+	UPROPERTY(Replicated)
 	EArenaPattern CurrentPhase = EArenaPattern::Waiting;
 
 	UPROPERTY(Replicated)
