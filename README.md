@@ -11,25 +11,10 @@
 
 ---
 
-## 프로젝트 요약
+## 프로젝트 개요
 
 **BangSquad**는 4명의 플레이어가 서로 다른 직업을 선택하고,  
 협력하여 스테이지, 미니게임, 보스전을 돌파하는 **3D 협동 액션 RPG**입니다.
-
-이 프로젝트에서 저는 게임플레이 전체보다  
-**멀티플레이 구조와 상태 동기화 흐름**을 중심으로 담당했습니다.
-
-특히 아래 문제를 해결하는 데 집중했습니다.
-
-- OnlineSubsystem 기반 세션 생성, 검색, 참가 흐름
-- RepNotify 기반 로비 상태 동기화
-- 서버 권한 기반 직업 선택 검증
-- 스테이지 전환과 오브젝트 상태 복원
-- 미니게임 실시간 순위 계산과 Arena Phase 전환 및 상태 복제
-
----
-
-## 프로젝트 정보
 
 | 항목 | 내용 |
 |---|---|
@@ -40,24 +25,46 @@
 | 플랫폼 | Windows PC |
 | 담당 역할 | 멀티플레이 구조 및 상태 동기화 |
 
-### 담당 범위
+---
 
-아래 내용은 팀 전체 기능 중 제가 직접 구현한 멀티플레이 및 상태 동기화 영역입니다.
+## 기술 스택
 
-- OnlineSubsystem 기반 LAN 세션 생성, 검색, 참가
-- 로비 Phase 동기화와 Ready 흐름 처리
-- 서버 권한 기반 직업 선택 및 중복 방지
-- Portal 기반 스테이지 전환
-- 체크포인트, 리스폰, 관전 시스템
-- `ISaveInterface` 기반 오브젝트 상태 저장 및 복원
-- 미니게임 실시간 순위 계산
-- Arena Phase 전환 로직 및 상태 복제
+| 분류 | 사용 기술 |
+|---|---|
+| Engine | Unreal Engine 5.5 |
+| Language | C++ |
+| UI | UMG |
+| Multiplayer | Listen Server |
+| Online | OnlineSubsystem — Steam 연동 / LAN 테스트 |
+| Networking | Replication / RPC / RepNotify |
+| Data | DataAsset |
+| Tools | Rider / Git / GitHub |
 
 ---
 
-## 주요 기능
+## 아키텍처
 
-### 1. OnlineSubsystem 기반 멀티플레이 세션
+클라이언트의 상태 변경 요청은 서버에서 검증하고, 확정된 상태는 `GameState`와 `PlayerState`를 통해 각 클라이언트에 복제하도록 구성했습니다.
+
+### 멀티플레이 상태 동기화
+
+<p align="center">
+  <img src="./docs/images/multiplayer-architecture.png" alt="멀티플레이 상태 동기화 아키텍처">
+</p>
+
+### 세션·레벨 전환·상태 보존
+
+<p align="center">
+  <img src="./docs/images/session-level-state-architecture.png" alt="세션, 레벨 전환, 상태 보존 아키텍처">
+</p>
+
+---
+
+## 주요 구현 기능
+
+### 1. 멀티플레이 세션
+
+#### OnlineSubsystem 기반 세션 생성·검색·참가
 
 세션 생성, 검색, 참가를 모두 **완료 Delegate 기준**으로 이어 붙여  
 비동기 작업이 끝나기 전에 `ServerTravel` 또는 `ClientTravel`이 호출되지 않도록 구성했습니다.
@@ -82,7 +89,9 @@ JoinSession
 - [MainMenu.cpp](./Source/Project_Bang_Squad/UI/Menu/MainMenu.cpp)
 - [CreateSession 완료 후 ServerTravel](https://github.com/dpdnjs512/BangSquad/blob/main/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L183-L190)
 
-### 2. RepNotify 기반 로비 상태 동기화
+### 2. 로비
+
+#### RepNotify 기반 상태 동기화
 
 로비는 `PreviewJob → SelectJob → GameStarting` 순서로 진행되며,  
 현재 상태를 `LobbyGameState`에 저장하고 `RepNotify`로 복제해, 복제된 Phase와 직업 점유 상태를 기준으로 로비 UI를 초기화하도록 구성했습니다.
@@ -93,7 +102,7 @@ JoinSession
 - [LobbyGameState.cpp](./Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.cpp)
 - [OnRep_CurrentPhase / OnRep_TakenJobs 브로드캐스트](https://github.com/dpdnjs512/BangSquad/blob/main/Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.cpp#L55-L64)
 
-### 3. 서버 권한 기반 직업 선택
+#### 서버 권한 기반 직업 선택
 
 직업 선택은 클라이언트 UI가 아니라  
 **서버의 `LobbyGameMode`가 최종 승인**하도록 구성했습니다.
@@ -108,7 +117,9 @@ JoinSession
 - [JobSelectWidget.cpp](./Source/Project_Bang_Squad/UI/Lobby/JobSelectWidget.cpp)
 - [서버 권한 기반 직업 확정 검증](https://github.com/dpdnjs512/BangSquad/blob/main/Source/Project_Bang_Squad/Game/Lobby/LobbyGameMode.cpp#L20-L66)
 
-### 4. DataAsset 기반 스테이지 전환
+### 3. 스테이지 전환 및 상태 보존
+
+#### DataAsset 기반 스테이지 전환
 
 스테이지 이동은 `Stage Index`와 `Section`으로 목적지를 결정하고,  
 실제 맵 경로와 로딩/결과 이미지는 `BSMapData`에서 조회하도록 구성했습니다.
@@ -122,7 +133,21 @@ JoinSession
 - [BSGameInstance.cpp](./Source/Project_Bang_Squad/Core/BSGameInstance.cpp) — DataAsset 조회와 ServerTravel
 - [BSMapData.h](./Source/Project_Bang_Squad/Data/DataAsset/BSMapData.h)
 
-### 5. 오브젝트 상태 저장 및 복원
+#### 체크포인트·리스폰·관전
+
+체크포인트 진입은 서버에서 판정하고, 최신 진행도를 `StageGameState`와 `GameInstance`에 저장해 같은 스테이지 내 레벨 전환 이후에도 유지하도록 구성했습니다.
+
+플레이어가 사망하면 서버의 `GameMode`가 리스폰 대기 시간과 위치를 결정하고, 최신 체크포인트에서 캐릭터를 다시 생성합니다.
+리스폰을 기다리는 동안에는 `PlayerController`가 생존한 플레이어만 필터링해 관전 대상을 순환하도록 구현했습니다.
+
+관련 코드
+
+- [Checkpoint.cpp](./Source/Project_Bang_Squad/Game/Stage/Checkpoint.cpp)
+- [StageGameState.cpp](./Source/Project_Bang_Squad/Game/Stage/StageGameState.cpp)
+- [StageGameMode.cpp](./Source/Project_Bang_Squad/Game/Stage/StageGameMode.cpp)
+- [StagePlayerController.cpp](./Source/Project_Bang_Squad/Game/Stage/StagePlayerController.cpp)
+
+#### ISaveInterface 기반 오브젝트 상태 저장 및 복원
 
 미니게임 이후 원래 스테이지로 복귀할 때  
 퍼즐과 상호작용 오브젝트가 초기화되지 않도록  
@@ -143,19 +168,43 @@ ISaveInterface Actor Collect
 - [MapPortal.cpp](./Source/Project_Bang_Squad/Game/Stage/MapPortal.cpp)
 - [CenterStatueManager.cpp](./Source/Project_Bang_Squad/MapPuzzle/CenterStatueManager.cpp)
 
-### 6. 미니게임 순위 계산과 Arena 상태 머신
+### 4. 미니게임
 
-미니게임 순위는 **체크포인트 진행도 + 다음 체크포인트까지 거리**를 조합한 점수로 계산했고,  
+#### 실시간 순위 계산
+
+미니게임 순위는 **체크포인트 진행도 + 다음 체크포인트까지 거리**를 조합한 점수로 계산했습니다.
+
+관련 코드
+
+- [MiniGamePlayerState.cpp](./Source/Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.cpp)
+- [MiniGameWidget.cpp](./Source/Project_Bang_Squad/UI/MiniGame/MiniGameWidget.cpp)
+
+#### Arena 상태 머신 및 상태 복제
+
 Arena 미니게임의 진행 상태를 `Waiting`, `Surviving`, `FloorSinking`, `Finished`로 구분했습니다.
 생존 중에는 `Surviving`과 `FloorSinking` 단계를 반복합니다.
 서버의 `ArenaMiniGameMode`가 Phase 전환 조건과 단계별 처리를 담당하고, `ArenaGameState`가 현재 Phase와 남은 시간, 가라앉을 바닥 번호를 복제합니다.
 
 관련 코드
 
-- [MiniGamePlayerState.cpp](./Source/Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.cpp)
-- [MiniGameWidget.cpp](./Source/Project_Bang_Squad/UI/MiniGame/MiniGameWidget.cpp)
 - [ArenaMiniGameMode.cpp](./Source/Project_Bang_Squad/Game/MiniGame/ArenaMiniGameMode.cpp) — Phase 전환 조건과 단계별 처리
 - [ArenaGameState.cpp](./Source/Project_Bang_Squad/Game/MiniGame/ArenaGameState.cpp) — Phase, 남은 시간, 바닥 번호 복제
+
+---
+
+## 담당 역할 및 기여
+
+팀 전체 게임플레이 중 멀티플레이 구조와 상태 동기화 영역을 담당했습니다.
+
+| 담당 영역 | 구현 내용 |
+|---|---|
+| 세션 | OnlineSubsystem 기반 세션 생성, 검색, 참가 |
+| 로비 | Phase 및 Ready 상태 동기화 |
+| 직업 선택 | 서버 권한 검증과 중복 선택 방지 |
+| 스테이지 전환 | 포탈 진입 인원 확인, 카운트다운, 레벨 이동 |
+| 체크포인트·리스폰·관전 | 진행도 저장, 체크포인트 리스폰, 생존 플레이어 순환 관전 |
+| 상태 보존 | `ISaveInterface` 기반 퍼즐 상태 저장·복원 |
+| 미니게임 | 실시간 순위 계산과 Arena Phase 복제 |
 
 ---
 
@@ -187,53 +236,3 @@ MiniGame 이후 기존 Stage로 복귀하면 일부 클라이언트에서
 - 원인: 복제 상태가 적용될 때 `EndLocation`이 아직 계산되지 않아 잘못된 위치가 적용됨
 - 해결: `BeginPlay()`에서 기준 위치를 먼저 계산한 뒤 저장/복제 상태를 반영하도록 순서를 변경
 - 결과: 저장 및 복제 적용 순서와 관계없이 같은 최종 위치를 보장
-
----
-
-## 게임 진행 구조
-
-```mermaid
-flowchart TD
-    A[Main Menu] --> B{Host / Join}
-    B -->|Host| C[Create Session]
-    B -->|Join| D[Find Session]
-    D --> E[Join Session]
-    C --> F[Lobby]
-    E --> F
-    F --> G[Preview Job]
-    G --> H[Select Job]
-    H --> I[Game Starting]
-    I --> J[Stage]
-    J --> K[Mini Game]
-    K --> L[Return to Stage]
-    L --> M[Boss Battle]
-    M --> N{Stage 3 Boss?}
-    N -->|No| O[Next Stage]
-    O --> J
-    N -->|Yes| P[Ending]
-```
-
----
-
-## 기술 스택
-
-| 분류 | 사용 기술 |
-|---|---|
-| Engine | Unreal Engine 5.5 |
-| Language | C++ |
-| IDE | Rider |
-| Architecture | Listen Server |
-| Online | OnlineSubsystem LAN |
-| Networking | Replication / RPC |
-| Data | DataAsset |
-| Version Control | GitHub |
-
----
-
-## 회고
-
-이 프로젝트를 통해 멀티플레이 게임에서는 기능 구현 자체보다  
-**상태를 누가 소유하고, 누가 변경하며, 어떤 시점에 동기화할지 결정하는 구조 설계**가 중요하다는 점을 배웠습니다.
-
-특히 서버 권한 직업 선택, Seamless Travel 생명주기 충돌, Replication 초기화 순서 문제를 해결하면서  
-Unreal Engine의 Gameplay Framework와 멀티플레이 상태 동기화를 실제 프로젝트 단위로 경험할 수 있었습니다.
