@@ -68,9 +68,9 @@
 
 **핵심 코드**
 
-- [세션 생성 완료 후 Listen Server 이동](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L183-L188) — 세션 생성 성공을 확인한 뒤 로비 맵으로 `ServerTravel`하는 코드
-- [검색 결과를 서버 목록 UI 데이터로 변환](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L200-L237) — 검색된 세션의 인원과 방 정보를 UI에 전달하는 코드
-- [세션 참가 완료 후 ClientTravel](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L242-L276) — 접속 주소를 얻어 참가 클라이언트를 호스트 맵으로 이동시키는 코드
+- [세션 생성 완료 후 Listen Server 이동](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L183-L188)
+- [검색 결과를 서버 목록 UI 데이터로 변환](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L200-L237)
+- [세션 참가 완료 후 ClientTravel](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L242-L276)
 
 세션 생성, 검색, 참가를 모두 **완료 Delegate 기준**으로 이어 붙여  
 비동기 작업이 끝나기 전에 `ServerTravel` 또는 `ClientTravel`이 호출되지 않도록 구성했습니다.
@@ -100,8 +100,8 @@ JoinSession
 
 **핵심 코드**
 
-- [로비 상태 복제 등록과 서버 Phase 변경](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.cpp#L12-L25) — Phase와 직업 점유 상태를 복제 대상으로 등록하고 서버에서만 Phase를 변경하는 코드
-- [RepNotify를 통한 UI 갱신 이벤트 전달](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.cpp#L55-L64) — 복제된 Phase와 직업 점유 상태를 Delegate로 브로드캐스트하는 코드
+- [로비 상태 복제 등록과 서버 Phase 변경](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.cpp#L12-L25)
+- [RepNotify를 통한 UI 갱신 이벤트 전달](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Lobby/LobbyGameState.cpp#L55-L64)
 
 로비는 `PreviewJob → SelectJob → GameStarting` 순서로 진행되며,  
 현재 상태를 `LobbyGameState`에 저장하고 `RepNotify`로 복제해, 복제된 Phase와 직업 점유 상태를 기준으로 로비 UI를 초기화하도록 구성했습니다.
@@ -116,8 +116,8 @@ JoinSession
 
 **핵심 코드**
 
-- [직업 선택 요청을 서버 GameMode로 전달](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Lobby/LobbyPlayerController.cpp#L262-L279) — Server RPC에서 요청한 플레이어와 직업 정보를 검증 로직으로 전달하는 코드
-- [서버 권한 기반 직업 확정 검증](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Lobby/LobbyGameMode.cpp#L20-L65) — 직업 점유 여부를 다시 확인하고 전체 점유 상태와 플레이어별 확정 상태를 갱신하는 코드
+- [직업 선택 요청을 서버 GameMode로 전달](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Lobby/LobbyPlayerController.cpp#L262-L279)
+- [서버 권한 기반 직업 확정 검증](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Lobby/LobbyGameMode.cpp#L20-L65)
 
 직업 선택은 클라이언트 UI가 아니라  
 **서버의 `LobbyGameMode`가 최종 승인**하도록 구성했습니다.
@@ -138,9 +138,9 @@ JoinSession
 
 **핵심 코드**
 
-- [Stage와 Section 기반 맵 경로 조회](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Data/DataAsset/BSMapData.cpp#L6-L25) — 열거형 조합에 맞는 맵 정보를 찾아 실제 레벨 경로로 변환하는 코드
-- [포탈 진입 인원 확인과 카운트다운 제어](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Stage/MapPortal.cpp#L145-L182) — 서버에서 전원 진입을 확인해 이동 카운트다운을 시작하거나 취소하는 코드
-- [로딩 UI 동기화 후 ServerTravel](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L413-L447) — 모든 클라이언트에 로딩 화면을 표시한 뒤 DataAsset의 경로로 이동하는 코드
+- [Stage와 Section 기반 맵 경로 조회](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Data/DataAsset/BSMapData.cpp#L6-L25)
+- [포탈 진입 인원 확인과 카운트다운 제어](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Stage/MapPortal.cpp#L145-L182)
+- [로딩 UI 동기화 후 ServerTravel](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Core/BSGameInstance.cpp#L413-L447)
 
 스테이지 이동은 `Stage Index`와 `Section`으로 목적지를 결정하고,  
 실제 맵 경로와 로딩/결과 이미지는 `BSMapData`에서 조회하도록 구성했습니다.
@@ -158,9 +158,9 @@ JoinSession
 
 **핵심 코드**
 
-- [저장 데이터 구조와 인터페이스 규약](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Interface/SaveInterface.h#L9-L37) — 오브젝트별 저장 데이터와 저장·복원 함수 계약을 정의한 코드
-- [ISaveInterface 구현 Actor 수집 및 저장](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Stage/MapPortal.cpp#L54-L72) — 맵의 저장 대상 Actor를 모아 `SaveID`별 데이터를 `GameInstance`에 전달하는 코드
-- [SaveID 기반 상태 보관과 조회](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Core/BSGameInstance.h#L274-L281) — 레벨 전환 후에도 사용할 오브젝트 상태를 ID 기준으로 저장하는 코드
+- [저장 데이터 구조와 인터페이스 규약](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Interface/SaveInterface.h#L9-L37)
+- [ISaveInterface 구현 Actor 수집 및 저장](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Stage/MapPortal.cpp#L54-L72)
+- [SaveID 기반 상태 보관과 조회](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Core/BSGameInstance.h#L274-L281)
 
 미니게임 이후 원래 스테이지로 복귀할 때  
 퍼즐과 상호작용 오브젝트가 초기화되지 않도록  
@@ -188,8 +188,8 @@ ISaveInterface Actor Collect
 
 **핵심 코드**
 
-- [체크포인트와 거리를 조합한 진행도 점수 계산](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.cpp#L46-L74) — 통과한 체크포인트에 가중치를 주고 다음 체크포인트까지의 거리로 동률을 구분하는 코드
-- [진행도 점수 기반 실시간 순위 UI 갱신](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/UI/MiniGame/MiniGameWidget.cpp#L74-L116) — 플레이어를 점수순으로 정렬하고 순위 행을 갱신하는 코드
+- [체크포인트와 거리를 조합한 진행도 점수 계산](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/MiniGame/MiniGamePlayerState.cpp#L46-L74)
+- [진행도 점수 기반 실시간 순위 UI 갱신](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/UI/MiniGame/MiniGameWidget.cpp#L74-L116)
 
 미니게임 순위는 **체크포인트 진행도 + 다음 체크포인트까지 거리**를 조합한 점수로 계산했습니다.
 
@@ -203,8 +203,8 @@ ISaveInterface Actor Collect
 
 **핵심 코드**
 
-- [Arena Phase 전환과 바닥 침하 처리](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/MiniGame/ArenaMiniGameMode.cpp#L86-L165) — 서버에서 남은 시간과 바닥 번호를 기준으로 `Surviving`과 `FloorSinking`을 전환하는 코드
-- [Arena 진행 상태 복제 등록](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/MiniGame/ArenaGameState.cpp#L8-L14) — 현재 Phase, 남은 시간, 가라앉을 바닥 번호를 클라이언트에 복제하는 코드
+- [Arena Phase 전환과 바닥 침하 처리](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/MiniGame/ArenaMiniGameMode.cpp#L86-L165)
+- [Arena 진행 상태 복제 등록](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/MiniGame/ArenaGameState.cpp#L8-L14)
 
 Arena 미니게임의 진행 상태를 `Waiting`, `Surviving`, `FloorSinking`, `Finished`로 구분했습니다.
 생존 중에는 `Surviving`과 `FloorSinking` 단계를 반복합니다.
@@ -219,10 +219,10 @@ Arena 미니게임의 진행 상태를 `Waiting`, `Surviving`, `FloorSinking`, `
 
 **핵심 코드**
 
-- [서버 권한 체크포인트 갱신](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Stage/Checkpoint.cpp#L21-L53) — 서버에서 플레이어 진입을 판정해 스테이지 또는 미니게임 진행도를 갱신하는 코드
-- [체크포인트 진행도 복제와 레벨 간 보존](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Stage/StageGameState.cpp#L9-L47) — 최신 체크포인트를 복제하고 `GameInstance`에도 저장해 같은 스테이지 내 레벨 전환 후 복원하는 코드
-- [최신 체크포인트 기반 리스폰](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Stage/StageGameMode.cpp#L24-L105) — 저장된 체크포인트 위치와 사망 횟수에 따른 대기 시간을 계산해 캐릭터를 다시 배치하는 코드
-- [생존 플레이어 순환 관전](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Stage/StagePlayerController.cpp#L128-L173) — 사망한 플레이어가 생존 중인 동료만 순서대로 전환해 관전하는 코드
+- [서버 권한 체크포인트 갱신](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Stage/Checkpoint.cpp#L21-L53)
+- [체크포인트 진행도 복제와 레벨 간 보존](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Stage/StageGameState.cpp#L9-L47)
+- [최신 체크포인트 기반 리스폰](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Stage/StageGameMode.cpp#L24-L105)
+- [생존 플레이어 순환 관전](https://github.com/dpdnjs512/BangSquad/blob/5b48ad96f89edc824cc0c979c146898fdf9758e9/Source/Project_Bang_Squad/Game/Stage/StagePlayerController.cpp#L128-L173)
 
 체크포인트 진입은 서버에서 판정하고, 최신 진행도를 `StageGameState`와 `GameInstance`에 저장해 같은 스테이지 내 레벨 전환 이후에도 유지하도록 구성했습니다.
 
