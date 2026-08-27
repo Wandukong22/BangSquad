@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Project_Bang_Squad/Game/InteractionInterface.h"
+#include "Project_Bang_Squad/Game/Interface/InteractionInterface.h"
 #include "BS_Door.h"
 #include "BS_Switch.generated.h"
 

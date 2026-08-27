@@ -14,7 +14,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Blueprint/UserWidget.h"
 
-#include "Project_Bang_Squad/Core/TrueDamageType.h"
+#include "Project_Bang_Squad/Character/Damage/TrueDamageType.h"
 
 AStage3Boss::AStage3Boss()
 {

@@ -4,7 +4,7 @@
 #include "StageBossGameState.h"
 #include "Project_Bang_Squad/Character/StageBoss/StageBossBase.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
-#include "Project_Bang_Squad/Core/TrueDamageType.h"
+#include "Project_Bang_Squad/Character/Damage/TrueDamageType.h"
 #include "Project_Bang_Squad/Character/StageBoss/Stage1Boss.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"

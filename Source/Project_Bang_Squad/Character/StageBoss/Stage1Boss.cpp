@@ -9,7 +9,7 @@
 #include "StageBossGameState.h"
 #include "Project_Bang_Squad/BossPattern/Boss1_Rampart.h"
 #include "Project_Bang_Squad/Projectile/SlashProjectile.h"
-#include "Project_Bang_Squad/Core/TrueDamageType.h"
+#include "Project_Bang_Squad/Character/Damage/TrueDamageType.h"
 #include "Project_Bang_Squad/Character/Component/HealthComponent.h"
 #include "Project_Bang_Squad/Character/MonsterBase/EnemyCharacterBase.h"
 

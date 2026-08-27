@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Project_Bang_Squad/Core/BSGameTypes.h"
-#include "Project_Bang_Squad/Game/InteractionInterface.h"
+#include "Project_Bang_Squad/Game/Interface/InteractionInterface.h"
 #include "MiniGameGoal.generated.h"
 
 class UWidgetComponent;

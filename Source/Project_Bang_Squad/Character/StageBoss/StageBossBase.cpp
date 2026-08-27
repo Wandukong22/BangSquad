@@ -1,20 +1,20 @@
 #include "StageBossBase.h"
 #include "Net/UnrealNetwork.h"
-#include "Project_Bang_Squad/Core/TrueDamageType.h"
+#include "Project_Bang_Squad/Character/Damage/TrueDamageType.h"
 #include "Engine/DamageEvents.h"
 
 AStageBossBase::AStageBossBase()
 {
-    // ¸ÖÆ¼ÇÃ·¹ÀÌ¾î ¼³Á¤
+    // ï¿½ï¿½Æ¼ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½
     bReplicates = true;
-    SetNetUpdateFrequency(100.0f); // º¸½º´Â ¿òÁ÷ÀÓ°ú »óÅÂ º¯È­°¡ Áß¿äÇÏ¹Ç·Î ºóµµ¸¦ ³ô°Ô À¯Áö
+    SetNetUpdateFrequency(100.0f); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ó°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È­ï¿½ï¿½ ï¿½ß¿ï¿½ï¿½Ï¹Ç·ï¿½ ï¿½óµµ¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 void AStageBossBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    // [Áßº¹ Á¦°Å ¹× ÃÖÀûÈ­] ¸ðµç º¹Á¦ º¯¼ö¸¦ ÇÑ °÷¿¡¼­ µî·ÏÇÕ´Ï´Ù.
+    // [ï¿½ßºï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­] ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     DOREPLIFETIME(AStageBossBase, CurrentPhase);
     DOREPLIFETIME(AStageBossBase, bIsInvincible);
     DOREPLIFETIME(AStageBossBase, bIsActionInProgress);
@@ -22,10 +22,10 @@ void AStageBossBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 
 float AStageBossBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-    // [¼öÁ¤] ºÎ¸ð Å¬·¡½ºµµ Æ®·ç µ¥¹ÌÁö¸¦ ¾Ë¾ÆºÁ¾ß ÇÕ´Ï´Ù!
+    // [ï¿½ï¿½ï¿½ï¿½] ï¿½Î¸ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ë¾Æºï¿½ï¿½ï¿½ ï¿½Õ´Ï´ï¿½!
     bool bIsTrueDamage = (DamageEvent.DamageTypeClass == UTrueDamageType::StaticClass());
 
-    // Æ®·ç µ¥¹ÌÁö°¡ '¾Æ´Ò ¶§¸¸' ¹«Àû Ã¼Å©
+    // Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 'ï¿½Æ´ï¿½ ï¿½ï¿½ï¿½ï¿½' ï¿½ï¿½ï¿½ï¿½ Ã¼Å©
     if (!bIsTrueDamage && bIsInvincible)
     {
         return 0.0f;
@@ -40,36 +40,36 @@ void AStageBossBase::SetPhase(EBossPhase NewPhase)
 
     CurrentPhase = NewPhase;
 
-    // ¼­¹ö¿¡¼­ÀÇ ·ÎÁ÷ ¼öÇà
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     OnPhaseChanged(CurrentPhase);
 
-    // ¼­¹ö´Â OnRepÀÌ ÀÚµ¿À¸·Î È£ÃâµÇÁö ¾ÊÀ¸¹Ç·Î ¼öµ¿ È£ÃâÇÏ¿© µ¿±âÈ­ ·ÎÁ÷ ½ÇÇà
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ OnRepï¿½ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     OnRep_CurrentPhase();
 }
 
 void AStageBossBase::OnRep_CurrentPhase()
 {
-    // [ºñÁÖ¾ó µ¿±âÈ­] Å¬¶óÀÌ¾ðÆ®¿¡¼­ ÆäÀÌÁî º¯°æ¿¡ µû¸¥ UI ¾÷µ¥ÀÌÆ®³ª ÀÌÆåÆ® Ã³¸®¸¦ ¼öÇà
+    // [ï¿½ï¿½ï¿½Ö¾ï¿½ ï¿½ï¿½ï¿½ï¿½È­] Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½æ¿¡ ï¿½ï¿½ï¿½ï¿½ UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 void AStageBossBase::OnPhaseChanged(EBossPhase NewPhase)
 {
-    // ÀÚ½Ä Å¬·¡½º(Stage1Boss µî)¿¡¼­ »ó¼¼ ÆäÀÌÁî ÀüÀÌ ·ÎÁ÷ ±¸Çö
+    // ï¿½Ú½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½(Stage1Boss ï¿½ï¿½)ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 void AStageBossBase::OnGimmickResolved(int32 GimmickID)
 {
-    // ÀÚ½Ä Å¬·¡½º¿¡¼­ ±â¹Í Å¬¸®¾î ·ÎÁ÷ ±¸Çö
+    // ï¿½Ú½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 void AStageBossBase::ServerSetActionInProgress_Implementation(bool bInProgress)
 {
-    // ¼­¹ö¿¡¼­¸¸ »óÅÂ¸¦ ¾ÈÀüÇÏ°Ô º¯°æÇÏµµ·Ï º¸Àå
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (HasAuthority())
     {
         bIsActionInProgress = bInProgress;
 
-        // µð¹ö±× ·Î±×: »óÅÂ º¯È­ ÃßÀû¿ë
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î±ï¿½: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         // UE_LOG(LogTemp, Log, TEXT("Boss Action State Changed: %s"), bInProgress ? TEXT("TRUE") : TEXT("FALSE"));
     }
 }

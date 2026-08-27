@@ -3,7 +3,7 @@
 #include "StageBossGameState.h"
 #include "StageBossPlayerState.h"
 #include "Project_Bang_Squad/Character/StageBoss/Stage1Boss.h"
-#include "Project_Bang_Squad/Core/TrueDamageType.h"
+#include "Project_Bang_Squad/Character/Damage/TrueDamageType.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerState.h"
 #include "TimerManager.h"
