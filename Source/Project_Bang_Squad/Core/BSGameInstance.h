@@ -72,12 +72,6 @@ private:
 	void OnStartSessionComplete(FName InSessionName, bool IsSuccess);
 	void OnNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType,
 	                      const FString& ErrorString);
-	void OnSessionUserInviteAccepted(
-		bool bWasSuccessful,
-		int32 ControllerId,
-		TSharedPtr<const FUniqueNetId> UserId,
-		const FOnlineSessionSearchResult& InviteResult
-	);
 
 	void CreateSession();
 

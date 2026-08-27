@@ -40,8 +40,6 @@ void UBSGameInstance::Init()
 			SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &UBSGameInstance::OnJoinSessionComplete);
 			SessionInterface->OnStartSessionCompleteDelegates.AddUObject(
 				this, &UBSGameInstance::OnStartSessionComplete);
-			SessionInterface->OnSessionUserInviteAcceptedDelegates.AddUObject(
-				this, &UBSGameInstance::OnSessionUserInviteAccepted);
 		}
 	}
 	else
@@ -80,10 +78,10 @@ void UBSGameInstance::Host(const FString& ServerName, int32 MaxPlayers, const FS
 	DesiredMaxPlayers = MaxPlayers;
 	DesiredHostName = HostName;
 
-	// ✅ 로비에서 쓸 방 이름 저장 (Select UI에서 표시)
+	//로비에서 쓸 방 이름 저장 (Select UI에서 표시)
 	LobbyRoomName = ServerName;
 
-	// ✨ 방 만들기 시작! 깃발 세우기
+	//방 만들기 시작
 	bIsGoingToHost = true;
 
 	if (SessionInterface.IsValid())
@@ -134,12 +132,6 @@ void UBSGameInstance::RefreshServerList()
 		{
 			SessionSearch->bIsLanQuery = true;
 			SessionSearch->QuerySettings.SearchParams.Empty(); // 필터 없이 다 찾음
-		}
-		else
-		{
-			// 스팀 설정
-			SessionSearch->bIsLanQuery = false;
-			SessionSearch->QuerySettings.Set(FName(TEXT("PRESENCESEARCH")), true, EOnlineComparisonOp::Equals);
 		}
 
 		SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
@@ -294,21 +286,6 @@ void UBSGameInstance::OnNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENe
 	OpenMainMenuLevel();
 }
 
-void UBSGameInstance::OnSessionUserInviteAccepted(bool bWasSuccessful, int32 ControllerId,
-                                                  TSharedPtr<const FUniqueNetId> UserId,
-                                                  const FOnlineSessionSearchResult& InviteResult)
-{
-	if (!bWasSuccessful || !InviteResult.IsValid()) return;
-
-	if (SessionInterface->GetNamedSession(SESSION_NAME))
-	{
-		bIsGoingToHost = false;
-		SessionInterface->DestroySession(SESSION_NAME);
-	}
-
-	SessionInterface->JoinSession(ControllerId, SESSION_NAME, InviteResult);
-}
-
 void UBSGameInstance::CreateSession()
 {
 	if (!SessionInterface.IsValid()) return;
@@ -323,13 +300,6 @@ void UBSGameInstance::CreateSession()
 	{
 		SessionSettings.bIsLANMatch = true; //LAN
 		SessionSettings.bUsesPresence = false;
-	}
-	else
-	{
-		SessionSettings.bIsLANMatch = false; //Steam
-		SessionSettings.bUsesPresence = true; //Steam 프로필 연동 (플레이 중 상태)
-		SessionSettings.bUseLobbiesIfAvailable = true; //최신 로비 시스템 우선적 사용
-		SessionSettings.bAllowInvites = true; //스팀 게임 초대 기능
 	}
 	
 	//공통 세팅
