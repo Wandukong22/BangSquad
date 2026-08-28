@@ -9,6 +9,7 @@
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
+#include "Project_Bang_Squad/Core/BSGameFlowSubsystem.h"
 #include "Project_Bang_Squad/Game/Stage/StageGameState.h"
 
 AStageBossGameMode::AStageBossGameMode()
@@ -267,7 +268,10 @@ void AStageBossGameMode::ReturnToStage()
 {
 	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 	{
-		GI->MoveToStage(GI->GetCurrentStage(), EStageSection::Main);
+		if (UBSGameFlowSubsystem* GameFlowSubsystem = GI->GetSubsystem<UBSGameFlowSubsystem>())
+		{
+			GameFlowSubsystem->ServerTravelToStage(GI->GetCurrentStage(), EStageSection::Main);
+		}
 	}
 }
 

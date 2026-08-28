@@ -31,14 +31,7 @@ void AEnemyCharacterBase::BeginPlay()
 	Super::BeginPlay();
 
 	GenerateUniqueID();
-
-	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-	if (GI && GI->IsMonsterDead(MyUniqueID))
-	{
-		Destroy();
-		return; 
-	}
-    
+	
 	if (UCharacterMovementComponent* Move = GetCharacterMovement())
 	{
 		DefaultMaxWalkSpeed = Move->MaxWalkSpeed;
@@ -241,15 +234,6 @@ void AEnemyCharacterBase::StartDeath()
 {
     bIsDead = true;
     bIsHitReacting = false;
-
-	if (HasAuthority())
-	{
-		UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-		if (GI)
-		{
-			GI->MarkMonsterAsDead(MyUniqueID);
-		}
-	}
 	
     OnDeathStarted();
 

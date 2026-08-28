@@ -14,6 +14,7 @@
 #include "Checkpoint.h"
 #include "EngineUtils.h"
 #include "StageGameState.h"
+#include "Project_Bang_Squad/Core/BSGameFlowSubsystem.h"
 
 AStageGameMode::AStageGameMode()
 {
@@ -141,6 +142,10 @@ void AStageGameMode::ReturnToMainMenu()
 	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 	{
 		GI->ResetAllGameData(); // 데이터 초기화
-		GI->MoveToStage(EStageIndex::Lobby, EStageSection::Main); // 로비로 이동
+		//GI->MoveToStage(EStageIndex::Lobby, EStageSection::Main); // 로비로 이동
+		if (UBSGameFlowSubsystem* GameFlowSubsystem = GI->GetSubsystem<UBSGameFlowSubsystem>())
+		{
+			GameFlowSubsystem->ServerTravelToStage(EStageIndex::Lobby, EStageSection::Main);
+		}
 	}
 }

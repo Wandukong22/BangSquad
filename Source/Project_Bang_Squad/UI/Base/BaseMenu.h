@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Project_Bang_Squad/Core/SessionInterface.h"
 #include "BaseMenu.generated.h"
 
 /**
@@ -16,11 +15,9 @@ class PROJECT_BANG_SQUAD_API UBaseMenu : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void SetOwningInstance(ISessionInterface* InInstance);
+	void ShowWidget();
+	void HideWidget();
 
 	void StartUp();
 	void Shutdown();
-
-protected:
-	ISessionInterface* OwningInstance;
 };

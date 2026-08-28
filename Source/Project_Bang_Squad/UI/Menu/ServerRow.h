@@ -4,43 +4,49 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Project_Bang_Squad/Online/BSSessionTypes.h"
 #include "ServerRow.generated.h"
 
+class UBorder;
+class UJoinMenu;
 class UTextBlock;
 class UButton;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnServerRowSelected, const FGuid&);
 
 UCLASS()
 class PROJECT_BANG_SQUAD_API UServerRow : public UUserWidget
 {
 	GENERATED_BODY()
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> RoomNameText;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> HostNameText;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> PlayerCountText;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> PingText;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> RowButton;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UBorder> SelectionBorder;
+
+	FGuid ResultId;
+
+	bool bSelected;
+
 public:
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* ServerName;
+	FOnServerRowSelected OnServerRowSelected;
+	
+protected:
+	virtual void NativeConstruct() override;
 
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* HostUser;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* ConnectionFraction;
-
-	UPROPERTY(meta = (BindWidget))
-	UButton* RowButton;
-
-	void SetUp(class UMainMenu* InParent, uint32 InIndex);
-
-	UPROPERTY(BlueprintReadOnly)
-	bool bSelected = false;
-
-	// ✨ [추가] 색깔 업데이트 함수
-	void UpdateColor();
-
+public:
+	void SetUp(const FBSSessionSummary& Summary);
+	const FGuid& GetResultId() const { return ResultId; }
+	void SetSelected(bool bInSelected);
 private:
 	UFUNCTION()
-	void OnClicked();
-
-	UPROPERTY()
-	class UMainMenu* Parent;
-
-	uint32 SelfIndex;
+	void HandleRowButtonClicked();
 };

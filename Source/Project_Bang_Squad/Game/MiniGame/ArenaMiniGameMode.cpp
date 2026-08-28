@@ -8,6 +8,7 @@
 #include "ArenaPlayerState.h"
 #include "EngineUtils.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
+#include "Project_Bang_Squad/Core/BSGameFlowSubsystem.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "Project_Bang_Squad/Data/DataAsset/CoinRewardDataAsset.h"
 #include "Project_Bang_Squad/MapPuzzle/ArenaFloor.h"
@@ -242,7 +243,11 @@ void AArenaMiniGameMode::EndArena()
 	{
 		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 		{
-			GI->MoveToStage(EStageIndex::Stage3, EStageSection::Main);
+			//GI->MoveToStage(EStageIndex::Stage3, EStageSection::Main);
+			if (UBSGameFlowSubsystem* GameFlowSubsystem = GI->GetSubsystem<UBSGameFlowSubsystem>())
+			{
+				GameFlowSubsystem->ServerTravelToStage(EStageIndex::Stage3, EStageSection::Main);
+			}
 		}
 	}), 5.f, false);
 }

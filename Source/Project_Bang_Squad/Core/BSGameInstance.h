@@ -4,128 +4,35 @@
 
 #include "CoreMinimal.h"
 #include "BSGameTypes.h"
-#include "Project_Bang_Squad/Core/SessionInterface.h"
 #include "Engine/GameInstance.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "Project_Bang_Squad/Game/Interface/SaveInterface.h"
 #include "BSGameInstance.generated.h"
 
-class UBSMapData;
 class UBSJobData;
-class UMainMenu;
-
-USTRUCT()
-struct FServerData
-{
-	GENERATED_BODY()
-
-public:
-	FString Name;
-	uint16 CurrentPlayers;
-	uint16 MaxPlayers;
-	FString HostUserName;
-};
 
 UCLASS()
-class PROJECT_BANG_SQUAD_API UBSGameInstance : public UGameInstance, public ISessionInterface
+class PROJECT_BANG_SQUAD_API UBSGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
-
-public:
-	UBSGameInstance();
-
 protected:
 	virtual void Init() override;
 
-public:
-	void SetMainMenuWidget(UMainMenu* InMainMenu);
-
-	UFUNCTION(BlueprintCallable)
-	void LoadMainMenu();
-
-#pragma region SessionInterface Codes
-	virtual void Host(const FString& ServerName, int32 MaxPlayers, const FString& HostName) override;
-
-	UFUNCTION(Exec)
-	virtual void Join(uint32 Index) override;
-
-	UFUNCTION(Exec)
-	virtual void RefreshServerList() override;
-
-#pragma endregion
-	void OpenMainMenuLevel();
-
-	// Host 호출 흐름 제어용 플래그
-	bool bIsGoingToHost = false;
-
-public:
-	// ✅ 로비에서 사용할 방 이름 (Select UI 표시용)
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Lobby")
-	FString LobbyRoomName;
-
 private:
-	// 세션 콜백들
-	void OnCreateSessionComplete(FName InSessionName, bool IsSuccess);
-	void OnDestroySessionComplete(FName InSessionName, bool IsSuccess);
-	void OnFindSessionComplete(bool IsSuccess) const;
-	void OnJoinSessionComplete(FName InSessionName, EOnJoinSessionCompleteResult::Type InResult);
-	void OnStartSessionComplete(FName InSessionName, bool IsSuccess);
-	void OnNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType,
-	                      const FString& ErrorString);
-
-	void CreateSession();
-
-public:
-	UFUNCTION(BlueprintCallable)
-	void StartSession();
-
-	// 원하는 최대 인원수 (Host 전에 세팅)
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-	int32 DesiredMaxPlayers = 4;
-
-private:
-	// 메인 메뉴 / 일시정지 메뉴 위젯
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UUserWidget> MainMenuWidgetClass;
-	class UMainMenu* MainMenu;
-
-	// 세션 이름 / 호스트 이름
-	FString DesiredServerName;
-	FString DesiredHostName;
-
-	// 온라인 세션
-	IOnlineSessionPtr SessionInterface;
-	TSharedPtr<FOnlineSessionSearch> SessionSearch;
-
 	//최종 선택된 직업
 	UPROPERTY()
 	EJobType PlayerJob = EJobType::None;
-
-public:
-	FORCEINLINE EJobType GetPlayerJob() const { return PlayerJob; }
-	void SetPlayerJob(EJobType NewJob) { PlayerJob = NewJob; }
 
 	//닉네임 저장
 	UPROPERTY()
 	FString UserNickname;
 
-#pragma region Stage Data Save
-
 public:
-	//죽은 몬스터의 고유 해시값(ID) 저장
-	UPROPERTY()
-	TSet<uint32> DeadMonsterIDs;
+	FORCEINLINE EJobType GetPlayerJob() const { return PlayerJob; }
+	void SetPlayerJob(EJobType NewJob) { PlayerJob = NewJob; }
 
-	//몬스터가 죽었을 때 ID 저장
-	UFUNCTION()
-	void MarkMonsterAsDead(uint32 ActorHash);
-
-	UFUNCTION()
-	bool IsMonsterDead(uint32 ActorHash) const;
-
-	UFUNCTION()
-	void ClearMonsterData();
-#pragma endregion
+	void SetUserNickname(FString NewName) { UserNickname = NewName; };
+	FString GetUserNickname() const { return UserNickname; }
 
 #pragma region JobData
 	UPROPERTY(EditDefaultsOnly, Category = "BS|Data")
@@ -136,26 +43,6 @@ public:
 	UTexture2D* GetJobIcon(EJobType InJobType) const;
 	UFUNCTION(BlueprintCallable, Category = "BS|Data")
 	FLinearColor GetJobColor(EJobType InJobType) const;
-#pragma endregion
-
-#pragma region Map Data
-
-private:
-	UPROPERTY(EditDefaultsOnly, Category = "BS|Data")
-	TObjectPtr<UBSMapData> MapDataAsset;
-
-public:
-	UBSMapData* GetMapData() const;
-
-	UFUNCTION()
-	void MoveToStage(EStageIndex InStage, EStageSection InSection);
-
-protected:
-	virtual void LoadComplete(const float LoadTime, const FString& MapName) override;
-
-private:
-	// 이동 중복 실행 방지용 플래그
-	bool bIsTraveling = false;
 #pragma endregion
 
 #pragma region Portal
@@ -212,13 +99,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BS|CutScene")
 	bool bIsStage3CutscenePlayed = false;
 #pragma endregion
-
-public:
-	//UFUNCTION()
-	//FORCEINLINE EStageIndex GetCurrentStage() const { return CurrentStage; }
-	//void SetCurrentStage(EStageIndex NewIndex) { CurrentStage = NewIndex; }
-
-
 	// =========================================================================
 	// 코인 시스템 (Coin System Persistence)
 	// =========================================================================

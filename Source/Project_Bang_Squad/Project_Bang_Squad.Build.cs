@@ -30,7 +30,8 @@ public class Project_Bang_Squad : ModuleRules
             "GeometryCollectionEngine",
             "FieldSystemEngine",
             "Chaos",
-            "ChaosSolverEngine"
+            "ChaosSolverEngine",
+            "DeveloperSettings"
         });
     }
 }

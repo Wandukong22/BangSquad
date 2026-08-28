@@ -2,40 +2,48 @@
 
 
 #include "Project_Bang_Squad/UI/Menu/ServerRow.h"
+
+#include "Components/Border.h"
 #include "Components/Button.h"
-#include "MainMenu.h"
+#include "Components/TextBlock.h"
 
-void UServerRow::SetUp(UMainMenu* InParent, uint32 InIndex)
+void UServerRow::NativeConstruct()
 {
-	Parent = InParent;
-	SelfIndex = InIndex;
-	RowButton->OnClicked.AddDynamic(this, &UServerRow::OnClicked);
-
-	// 처음에 색깔 초기화 (안 하면 랜덤으로 색이 칠해질 수 있음)
-	UpdateColor();
+	Super::NativeConstruct();
+	if (RowButton) RowButton->OnClicked.AddDynamic(this, &UServerRow::HandleRowButtonClicked);
 }
 
-void UServerRow::OnClicked()
+void UServerRow::SetUp(const FBSSessionSummary& Summary)
 {
-	Parent->SetSelectedIndex(SelfIndex);
+	ResultId = Summary.ResultId;
+
+	if (RoomNameText) RoomNameText->SetText(FText::FromString(Summary.RoomName));
+	if (HostNameText) HostNameText->SetText(FText::FromString(Summary.HostName));
+	if (PlayerCountText)
+	{
+		const FString PlayerCount = FString::Printf(
+			TEXT("%d/%d"), Summary.CurrentPlayerCount, Summary.MaxPlayerCount);
+		PlayerCountText->SetText(FText::FromString(PlayerCount));
+	}
+	if (PingText)
+	{
+		const FString Ping = FString::Printf(TEXT("%d ms"), Summary.PingInMs);
+		PingText->SetText(FText::FromString(Ping));
+	}
+	SetSelected(false);
 }
 
-// ✨ [추가] 색깔 바꾸는 함수 구현
-void UServerRow::UpdateColor()
+void UServerRow::SetSelected(bool bInSelected)
 {
-	if (!RowButton) return;
-
-	// 선택되면 하늘색, 아니면 투명(또는 연한 회색)
-	FLinearColor SelectedColor = FLinearColor(0.0f, 0.5f, 1.0f, 1.0f); // 진한 하늘색
-	FLinearColor NormalColor = FLinearColor(1.0f, 1.0f, 1.0f, 0.0f);   // 투명 (기본 배경색 보임)
-
-	// bSelected 값에 따라 색 변경
-	if (bSelected)
+	bSelected = bInSelected;
+	if (SelectionBorder)
 	{
-		RowButton->SetBackgroundColor(SelectedColor);
+		SelectionBorder->SetVisibility(bSelected ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
-	else
-	{
-		RowButton->SetBackgroundColor(NormalColor);
-	}
+}
+
+void UServerRow::HandleRowButtonClicked()
+{
+	if (!ResultId.IsValid()) return;
+	OnServerRowSelected.Broadcast(ResultId);
 }

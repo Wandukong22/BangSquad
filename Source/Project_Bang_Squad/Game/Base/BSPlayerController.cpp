@@ -4,7 +4,8 @@
 #include "Blueprint/UserWidget.h"
 #include "Project_Bang_Squad/Shop/ShopMainWidget.h" 
 #include "Project_Bang_Squad/Data/DataAsset/BSMapData.h"
-#include "GameFramework/Character.h"
+#include "Project_Bang_Squad/Core/BSGameFlowSubsystem.h"
+#include "Project_Bang_Squad/Core/BSGameSettings.h"
 
 void ABSPlayerController::BeginPlay()
 {
@@ -159,16 +160,16 @@ void ABSPlayerController::Client_ShowLoadingScreen_Implementation(EStageIndex St
 	//내 컴퓨터의 GameInstance 가져오기
 	if (UBSGameInstance* GI = GetGameInstance<UBSGameInstance>())
 	{
-		// 내 컴퓨터에 있는 데이터 에셋에서 넘어갈 맵의 정보 찾기
-		if (GI->GetMapData())
+		const UBSGameSettings* Settings = GetDefault<UBSGameSettings>();
+		if (!Settings) return;
+
+		UBSMapData* MapData = Settings->MapData.LoadSynchronous();
+		if (!MapData) return;
+
+		const auto* MapInfo = MapData->GetMapInfo(Stage, Section);
+		if (MapInfo && MapInfo->LoadingImage)
 		{
-			const FMapInfo* MapInfo = GI->GetMapData()->GetMapInfo(Stage, Section);
-            
-			// 이미지가 정상적으로 들어있다면 띄우기
-			if (MapInfo && MapInfo->LoadingImage)
-			{
-				GI->ShowLoadingScreen(MapInfo->LoadingImage);
-			}
+			GI->ShowLoadingScreen(MapInfo->LoadingImage);
 		}
 	}
 }
@@ -178,9 +179,12 @@ void ABSPlayerController::Client_ShowLoadingScreen_Implementation(EStageIndex St
 void ABSPlayerController::ServerDebugMoveToMapHandle_Implementation(EStageIndex Stage, EStageSection Section)
 {
 	// [Server] GameInstance를 통해 맵 트래블 실행
-	if (UBSGameInstance* GI = GetGameInstance<UBSGameInstance>())
+	if (UGameInstance* GI = GetGameInstance())
 	{
-		GI->MoveToStage(Stage, Section);
+		if (UBSGameFlowSubsystem* GameFlowSubsystem = GI->GetSubsystem<UBSGameFlowSubsystem>())
+		{
+			GameFlowSubsystem->ServerTravelToStage(Stage, Section);
+		}
 	}
 }
 

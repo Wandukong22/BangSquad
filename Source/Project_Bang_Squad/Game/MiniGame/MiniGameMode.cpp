@@ -8,6 +8,7 @@
 #include "MiniGamePlayerState.h"
 #include "MiniGameState.h"
 #include "GameFramework/Character.h"
+#include "Project_Bang_Squad/Core/BSGameFlowSubsystem.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "Project_Bang_Squad/Data/DataAsset/CoinRewardDataAsset.h"
 #include "Project_Bang_Squad/Game/Stage/Checkpoint.h"
@@ -143,7 +144,10 @@ void AMiniGameMode::EndMiniGame(EStageIndex StageIndex)
 	{
 		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 		{
-			GI->MoveToStage(StageIndex, EStageSection::Main);
+			if (UBSGameFlowSubsystem* GameFlowSubsystem = GI->GetSubsystem<UBSGameFlowSubsystem>())
+			{
+				GameFlowSubsystem->ServerTravelToStage(StageIndex, EStageSection::Main);
+			}
 		}
 	}), ReturnDelay, false);
 }

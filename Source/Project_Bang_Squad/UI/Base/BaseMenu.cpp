@@ -3,9 +3,14 @@
 
 #include "Project_Bang_Squad/UI/Base/BaseMenu.h"
 
-void UBaseMenu::SetOwningInstance(ISessionInterface* InInstance)
+void UBaseMenu::ShowWidget()
 {
-	OwningInstance = InInstance;
+	SetVisibility(ESlateVisibility::Visible);
+}
+
+void UBaseMenu::HideWidget()
+{
+	SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UBaseMenu::StartUp()

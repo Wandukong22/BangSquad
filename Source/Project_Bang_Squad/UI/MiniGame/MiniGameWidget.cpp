@@ -46,15 +46,15 @@ void UMiniGameWidget::ShowResultBoard(EStageIndex Stage, const TArray<AMiniGameP
 		{
 			// (주의: 프로젝트의 GameInstance 또는 GameState 구현에 맞게 현재 스테이지 정보를 가져오세요)
 			EStageIndex CurrentStage = GI->GetCurrentStage(); 
-			UBSMapData* MapData = GI->GetMapData(); 
-			if (MapData)
-			{
-				// 추가하신 헬퍼 함수를 통해 텍스처를 바로 받아옵니다.
-			if (UTexture2D* ResultTex = MapData->GetMiniGameResultImage(Stage, EStageSection::MiniGame))
-				{
-					Img_ResultTitle->SetBrushFromTexture(ResultTex);
-				}
-			}
+			//UBSMapData* MapData = GI->GetMapData(); 
+			//if (MapData)
+			//{
+			//	// 추가하신 헬퍼 함수를 통해 텍스처를 바로 받아옵니다.
+			//if (UTexture2D* ResultTex = MapData->GetMiniGameResultImage(Stage, EStageSection::MiniGame))
+			//	{
+			//		Img_ResultTitle->SetBrushFromTexture(ResultTex);
+			//	}
+			//}
 		}
 	}
 	

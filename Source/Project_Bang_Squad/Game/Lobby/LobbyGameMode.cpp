@@ -9,6 +9,7 @@
 #include "LobbyGameState.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/GameStateBase.h"
+#include "Project_Bang_Squad/Core/BSGameFlowSubsystem.h"
 
 ALobbyGameMode::ALobbyGameMode()
 {
@@ -187,8 +188,11 @@ void ALobbyGameMode::ForceStartGame()
 	// 돌고 있던 영상 대기 타이머 강제 취소
 	GetWorldTimerManager().ClearTimer(VideoTravelTimerHandle);
 
-	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
+	if (UGameInstance* GI = GetGameInstance())
 	{
-		GI->MoveToStage(EStageIndex::Stage1, EStageSection::Main);
+		if (UBSGameFlowSubsystem* GameFlowSubsystem = GI->GetSubsystem<UBSGameFlowSubsystem>())
+		{
+			GameFlowSubsystem->ServerTravelToStage(EStageIndex::Stage1, EStageSection::Main);
+		}
 	}
 }

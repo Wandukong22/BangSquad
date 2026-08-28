@@ -6,6 +6,7 @@
 #include "Project_Bang_Squad/Game/Base/BSPlayerController.h"
 #include "MenuPlayerController.generated.h"
 
+class UMainMenu;
 /**
  * 
  */
@@ -18,5 +19,7 @@ public:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
-	TSubclassOf<class UUserWidget> MainMenuWidgetClass;
+	TSubclassOf<UUserWidget> MainMenuWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UMainMenu> MainMenuWidget = nullptr;
 };

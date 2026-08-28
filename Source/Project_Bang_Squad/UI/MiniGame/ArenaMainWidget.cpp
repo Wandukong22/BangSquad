@@ -56,13 +56,13 @@ void UArenaMainWidget::ShowRankingBoard(EStageIndex Stage, const TArray<AArenaPl
 		
 		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 		{
-			if (UBSMapData* MapData = GI->GetMapData())
-			{
-				if (UTexture2D* ResultTex = MapData->GetMiniGameResultImage(Stage, EStageSection::MiniGame))
-				{
-					Img_ResultTitle->SetBrushFromTexture(ResultTex);
-				}
-			}
+			//if (UBSMapData* MapData = GI->GetMapData())
+			//{
+			//	if (UTexture2D* ResultTex = MapData->GetMiniGameResultImage(Stage, EStageSection::MiniGame))
+			//	{
+			//		Img_ResultTitle->SetBrushFromTexture(ResultTex);
+			//	}
+			//}
 		}
 	}
 	

@@ -35,9 +35,9 @@ void ALobbyPlayerController::BeginPlay()
 		
 		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 		{
-			if (!GI->UserNickname.IsEmpty())
+			if (!GI->GetUserNickname().IsEmpty())
 			{
-				ServerSetNickName(GI->UserNickname);
+				ServerSetNickName(GI->GetUserNickname());
 			}
 		}
 	}

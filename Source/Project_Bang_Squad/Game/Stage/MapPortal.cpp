@@ -11,6 +11,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
+#include "Project_Bang_Squad/Core/BSGameFlowSubsystem.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "Project_Bang_Squad/MapPuzzle/Boss3Elevator.h"
 #include "Project_Bang_Squad/UI/Stage/PortalMainWidget.h"
@@ -236,7 +237,11 @@ void AMapPortal::PerformLevelTravel()
 	{
 		SaveAllPuzzles();
 		GI->MarkStageAsVisited(TargetStageIndex, TargetSection);
-		GI->MoveToStage(TargetStageIndex, TargetSection);
+		//GI->MoveToStage(TargetStageIndex, TargetSection);
+		if (UBSGameFlowSubsystem* GameFlowSubsystem = GI->GetSubsystem<UBSGameFlowSubsystem>())
+		{
+			GameFlowSubsystem->ServerTravelToStage(TargetStageIndex, TargetSection);
+		}
 	}
 }
 
