@@ -46,12 +46,20 @@ void UBSGameFlowSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void UBSGameFlowSubsystem::Deinitialize()
 {
-	Super::Deinitialize();
-
-	SessionSubsystem->OnBSCreateSessionSucceeded.RemoveAll(this);
-	SessionSubsystem->OnBSJoinSessionSucceeded.RemoveAll(this);
-	SessionSubsystem->OnBSLeaveSessionSucceeded.RemoveAll(this);
 	FCoreUObjectDelegates::PostLoadMapWithWorld.RemoveAll(this);
+
+	if (IsValid(SessionSubsystem))
+	{
+		SessionSubsystem->OnBSCreateSessionSucceeded.RemoveAll(this);
+		SessionSubsystem->OnBSJoinSessionSucceeded.RemoveAll(this);
+		SessionSubsystem->OnBSLeaveSessionSucceeded.RemoveAll(this);
+	}
+	if (GEngine)
+	{
+		GEngine->OnNetworkFailure().RemoveAll(this);
+		GEngine->OnTravelFailure().RemoveAll(this);
+	}
+	Super::Deinitialize();
 }
 
 void UBSGameFlowSubsystem::HandleCreateSessionSucceeded()
