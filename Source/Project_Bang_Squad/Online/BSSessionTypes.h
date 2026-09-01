@@ -12,8 +12,7 @@ enum class EBSSessionState : uint8
 	Finding,
 	Joining,
 	InSession,
-	Leaving,
-	Starting
+	Destroying,
 };
 
 UENUM()

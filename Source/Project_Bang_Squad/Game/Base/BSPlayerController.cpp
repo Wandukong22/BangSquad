@@ -1,11 +1,13 @@
 #include "Project_Bang_Squad/Game/Base/BSPlayerController.h"
 #include "BSPlayerState.h"
+#include "EnhancedInputComponent.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "Blueprint/UserWidget.h"
-#include "Project_Bang_Squad/Shop/ShopMainWidget.h" 
+#include "Project_Bang_Squad/Shop/ShopMainWidget.h"
 #include "Project_Bang_Squad/Data/DataAsset/BSMapData.h"
 #include "Project_Bang_Squad/Core/BSGameFlowSubsystem.h"
 #include "Project_Bang_Squad/Core/BSGameSettings.h"
+#include "Project_Bang_Squad/UI/Menu/InGameMenu.h"
 
 void ABSPlayerController::BeginPlay()
 {
@@ -19,7 +21,7 @@ void ABSPlayerController::BeginPlay()
 		}
 	}
 	ManagedWidgets.Empty();
-	
+
 	if (IsLocalController())
 	{
 		if (UBSGameInstance* GI = GetGameInstance<UBSGameInstance>())
@@ -31,12 +33,19 @@ void ABSPlayerController::BeginPlay()
 			}
 		}
 	}
+
+	if (!IsLocalController() || !InGameMenuClass) return;
+	InGameMenu = CreateWidget<UInGameMenu>(this, InGameMenuClass);
 }
 
 void ABSPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::EndPlay(EndPlayReason);
 
+	if (IsValid(InGameMenu))
+	{
+		InGameMenu->RemoveFromParent();
+		InGameMenu = nullptr;
+	}
 	//레벨 이동이나 종료 시 관리하던 위젯들을 모두 제거
 	//for (UUserWidget* Widget : ManagedWidgets)
 	for (TObjectPtr<UUserWidget> Widget : ManagedWidgets)
@@ -48,12 +57,18 @@ void ABSPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		}
 	}
 	ManagedWidgets.Empty();
+	
+	Super::EndPlay(EndPlayReason);
 }
 
 void ABSPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-	
+	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
+	if (!EnhancedInputComponent || !ToggleInGameMenuAction) return;
+	EnhancedInputComponent->BindAction(ToggleInGameMenuAction, ETriggerEvent::Started, this,
+	                                   &ABSPlayerController::ToggleInGameMenu);
+
 	// F1 ~ F9 키
 	InputComponent->BindKey(EKeys::F1, IE_Pressed, this, &ABSPlayerController::MoveToStage1Map);
 	InputComponent->BindKey(EKeys::F2, IE_Pressed, this, &ABSPlayerController::MoveToStage1MiniGameMap);
@@ -70,15 +85,11 @@ void ABSPlayerController::SetupInputComponent()
 
 void ABSPlayerController::RegisterManagedWidget(UUserWidget* InWidget)
 {
-	//if (InWidget)
 	if (IsValid(InWidget))
 	{
 		ManagedWidgets.Add(InWidget);
 	}
 }
-
-#include "Project_Bang_Squad/Character/Base/BaseCharacter.h" // 캐릭터 헤더 포함 필수
-
 void ABSPlayerController::ToggleShopUI()
 {
 	// 1. 닫기 로직 (이미 열려있으면 끄기)S
@@ -156,7 +167,6 @@ void ABSPlayerController::ServerSetNickName_Implementation(const FString& NewNam
 
 void ABSPlayerController::Client_ShowLoadingScreen_Implementation(EStageIndex Stage, EStageSection Section)
 {
-	
 	//내 컴퓨터의 GameInstance 가져오기
 	if (UBSGameInstance* GI = GetGameInstance<UBSGameInstance>())
 	{
@@ -171,6 +181,30 @@ void ABSPlayerController::Client_ShowLoadingScreen_Implementation(EStageIndex St
 		{
 			GI->ShowLoadingScreen(MapInfo->LoadingImage);
 		}
+	}
+}
+
+
+void ABSPlayerController::ToggleInGameMenu()
+{
+	if (!IsLocalController() || !IsValid(InGameMenu)) return;
+
+	if (InGameMenu->IsInViewport())
+	{
+		InGameMenu->RemoveFromParent();
+
+		SetInputMode(FInputModeGameOnly());
+		SetShowMouseCursor(false);
+	}
+	else
+	{
+		InGameMenu->AddToViewport(100);
+
+		FInputModeGameAndUI InputMode;
+		InputMode.SetWidgetToFocus(InGameMenu->TakeWidget());
+
+		SetInputMode(InputMode);
+		SetShowMouseCursor(true);
 	}
 }
 
@@ -191,15 +225,39 @@ void ABSPlayerController::ServerDebugMoveToMapHandle_Implementation(EStageIndex 
 // --- Wrapper Functions (Input Bindings) ---
 
 void ABSPlayerController::MoveToStage1Map() { ServerDebugMoveToMapHandle(EStageIndex::Stage1, EStageSection::Main); }
-void ABSPlayerController::MoveToStage1MiniGameMap() { ServerDebugMoveToMapHandle(EStageIndex::Stage1, EStageSection::MiniGame); }
-void ABSPlayerController::MoveToStage1BossMap() { ServerDebugMoveToMapHandle(EStageIndex::Stage1, EStageSection::Boss); }
+
+void ABSPlayerController::MoveToStage1MiniGameMap()
+{
+	ServerDebugMoveToMapHandle(EStageIndex::Stage1, EStageSection::MiniGame);
+}
+
+void ABSPlayerController::MoveToStage1BossMap()
+{
+	ServerDebugMoveToMapHandle(EStageIndex::Stage1, EStageSection::Boss);
+}
 
 void ABSPlayerController::MoveToStage2Map() { ServerDebugMoveToMapHandle(EStageIndex::Stage2, EStageSection::Main); }
-void ABSPlayerController::MoveToStage2MiniGameMap() { ServerDebugMoveToMapHandle(EStageIndex::Stage2, EStageSection::MiniGame); }
-void ABSPlayerController::MoveToStage2BossMap() { ServerDebugMoveToMapHandle(EStageIndex::Stage2, EStageSection::Boss); }
+
+void ABSPlayerController::MoveToStage2MiniGameMap()
+{
+	ServerDebugMoveToMapHandle(EStageIndex::Stage2, EStageSection::MiniGame);
+}
+
+void ABSPlayerController::MoveToStage2BossMap()
+{
+	ServerDebugMoveToMapHandle(EStageIndex::Stage2, EStageSection::Boss);
+}
 
 void ABSPlayerController::MoveToStage3Map() { ServerDebugMoveToMapHandle(EStageIndex::Stage3, EStageSection::Main); }
-void ABSPlayerController::MoveToStage3MiniGameMap() { ServerDebugMoveToMapHandle(EStageIndex::Stage3, EStageSection::MiniGame); }
-void ABSPlayerController::MoveToStage3BossMap() { ServerDebugMoveToMapHandle(EStageIndex::Stage3, EStageSection::Boss); }
+
+void ABSPlayerController::MoveToStage3MiniGameMap()
+{
+	ServerDebugMoveToMapHandle(EStageIndex::Stage3, EStageSection::MiniGame);
+}
+
+void ABSPlayerController::MoveToStage3BossMap()
+{
+	ServerDebugMoveToMapHandle(EStageIndex::Stage3, EStageSection::Boss);
+}
 
 #pragma endregion

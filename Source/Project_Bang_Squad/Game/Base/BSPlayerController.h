@@ -7,6 +7,8 @@
 #include "Project_Bang_Squad/Core/BSGameTypes.h" // 프로젝트 타입 정의 헤더
 #include "BSPlayerController.generated.h"
 
+class UInGameMenu;
+
 UCLASS()
 class PROJECT_BANG_SQUAD_API ABSPlayerController : public APlayerController
 {
@@ -54,6 +56,16 @@ protected:
 	TArray<TObjectPtr<UUserWidget>> ManagedWidgets; // UE5 표준: Raw Pointer 대신 TObjectPtr 사용
 
 	bool bIsGameInputEnabled = true;
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
+	TSubclassOf<UInGameMenu> InGameMenuClass;
+	UPROPERTY()
+	TObjectPtr<UInGameMenu> InGameMenu;
+	UPROPERTY(EditAnywhere, Category = "BS|UI")
+	UInputAction* ToggleInGameMenuAction;
+	
+	void ToggleInGameMenu();
 
 #pragma region Debug Codes
 public:

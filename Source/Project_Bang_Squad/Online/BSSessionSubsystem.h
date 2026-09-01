@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "BSSessionTypes.h"
-#include "Interfaces/OnlineIdentityInterface.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "BSSessionSubsystem.generated.h"
@@ -12,7 +11,7 @@
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnBSSessionStateChanged, EBSSessionState, EBSSessionState);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnBSSessionFailure,EBSSessionError);
 DECLARE_MULTICAST_DELEGATE(FOnBSCreateSessionSucceeded);
-DECLARE_MULTICAST_DELEGATE(FOnBSLeaveSessionSucceeded);
+DECLARE_MULTICAST_DELEGATE(FOnBSDestroySessionSucceeded);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnBSFindSessionSuccedeed, const TArray<FBSSessionSummary>&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnBSJoinSessionSucceeded, const FString&);
 /**
@@ -25,7 +24,6 @@ class PROJECT_BANG_SQUAD_API UBSSessionSubsystem : public UGameInstanceSubsystem
 
 	//OnlineSubsystem이 제공하는 세션 인터페이스
 	IOnlineSessionPtr SessionInterface;
-	IOnlineIdentityPtr IdentityInterface;
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;
 	TArray<FBSSessionSummary> SessionSummaries;
 	
@@ -39,6 +37,7 @@ class PROJECT_BANG_SQUAD_API UBSSessionSubsystem : public UGameInstanceSubsystem
 	FDelegateHandle DestroySessionCompleteHandle;
 
 	EBSSessionState CurrentState = EBSSessionState::Idle;
+	EBSSessionState StateBeforeDestroy = EBSSessionState::Idle;
 	EBSSessionError LastError = EBSSessionError::None;
 	FString LastErrorMessage;
 
@@ -46,7 +45,7 @@ public:
 	FOnBSSessionStateChanged OnBSSessionStateChanged;
 	FOnBSSessionFailure OnBSSessionFailure;
 	FOnBSCreateSessionSucceeded OnBSCreateSessionSucceeded;
-	FOnBSLeaveSessionSucceeded OnBSLeaveSessionSucceeded;
+	FOnBSDestroySessionSucceeded OnBSDestroySessionSucceeded;
 	FOnBSFindSessionSuccedeed OnBSFindSessionSucceeded;
 	FOnBSJoinSessionSucceeded OnBSJoinSessionSucceeded;
 	
@@ -58,7 +57,7 @@ public:
 	void CreateSession(const FBSCreateSessionRequest& Request);
 	void FindSessions();
 	void JoinSession(const FGuid& ResultId);
-	void LeaveSession();
+	void DestroySession();
 
 private:
 	//Online Session 비동기 작업 완료 콜백

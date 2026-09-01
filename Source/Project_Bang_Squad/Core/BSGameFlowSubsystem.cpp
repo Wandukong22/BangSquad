@@ -33,7 +33,7 @@ void UBSGameFlowSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	//Join 성공 이벤트 구독
 	SessionSubsystem->OnBSJoinSessionSucceeded.AddUObject(this, &UBSGameFlowSubsystem::HandleJoinSessionSucceeded);
 	//Leave 성공 이벤트 구독
-	SessionSubsystem->OnBSLeaveSessionSucceeded.AddUObject(this, &UBSGameFlowSubsystem::HandleLeaveSessionSucceeded);
+	SessionSubsystem->OnBSDestroySessionSucceeded.AddUObject(this, &UBSGameFlowSubsystem::HandleLeaveSessionSucceeded);
 
 	FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UBSGameFlowSubsystem::HandlePostLoadMap);
 
@@ -52,7 +52,7 @@ void UBSGameFlowSubsystem::Deinitialize()
 	{
 		SessionSubsystem->OnBSCreateSessionSucceeded.RemoveAll(this);
 		SessionSubsystem->OnBSJoinSessionSucceeded.RemoveAll(this);
-		SessionSubsystem->OnBSLeaveSessionSucceeded.RemoveAll(this);
+		SessionSubsystem->OnBSDestroySessionSucceeded.RemoveAll(this);
 	}
 	if (GEngine)
 	{
@@ -92,7 +92,7 @@ void UBSGameFlowSubsystem::HandleNetworkFailure(UWorld* World, UNetDriver* NetDr
 
 	if (IsValid(SessionSubsystem))
 	{
-		SessionSubsystem->LeaveSession();
+		SessionSubsystem->DestroySession();
 	}
 	else
 	{
@@ -110,7 +110,7 @@ void UBSGameFlowSubsystem::HandleTravelFailure(UWorld* World, ETravelFailure::Ty
 
 	if (IsValid(SessionSubsystem))
 	{
-		SessionSubsystem->LeaveSession();
+		SessionSubsystem->DestroySession();
 	}
 	else
 	{

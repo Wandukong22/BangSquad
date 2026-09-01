@@ -2,7 +2,6 @@
 
 
 #include "BSSessionSubsystem.h"
-
 #include "OnlineSessionSettings.h"
 #include "OnlineSubsystemUtils.h"
 
@@ -15,15 +14,13 @@ void UBSSessionSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	//현재 World의 Online Session 인터페이스 획득
 	UWorld* World = GetWorld();
-	if (!IsValid(World)) return;
+	if (!World) return;
 
 	IOnlineSubsystem* OnlineSubsystem = Online::GetSubsystem(World);
 	if (!OnlineSubsystem) return;
 
 	SessionInterface = OnlineSubsystem->GetSessionInterface();
 	if (!SessionInterface.IsValid()) return;
-
-	IdentityInterface = OnlineSubsystem->GetIdentityInterface();
 
 	//Online Session 비동기 작업 완료 델리게이트 등록
 
@@ -110,11 +107,8 @@ void UBSSessionSubsystem::CreateSession(const FBSCreateSessionRequest& Request)
 	//기존 세션이 있는지 확인
 	if (SessionInterface->GetNamedSession(NAME_GameSession))
 	{
-		HandleFailure(
-			EBSSessionError::AlreadyInSession,
-			TEXT("기존 세션이 존재하여 생성을 거절합니다."),
-			CurrentState);
-		//TODO: 추후 PendingOperation을 이용해 Leave 완료 후 자동으로 Create 재시도
+		//Idle상태에서 기존 세션이 있다면 Destroy
+		DestroySession();
 		return;
 	}
 
@@ -184,6 +178,7 @@ void UBSSessionSubsystem::FindSessions()
 	if (!SessionInterface->FindSessions(0, SessionSearch.ToSharedRef()))
 	{
 		//요청 시작 실패
+		ResetSearchResultAndData();
 		HandleFailure(
 			EBSSessionError::FindFailed,
 			TEXT("Find 실패"),
@@ -202,6 +197,12 @@ void UBSSessionSubsystem::JoinSession(const FGuid& ResultId)
 		return;
 	}
 	if (!IsValidSessionInterface()) return;
+
+	if (SessionInterface->GetNamedSession(NAME_GameSession))
+	{
+		DestroySession();
+		return;
+	}
 
 	//ResultId가 Map에 존재하는지 확인
 	const int32* FoundIndex = SearchResultIndexMap.Find(ResultId);
@@ -222,9 +223,9 @@ void UBSSessionSubsystem::JoinSession(const FGuid& ResultId)
 			EBSSessionState::Idle);
 		return;
 	}
-	const FOnlineSessionSearchResult& SearchResult = SessionSearch->SearchResults[*FoundIndex];
-
 	SetState(EBSSessionState::Joining);
+
+	const FOnlineSessionSearchResult& SearchResult = SessionSearch->SearchResults[*FoundIndex];
 	if (!SessionInterface->JoinSession(0, NAME_GameSession, SearchResult))
 	{
 		HandleFailure(
@@ -234,10 +235,10 @@ void UBSSessionSubsystem::JoinSession(const FGuid& ResultId)
 	}
 }
 
-void UBSSessionSubsystem::LeaveSession()
+void UBSSessionSubsystem::DestroySession()
 {
 	//작업 가능한 상태인지 확인
-	if (!CanStartOperation(EBSSessionState::Leaving))
+	if (!CanStartOperation(EBSSessionState::Destroying))
 	{
 		HandleFailure(
 			EBSSessionError::OperationAlreadyInProgress,
@@ -253,13 +254,14 @@ void UBSSessionSubsystem::LeaveSession()
 	if (SessionInterface->GetNamedSession(NAME_GameSession))
 	{
 		//존재할 경우
-		SetState(EBSSessionState::Leaving);
+		StateBeforeDestroy = CurrentState;
+		SetState(EBSSessionState::Destroying);
 		if (!SessionInterface->DestroySession(NAME_GameSession)) //요청이 실패하면
 		{
 			HandleFailure(
 				EBSSessionError::LeaveFailed,
-				TEXT("Leave 실패"),
-				EBSSessionState::InSession);
+				TEXT("세션 정리 실패"),
+				StateBeforeDestroy);
 		}
 	}
 	else
@@ -269,14 +271,16 @@ void UBSSessionSubsystem::LeaveSession()
 		ResetSearchResultAndData();
 
 		SetState(EBSSessionState::Idle);
-		OnBSLeaveSessionSucceeded.Broadcast();
+		OnBSDestroySessionSucceeded.Broadcast();
 	}
 }
 
 void UBSSessionSubsystem::OnFindSessionsComplete(bool bWasSuccessful)
 {
+	if (CurrentState != EBSSessionState::Finding) return;
 	if (!bWasSuccessful || !SessionSearch.IsValid())
 	{
+		ResetSearchResultAndData();
 		HandleFailure(
 			EBSSessionError::FindFailed,
 			TEXT("Find 실패"),
@@ -309,6 +313,7 @@ void UBSSessionSubsystem::OnFindSessionsComplete(bool bWasSuccessful)
 
 void UBSSessionSubsystem::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
 {
+	if (SessionName != NAME_GameSession || CurrentState != EBSSessionState::Joining) return;
 	switch (Result)
 	{
 	case EOnJoinSessionCompleteResult::Success: break;
@@ -354,6 +359,7 @@ void UBSSessionSubsystem::OnJoinSessionComplete(FName SessionName, EOnJoinSessio
 			EBSSessionError::CouldNotResolveConnectString,
 			TEXT("접속 주소를 가져올 수 없습니다."),
 			EBSSessionState::Idle);
+		DestroySession();
 		return;
 	}
 	//InSession 상태 변경
@@ -364,24 +370,26 @@ void UBSSessionSubsystem::OnJoinSessionComplete(FName SessionName, EOnJoinSessio
 
 void UBSSessionSubsystem::OnDestroySessionComplete(FName SessionName, bool bWasSuccessful)
 {
+	if (SessionName != NAME_GameSession || CurrentState != EBSSessionState::Destroying) return;
 	if (bWasSuccessful)
 	{
 		//검색 결과 정리 & 내부 세션 관련 데이터 정리
 		ResetSearchResultAndData();
 		SetState(EBSSessionState::Idle);
-		OnBSLeaveSessionSucceeded.Broadcast();
+		OnBSDestroySessionSucceeded.Broadcast();
 	}
 	else
 	{
 		HandleFailure(
 			EBSSessionError::LeaveFailed,
-			TEXT("Leave 실패"),
-			EBSSessionState::InSession);
+			TEXT("세션 정리 실패"),
+			StateBeforeDestroy);
 	}
 }
 
 void UBSSessionSubsystem::OnCreateSessionComplete(FName SessionName, bool bWasSuccessful)
 {
+	if (SessionName != NAME_GameSession || CurrentState != EBSSessionState::Creating) return;
 	if (bWasSuccessful)
 	{
 		UE_LOG(
@@ -390,17 +398,6 @@ void UBSSessionSubsystem::OnCreateSessionComplete(FName SessionName, bool bWasSu
 			TEXT("[BSSession] 세션 생성 성공: %s"),
 			*SessionName.ToString());
 
-		
-		if (IdentityInterface.IsValid() && SessionInterface.IsValid())
-		{
-			TSharedPtr<const FUniqueNetId> HostId = IdentityInterface->GetUniquePlayerId(0);
-			if (HostId.IsValid())
-			{
-				SessionInterface->RegisterPlayer(NAME_GameSession, *HostId, false);
-			}
-		}
-		
-		
 		SetState(EBSSessionState::InSession);
 		OnBSCreateSessionSucceeded.Broadcast();
 	}
@@ -430,10 +427,7 @@ bool UBSSessionSubsystem::CanStartOperation(EBSSessionState RequestedOperation) 
 	case EBSSessionState::Finding:
 	case EBSSessionState::Joining:
 		return CurrentState == EBSSessionState::Idle;
-
-	case EBSSessionState::Starting:
-		return CurrentState == EBSSessionState::InSession;
-	case EBSSessionState::Leaving:
+	case EBSSessionState::Destroying:
 		return CurrentState == EBSSessionState::InSession || CurrentState == EBSSessionState::Idle;
 
 	default:
