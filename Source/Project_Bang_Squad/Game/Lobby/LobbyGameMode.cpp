@@ -37,19 +37,36 @@ EJobClaimResult ALobbyGameMode::TryClaimJob(EJobType Job, ALobbyPlayerState* Req
 		);
 	};
 	
-	//요청된 PlayerState가 null일 경우
+	//요청자 확인
 	if (!RequestingPS)
 	{
 		LogJobClaim(EJobClaimResult::InvalidPlayer);
 		return EJobClaimResult::InvalidPlayer;
 	}
 
-	//LobbyGameState 가져오기
+	//LobbyGameState 확인
 	ALobbyGameState* GS = GetGameState<ALobbyGameState>();
 	if (!GS)
 	{
 		LogJobClaim(EJobClaimResult::InternalError);
 		return EJobClaimResult::InternalError;
+	}
+
+	//Phase 확인
+	if (GS->CurrentPhase != ELobbyPhase::SelectJob)
+	{
+		LogJobClaim(EJobClaimResult::InvalidPhase);
+		return EJobClaimResult::InvalidPhase;
+	}
+
+	//요청 직업 확인
+	if (Job != EJobType::Titan &&
+		Job != EJobType::Striker &&
+		Job != EJobType::Mage &&
+		Job != EJobType::Paladin)
+	{
+		LogJobClaim(EJobClaimResult::InvalidJob);
+		return EJobClaimResult::InvalidJob;
 	}
 
 	//요청 플레이어의 확정 직업 가져와서 저장
