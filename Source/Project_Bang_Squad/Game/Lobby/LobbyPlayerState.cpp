@@ -20,7 +20,6 @@ void ALobbyPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimePropert
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ALobbyPlayerState, bIsReady);
-	DOREPLIFETIME(ALobbyPlayerState, bIsConfirmedJob);
 	DOREPLIFETIME(ALobbyPlayerState, PreviewJob);
 }
 
@@ -61,18 +60,6 @@ void ALobbyPlayerState::SetIsReady(bool NewIsReady)
 	{
 		bIsReady = NewIsReady;
 		OnRep_UpdateUI();
-	}
-}
-
-void ALobbyPlayerState::SetIsConfirmedJob(bool NewIsConfirmedJob)
-{
-	if (HasAuthority())
-	{
-		bIsConfirmedJob = NewIsConfirmedJob;
-		OnRep_UpdateUI();
-
-		//변경사항을 모든 클라이언트에게 즉시 전송
-		ForceNetUpdate();
 	}
 }
 

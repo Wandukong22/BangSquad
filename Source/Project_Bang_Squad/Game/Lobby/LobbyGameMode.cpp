@@ -6,8 +6,6 @@
 #include "LobbyGameState.h"
 #include "LobbyPlayerController.h"
 #include "LobbyPlayerState.h"
-#include "LobbyGameState.h"
-#include "GameFramework/Character.h"
 #include "GameFramework/GameStateBase.h"
 #include "Project_Bang_Squad/Core/BSGameFlowSubsystem.h"
 
@@ -18,11 +16,20 @@ ALobbyGameMode::ALobbyGameMode()
 	GameStateClass = ALobbyGameState::StaticClass();
 }
 
-bool ALobbyGameMode::TryConfirmJob(EJobType Job, class ALobbyPlayerState* RequestingPS)
+bool ALobbyGameMode::TryConfirmJob(EJobType Job, ALobbyPlayerState* RequestingPS)
 {
+	//요청된 PlayerState가 null이면 false
+	if (!RequestingPS) return false;
+
+	//LobbyGameState 가져오기
 	ALobbyGameState* GS = GetGameState<ALobbyGameState>();
-	if (!GS || !RequestingPS) return false;
-	bool bIsMyConfirmedJob = (RequestingPS->GetIsConfirmedJob() && RequestingPS->GetSavedJobType() == Job);
+	if (!GS) return false;
+
+	//요청 플레이어의 확정 직업 가져와서 저장
+	EJobType OldJob = RequestingPS->GetJob();
+
+	//이미 같은 직업을 확정한 상태인지
+	bool bIsMyConfirmedJob = (OldJob != EJobType::None && OldJob == Job);
 	if (!bIsMyConfirmedJob)
 	{
 		// 내 직업이 아니라면, 빈자리인지 철저히 검사
@@ -31,61 +38,22 @@ bool ALobbyGameMode::TryConfirmJob(EJobType Job, class ALobbyPlayerState* Reques
 			return false; // 누군가 이미 가져갔음 -> 실패
 		}
 	}
-	
-	if (RequestingPS->GetIsConfirmedJob())
-	{
-		//EJobType OldJob = RequestingPS->GetJob();
-		EJobType OldJob = RequestingPS->GetSavedJobType();
 
-		if (OldJob != Job && OldJob != EJobType::None)
-		{
-			GS->RemoveTakenJob(OldJob);
-		}
-		/*if (OldJob == Job) return true;
-		if (!GS->IsJobAvailable(OldJob)) return false;
-		if (OldJob != EJobType::None) GS->RemoveTakenJob(OldJob);*/
+	if (OldJob != EJobType::None && OldJob != Job)
+	{
+		GS->RemoveTakenJob(OldJob);
 	}
-	//else
-	//{
-	//	if (!GS->IsJobAvailable(Job)) return false;
-	//}
-	
+
 	//성공
 	GS->AddTakenJob(Job);
-	
+
 	//플레이어 상태 업데이트
 	RequestingPS->SetJob(Job);
-	RequestingPS->SetSavedJobType(Job);
-	RequestingPS->SetIsConfirmedJob(true);
-
-	//목록에 등록
-	//ConfirmedJobs.Add(Job);
 
 	CheckConfirmedJob();
 
 	return true;
 }
-
-/*void ALobbyGameMode::ChangePlayerCharacter(AController* Controller, EJobType NewJob)
-{
-	if (!Controller) return;
-
-	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-	if (!GI) return;
-	
-	TSubclassOf<ACharacter> TargetClass = GI->GetCharacterClass(NewJob);
-	if (!TargetClass) return;
-	
-	APawn* OldPawn = Controller->GetPawn();
-	FVector Loc = OldPawn ? OldPawn->GetActorLocation() : FVector::ZeroVector;
-	FRotator Rot = OldPawn ? OldPawn->GetActorRotation() : FRotator::ZeroRotator;
-	if (OldPawn) OldPawn->Destroy();
-	
-	if (ACharacter* NewChar = GetWorld()->SpawnActor<ACharacter>(TargetClass, Loc, Rot))
-	{
-		Controller->Possess(NewChar);
-	}
-}*/
 
 void ALobbyGameMode::CheckAllReady()
 {
@@ -106,7 +74,7 @@ void ALobbyGameMode::CheckAllReady()
 			else bAllReady = false;
 		}
 	}
-	
+
 	//이동
 	if (bAllReady && GS->PlayerArray.Num() == PlayerCount)
 	{
@@ -127,12 +95,12 @@ void ALobbyGameMode::CheckConfirmedJob()
 	for (APlayerState* PS : GS->PlayerArray)
 	{
 		ALobbyPlayerState* LobbyPS = Cast<ALobbyPlayerState>(PS);
-		if (LobbyPS && LobbyPS->GetIsConfirmedJob())
+		if (LobbyPS && LobbyPS->GetJob() != EJobType::None)
 		{
 			ConfirmedCount++;
 		}
 	}
-	
+
 	////모두 직업 확정 완료
 	//if (ConfirmedCount == TotalPlayers)
 	//{
@@ -162,7 +130,8 @@ void ALobbyGameMode::CheckConfirmedJob()
 		float VideoDuration = 29.0f; // 🎬 영상 길이에 맞춰 세팅하세요!
 
 		// ForceStartGame을 호출하는 타이머 실행
-		GetWorldTimerManager().SetTimer(VideoTravelTimerHandle, this, &ALobbyGameMode::ForceStartGame, VideoDuration, false);
+		GetWorldTimerManager().SetTimer(VideoTravelTimerHandle, this, &ALobbyGameMode::ForceStartGame, VideoDuration,
+		                                false);
 	}
 }
 

@@ -26,18 +26,12 @@ public:
 	//준비 완료 여부
 	UPROPERTY(ReplicatedUsing = OnRep_UpdateUI, BlueprintReadOnly)
 	bool bIsReady = false;
-
-	bool GetIsConfirmedJob() const { return bIsConfirmedJob; }
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnLobbyDataChanged OnLobbyDataChanged;
 
 	virtual void SetJob(EJobType NewJob) override;
 	void SetIsReady(bool NewIsReady);
-	void SetIsConfirmedJob(bool NewIsConfirmedJob);
-
-	EJobType GetSavedJobType() const { return SavedConfirmedJob; }
-	void SetSavedJobType(EJobType NewJobType) { SavedConfirmedJob = NewJobType; }
 
 protected:
 	UFUNCTION()
@@ -50,13 +44,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
 
-	//픽 확정 여부
-	UPROPERTY(ReplicatedUsing = OnRep_UpdateUI, BlueprintReadOnly)
-	bool bIsConfirmedJob = false;
-
 	virtual void OnRep_JobType() override;
 
 	void RefreshUI();
-private:
-	EJobType SavedConfirmedJob = EJobType::None;
 };

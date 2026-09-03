@@ -49,10 +49,7 @@ void UJobSelectWidget::UpdateJobAvailability(const TArray<EJobType>& TakenJobs)
 	EJobType MyConfirmedJob = EJobType::None;
 	if (ALobbyPlayerState* PS = GetOwningPlayer()->GetPlayerState<ALobbyPlayerState>())
 	{
-		if (PS->GetIsConfirmedJob())
-		{
-			MyConfirmedJob = PS->GetJob();
-		}
+		MyConfirmedJob = PS->GetJob();
 	}
 	auto UpdateButtonState = [&](UJobButton* Btn, EJobType JobType)
 	{
