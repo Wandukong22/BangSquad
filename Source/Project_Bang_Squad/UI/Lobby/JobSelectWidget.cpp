@@ -35,22 +35,36 @@ void UJobSelectWidget::NativeConstruct()
 	}
 	if (Btn_Confirm) Btn_Confirm->OnClicked.AddDynamic(this, &UJobSelectWidget::OnConfirmClicked);
 
-	if (ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>())
-	{
-		GS->OnTakenJobsChanged.RemoveDynamic(this, &UJobSelectWidget::HandleTakenJobsChanged);
-		GS->OnTakenJobsChanged.AddDynamic(this, &UJobSelectWidget::HandleTakenJobsChanged);
 
-		UpdateJobAvailability(GS->GetTakenJobs());
-	}
+		UpdateJobAvailability();
 }
 
-void UJobSelectWidget::UpdateJobAvailability(const TArray<EJobType>& TakenJobs)
+void UJobSelectWidget::UpdateJobAvailability()
 {
-	EJobType MyConfirmedJob = EJobType::None;
-	if (ALobbyPlayerState* PS = GetOwningPlayer()->GetPlayerState<ALobbyPlayerState>())
+	//LobbyGameState 가져오기
+	UWorld* World = GetWorld();
+	if (!World) return;
+	ALobbyGameState* GS = World->GetGameState<ALobbyGameState>();
+	if (!GS) return;
+	//LobbyPlayerState 가져오기
+	APlayerController* PC = GetOwningPlayer();
+	if (!PC) return;
+	ALobbyPlayerState* PS = PC->GetPlayerState<ALobbyPlayerState>();
+	if (!PS) return;
+
+	TSet<EJobType> TakenJobs;
+	EJobType MyConfirmedJob = PS->GetJob();
+
+	for (APlayerState* PlayerState : GS->PlayerArray)
 	{
-		MyConfirmedJob = PS->GetJob();
+		ALobbyPlayerState* LobbyPlayerState = Cast<ALobbyPlayerState>(PlayerState);
+		if (!LobbyPlayerState) continue;
+		
+		EJobType Job = LobbyPlayerState->GetJob();
+		if (Job != EJobType::None)
+			TakenJobs.Add(Job);
 	}
+	
 	auto UpdateButtonState = [&](UJobButton* Btn, EJobType JobType)
 	{
 		if (!Btn) return;
@@ -91,8 +105,7 @@ void UJobSelectWidget::OnJobButtonClicked(EJobType SelectedJob)
 {
 	PendingJob = SelectedJob;
 
-	if (ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>())
-		UpdateJobAvailability(GS->GetTakenJobs());
+	UpdateJobAvailability();
 }
 
 void UJobSelectWidget::OnConfirmClicked()
@@ -105,9 +118,4 @@ void UJobSelectWidget::OnConfirmClicked()
 		ConfirmJob = PendingJob;
 		PC->RequestConfirmedJob(PendingJob);
 	}
-}
-
-void UJobSelectWidget::HandleTakenJobsChanged(const TArray<EJobType>& NewTakenJobs)
-{
-	UpdateJobAvailability(NewTakenJobs);
 }

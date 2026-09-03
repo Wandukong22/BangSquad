@@ -18,8 +18,8 @@ ALobbyGameMode::ALobbyGameMode()
 
 EJobClaimResult ALobbyGameMode::TryClaimJob(EJobType Job, ALobbyPlayerState* RequestingPS)
 {
-	EJobType OldJob = EJobType::None;
 	
+	EJobType OldJob = EJobType::None;
 	auto LogJobClaim = [&](EJobClaimResult Result)
 	{
 		const FString PlayerName = RequestingPS
@@ -43,6 +43,9 @@ EJobClaimResult ALobbyGameMode::TryClaimJob(EJobType Job, ALobbyPlayerState* Req
 		LogJobClaim(EJobClaimResult::InvalidPlayer);
 		return EJobClaimResult::InvalidPlayer;
 	}
+	
+	//요청 플레이어의 확정 직업 가져와서 저장
+	OldJob = RequestingPS->GetJob();
 
 	//LobbyGameState 확인
 	ALobbyGameState* GS = GetGameState<ALobbyGameState>();
@@ -66,29 +69,13 @@ EJobClaimResult ALobbyGameMode::TryClaimJob(EJobType Job, ALobbyPlayerState* Req
 		return EJobClaimResult::InvalidJob;
 	}
 
-	//요청 플레이어의 확정 직업 가져와서 저장
-	OldJob = RequestingPS->GetJob();
-
 	//이미 같은 직업을 확정한 상태인지
-	bool bIsMyConfirmedJob = (OldJob != EJobType::None && OldJob == Job);
-	if (!bIsMyConfirmedJob)
+	if (!IsJobAvailable(Job, RequestingPS))
 	{
-		// 내 직업이 아니라면, 빈자리인지 철저히 검사
-		if (!GS->IsJobAvailable(Job))
-		{
-			LogJobClaim(EJobClaimResult::AlreadyTaken);
-			return EJobClaimResult::AlreadyTaken; // 누군가 이미 가져갔음 -> 실패
-		}
+		LogJobClaim(EJobClaimResult::AlreadyTaken);
+		return EJobClaimResult::AlreadyTaken;
 	}
-
-	if (OldJob != EJobType::None && OldJob != Job)
-	{
-		GS->RemoveTakenJob(OldJob);
-	}
-
-	//성공
-	GS->AddTakenJob(Job);
-
+	
 	//플레이어 상태 업데이트
 	RequestingPS->SetJob(Job);
 
@@ -333,8 +320,31 @@ bool ALobbyGameMode::IsPlayableJob(EJobType Job) const
 		Job == EJobType::Paladin);
 }
 
+bool ALobbyGameMode::IsJobAvailable(EJobType RequestedJob, const ALobbyPlayerState* RequestingPlayerState) const
+{
+	//LobbyGameState 획득
+	ALobbyGameState* GS = GetGameState<ALobbyGameState>();
+	if (!GS) return false;
+	
+	//PlayerArray를 순회
+	for (APlayerState* PlayerState : GS->PlayerArray)
+	{
+		//각 항목을 ALobbyPlayerState로 변환
+		ALobbyPlayerState* LobbyPlayerState = Cast<ALobbyPlayerState>(PlayerState);
+		if (!LobbyPlayerState) continue;
+
+		//변환 실패 항목과 요청자 자신의 PlayerState는 건너뜀
+		if (LobbyPlayerState == RequestingPlayerState) continue;
+		
+		//다른 플레이어의 GetJob()이 RequestedJob과 같으면 즉시 false.
+		if (LobbyPlayerState->GetJob() == RequestedJob) return false;
+	}
+	//끝까지 없으면 true
+	return true;
+}
+
 void ALobbyGameMode::LogActionRejected(const TCHAR* Action, ALobbyPlayerController* Requester,
-	const ALobbyGameState* GS, const TCHAR* Reason) const
+                                       const ALobbyGameState* GS, const TCHAR* Reason) const
 {
 	FString PlayerName = TEXT("Unknown");
 

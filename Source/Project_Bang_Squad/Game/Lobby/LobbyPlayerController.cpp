@@ -81,7 +81,7 @@ void ALobbyPlayerController::RefreshLobbyUI()
 
 	if (IsValid(JobSelectWidget) && JobSelectWidget->IsInViewport())
 	{
-		JobSelectWidget->UpdateJobAvailability(GS->GetTakenJobs());
+		JobSelectWidget->UpdateJobAvailability();
 	}
 }
 
@@ -100,10 +100,7 @@ void ALobbyPlayerController::Client_JobSelectFailed_Implementation(EJobType Fail
 {
 	if (JobSelectWidget)
 	{
-		if (ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>())
-		{
-			JobSelectWidget->UpdateJobAvailability(GS->GetTakenJobs());
-		}
+		JobSelectWidget->UpdateJobAvailability();
 	}
 }
 
@@ -155,7 +152,7 @@ void ALobbyPlayerController::OnLobbyPhaseChanged(ELobbyPhase NewPhase)
 			JobSelectWidget->StartUp();
 
 			if (ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>())
-				JobSelectWidget->UpdateJobAvailability(GS->GetTakenJobs());
+				JobSelectWidget->UpdateJobAvailability();
 		}
 	}
 	else if (NewPhase == ELobbyPhase::GameStarting)
@@ -274,7 +271,9 @@ void ALobbyPlayerController::ServerPreviewJob_Implementation(EJobType NewJob)
 	else
 	{
 		UE_LOG(LogTemp, Warning,
-			TEXT("[LobbyAction] Action=PreviewJob Player=Unknown Phase=Unknown Result=Rejected Reason=MissingGameMode"));
+		       TEXT(
+			       "[LobbyAction] Action=PreviewJob Player=Unknown Phase=Unknown Result=Rejected Reason=MissingGameMode"
+		       ));
 	}
 }
 
@@ -287,7 +286,9 @@ void ALobbyPlayerController::ServerToggleReady_Implementation()
 	else
 	{
 		UE_LOG(LogTemp, Warning,
-			TEXT("[LobbyAction] Action=ToggleReady Player=Unknown Phase=Unknown Result=Rejected Reason=MissingGameMode"));
+		       TEXT(
+			       "[LobbyAction] Action=ToggleReady Player=Unknown Phase=Unknown Result=Rejected Reason=MissingGameMode"
+		       ));
 	}
 }
 
@@ -326,7 +327,7 @@ void ALobbyPlayerController::ServerRequestSkipVideo_Implementation()
 	if (bHasVotedSkip)
 	{
 		UE_LOG(LogTemp, Warning,
-			TEXT("[LobbyAction] Action=SkipVideo Player=Unknown Phase=Unknown Result=Rejected Reason=AlreadyVoted"));
+		       TEXT("[LobbyAction] Action=SkipVideo Player=Unknown Phase=Unknown Result=Rejected Reason=AlreadyVoted"));
 		return;
 	}
 
@@ -334,7 +335,8 @@ void ALobbyPlayerController::ServerRequestSkipVideo_Implementation()
 	if (!GM)
 	{
 		UE_LOG(LogTemp, Warning,
-			TEXT("[LobbyAction] Action=SkipVideo Player=Unknown Phase=Unknown Result=Rejected Reason=MissingGameMode"));
+		       TEXT("[LobbyAction] Action=SkipVideo Player=Unknown Phase=Unknown Result=Rejected Reason=MissingGameMode"
+		       ));
 		return;
 	}
 

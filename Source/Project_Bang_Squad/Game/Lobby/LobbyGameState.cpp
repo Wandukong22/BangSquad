@@ -13,7 +13,6 @@ void ALobbyGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ALobbyGameState, CurrentLobbyPhase);
-	DOREPLIFETIME(ALobbyGameState, TakenJobs);
 	DOREPLIFETIME(ALobbyGameState, SkipVoteCount);
 }
 
@@ -24,37 +23,6 @@ void ALobbyGameState::SetCurrentLobbyPhase(ELobbyPhase NewPhase)
 		CurrentLobbyPhase = NewPhase;
 		OnRep_CurrentPhase(); //서버는 RepNotify 자동호출X라서 수동으로 함
 	}
-}
-
-bool ALobbyGameState::IsJobAvailable(EJobType JobType) const
-{
-	return !TakenJobs.Contains(JobType);
-}
-
-void ALobbyGameState::AddTakenJob(EJobType JobType)
-{
-	if (HasAuthority() && IsJobAvailable(JobType))
-	{
-		TakenJobs.Add(JobType);
-		OnRep_TakenJobs(); //서버에서도 UI 갱신
-	}
-}
-
-void ALobbyGameState::RemoveTakenJob(EJobType JobType)
-{
-	if (HasAuthority())
-	{
-		if (TakenJobs.Contains(JobType))
-		{
-			TakenJobs.Remove(JobType);
-			OnRep_TakenJobs();
-		}
-	}
-}
-
-void ALobbyGameState::OnRep_TakenJobs()
-{
-	OnTakenJobsChanged.Broadcast(TakenJobs);
 }
 
 void ALobbyGameState::OnRep_CurrentPhase()

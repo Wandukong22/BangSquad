@@ -47,6 +47,8 @@ protected:
 private:
 	bool IsPlayableJob(EJobType Job) const;
 
+	bool IsJobAvailable(EJobType RequestedJob, const ALobbyPlayerState* RequestingPlayerState) const;
+
 	//거절 로그
 	void LogActionRejected(
 		const TCHAR* Action,
