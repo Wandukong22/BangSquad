@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "LobbyGameTypes.h"
 #include "Project_Bang_Squad/Core/BSGameTypes.h"
 #include "Project_Bang_Squad/Game/Base/BSGameMode.h"
 #include "LobbyGameMode.generated.h"
@@ -23,11 +24,8 @@ public:
 
 	//직업 확정했는지 체크
 	void CheckConfirmedJob();
-	
-	UPROPERTY()
-	TSet<EJobType> ConfirmedJobs;
 
-	bool TryConfirmJob(EJobType Job, class ALobbyPlayerState* RequestingPS);
+	EJobClaimResult TryClaimJob(EJobType Job, class ALobbyPlayerState* RequestingPS);
 
 	// 클라이언트가 스킵을 눌렀을 때 호출할 함수
 	void RegisterSkipVote();
@@ -41,4 +39,5 @@ protected:
 
 	// 즉시 맵을 이동시키는 함수
 	void ForceStartGame();
+	
 };

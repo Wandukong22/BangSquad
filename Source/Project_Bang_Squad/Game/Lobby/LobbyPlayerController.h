@@ -100,4 +100,8 @@ private:
 	UFUNCTION(BlueprintCallable)
 	void ToggleLobbyMenu();
 	void SetMenuState(bool bShow);
+
+public:
+	UFUNCTION(Exec)
+	void DebugClaimJob(const FString& JobName);
 };

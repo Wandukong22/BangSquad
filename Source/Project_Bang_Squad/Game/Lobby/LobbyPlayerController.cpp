@@ -230,6 +230,41 @@ void ALobbyPlayerController::SetMenuState(bool bShow)
 	}
 }
 
+void ALobbyPlayerController::DebugClaimJob(const FString& JobName)
+{
+#if UE_BUILD_SHIPPING
+	return;
+#endif
+	EJobType RequestedJob = EJobType::None;
+	
+	if (JobName.Equals(TEXT("Titan"), ESearchCase::IgnoreCase))
+	{
+		RequestedJob = EJobType::Titan;
+	}
+	else if (JobName.Equals(TEXT("Striker"), ESearchCase::IgnoreCase))
+	{
+		RequestedJob = EJobType::Striker;
+	}
+	else if (JobName.Equals(TEXT("Mage"), ESearchCase::IgnoreCase))
+	{
+		RequestedJob = EJobType::Mage;
+	}
+	else if (JobName.Equals(TEXT("Paladin"), ESearchCase::IgnoreCase))
+	{
+		RequestedJob = EJobType::Paladin;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[DebugClaim] Unknown job: %s"), *JobName);
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[DebugClaim] Requesting job: %s"), *JobName);
+
+	// UI와 GameInstance 저장을 우회하고 서버 검증 경로만 호출
+	ServerConfirmedJob(RequestedJob);
+}
+
 void ALobbyPlayerController::ServerPreviewJob_Implementation(EJobType NewJob)
 {
 	ALobbyPlayerState* PS = GetPlayerState<ALobbyPlayerState>();
@@ -273,9 +308,9 @@ void ALobbyPlayerController::ServerConfirmedJob_Implementation(EJobType FinalJob
 
 	if (PS && GM)
 	{
-		bool bSuccess = GM->TryConfirmJob(FinalJob, PS);
+		EJobClaimResult JobClaimResult = GM->TryClaimJob(FinalJob, PS);
 
-		if (!bSuccess)
+		if (JobClaimResult != EJobClaimResult::Success)
 		{
 			Client_JobSelectFailed(FinalJob);
 		}

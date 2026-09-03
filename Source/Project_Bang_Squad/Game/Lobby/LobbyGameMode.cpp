@@ -16,17 +16,44 @@ ALobbyGameMode::ALobbyGameMode()
 	GameStateClass = ALobbyGameState::StaticClass();
 }
 
-bool ALobbyGameMode::TryConfirmJob(EJobType Job, ALobbyPlayerState* RequestingPS)
+EJobClaimResult ALobbyGameMode::TryClaimJob(EJobType Job, ALobbyPlayerState* RequestingPS)
 {
-	//요청된 PlayerState가 null이면 false
-	if (!RequestingPS) return false;
+	EJobType OldJob = EJobType::None;
+	
+	auto LogJobClaim = [&](EJobClaimResult Result)
+	{
+		const FString PlayerName = RequestingPS
+			? RequestingPS->GetPlayerName()
+			: TEXT("Unknown");
+
+		UE_LOG(
+			LogTemp,
+			Log,
+			TEXT("[JobClaim] Player=%s Requested=%s Previous=%s Result=%s"),
+			*PlayerName,
+			*UEnum::GetValueAsString(Job),
+			*UEnum::GetValueAsString(OldJob),
+			*UEnum::GetValueAsString(Result)
+		);
+	};
+	
+	//요청된 PlayerState가 null일 경우
+	if (!RequestingPS)
+	{
+		LogJobClaim(EJobClaimResult::InvalidPlayer);
+		return EJobClaimResult::InvalidPlayer;
+	}
 
 	//LobbyGameState 가져오기
 	ALobbyGameState* GS = GetGameState<ALobbyGameState>();
-	if (!GS) return false;
+	if (!GS)
+	{
+		LogJobClaim(EJobClaimResult::InternalError);
+		return EJobClaimResult::InternalError;
+	}
 
 	//요청 플레이어의 확정 직업 가져와서 저장
-	EJobType OldJob = RequestingPS->GetJob();
+	OldJob = RequestingPS->GetJob();
 
 	//이미 같은 직업을 확정한 상태인지
 	bool bIsMyConfirmedJob = (OldJob != EJobType::None && OldJob == Job);
@@ -35,7 +62,8 @@ bool ALobbyGameMode::TryConfirmJob(EJobType Job, ALobbyPlayerState* RequestingPS
 		// 내 직업이 아니라면, 빈자리인지 철저히 검사
 		if (!GS->IsJobAvailable(Job))
 		{
-			return false; // 누군가 이미 가져갔음 -> 실패
+			LogJobClaim(EJobClaimResult::AlreadyTaken);
+			return EJobClaimResult::AlreadyTaken; // 누군가 이미 가져갔음 -> 실패
 		}
 	}
 
@@ -52,7 +80,8 @@ bool ALobbyGameMode::TryConfirmJob(EJobType Job, ALobbyPlayerState* RequestingPS
 
 	CheckConfirmedJob();
 
-	return true;
+	LogJobClaim(EJobClaimResult::Success);
+	return EJobClaimResult::Success;
 }
 
 void ALobbyGameMode::CheckAllReady()
