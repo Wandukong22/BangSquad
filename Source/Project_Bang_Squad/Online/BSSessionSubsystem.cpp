@@ -104,6 +104,29 @@ void UBSSessionSubsystem::CreateSession(const FBSCreateSessionRequest& Request)
 	//세션 인터페이스 유효성 검사
 	if (!IsValidSessionInterface()) return;
 
+	// Standalone은 기본 NetDriver가 없으므로 이 상태에서 세션을 만들면
+	// OnlineSubsystemNull이 접속 포트를 0으로 광고한다.
+	// 세션 정보를 만들기 전에 Listen 서버를 열어 실제 포트를 등록한다.
+	UWorld* World = GetWorld();
+	UGameInstance* GameInstance = GetGameInstance();
+	if (!IsValid(World) || !IsValid(GameInstance))
+	{
+		HandleFailure(
+			EBSSessionError::CreateFailed,
+			TEXT("호스트 월드를 찾을 수 없습니다."),
+			EBSSessionState::Idle);
+		return;
+	}
+
+	if (World->GetNetMode() == NM_Standalone && !GameInstance->EnableListenServer(true))
+	{
+		HandleFailure(
+			EBSSessionError::CreateFailed,
+			TEXT("Listen 서버를 시작할 수 없습니다."),
+			EBSSessionState::Idle);
+		return;
+	}
+
 	//기존 세션이 있는지 확인
 	if (SessionInterface->GetNamedSession(NAME_GameSession))
 	{
@@ -392,6 +415,25 @@ void UBSSessionSubsystem::OnCreateSessionComplete(FName SessionName, bool bWasSu
 	if (SessionName != NAME_GameSession || CurrentState != EBSSessionState::Creating) return;
 	if (bWasSuccessful)
 	{
+		// Null Online Subsystem은 세션 생성 시 호스트의 공개 슬롯을
+		// 자동으로 차감하지 않으므로 호스트를 명시적으로 등록
+		if (FNamedOnlineSession* Session = SessionInterface->GetNamedSession(SessionName))
+		{
+			if (Session->OwningUserId.IsValid())
+			{
+				const bool bHostAlreadyRegistered = Session->RegisteredPlayers.ContainsByPredicate(
+					[&Session](const FUniqueNetIdRef& PlayerId)
+					{
+						return *PlayerId == *Session->OwningUserId;
+					});
+
+				if (!bHostAlreadyRegistered)
+				{
+					SessionInterface->RegisterPlayer(SessionName, *Session->OwningUserId, false);
+				}
+			}
+		}
+
 		UE_LOG(
 			LogTemp,
 			Log,
