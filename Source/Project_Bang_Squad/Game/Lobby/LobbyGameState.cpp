@@ -12,16 +12,16 @@ ALobbyGameState::ALobbyGameState()
 void ALobbyGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(ALobbyGameState, CurrentPhase);
+	DOREPLIFETIME(ALobbyGameState, CurrentLobbyPhase);
 	DOREPLIFETIME(ALobbyGameState, TakenJobs);
 	DOREPLIFETIME(ALobbyGameState, SkipVoteCount);
 }
 
-void ALobbyGameState::SetLobbyPhase(ELobbyPhase NewPhase)
+void ALobbyGameState::SetCurrentLobbyPhase(ELobbyPhase NewPhase)
 {
 	if (HasAuthority())
 	{
-		CurrentPhase = NewPhase;
+		CurrentLobbyPhase = NewPhase;
 		OnRep_CurrentPhase(); //서버는 RepNotify 자동호출X라서 수동으로 함
 	}
 }
@@ -60,7 +60,7 @@ void ALobbyGameState::OnRep_TakenJobs()
 void ALobbyGameState::OnRep_CurrentPhase()
 {
 	//모든 클라이언트(UI)에게 알림
-	OnLobbyPhaseChanged.Broadcast(CurrentPhase);
+	OnLobbyPhaseChanged.Broadcast(CurrentLobbyPhase);
 }
 
 void ALobbyGameState::OnRep_SkipVoteCount()

@@ -71,7 +71,7 @@ void ALobbyPlayerController::RefreshLobbyUI()
 	}
 
 	ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>();
-	if (GS && GS->CurrentPhase == ELobbyPhase::GameStarting)
+	if (GS && GS->GetCurrentLobbyPhase() == ELobbyPhase::GameStarting)
 		return;
 
 	if (IsValid(LobbyMainWidget) && LobbyMainWidget->IsInViewport())
@@ -126,7 +126,7 @@ void ALobbyPlayerController::InitLobbyUI()
 
 		GS->OnLobbyPhaseChanged.AddDynamic(this, &ALobbyPlayerController::OnLobbyPhaseChanged);
 
-		OnLobbyPhaseChanged(GS->CurrentPhase);
+		OnLobbyPhaseChanged(GS->GetCurrentLobbyPhase());
 	}
 }
 
@@ -236,7 +236,7 @@ void ALobbyPlayerController::DebugClaimJob(const FString& JobName)
 	return;
 #endif
 	EJobType RequestedJob = EJobType::None;
-	
+
 	if (JobName.Equals(TEXT("Titan"), ESearchCase::IgnoreCase))
 	{
 		RequestedJob = EJobType::Titan;
@@ -267,37 +267,27 @@ void ALobbyPlayerController::DebugClaimJob(const FString& JobName)
 
 void ALobbyPlayerController::ServerPreviewJob_Implementation(EJobType NewJob)
 {
-	ALobbyPlayerState* PS = GetPlayerState<ALobbyPlayerState>();
-	UE_LOG(
-		LogTemp,
-		Log,
-		TEXT("[PreviewJob][ServerRequest] Player=%s RequestedJob=%d"),
-		PS ? *PS->GetPlayerName() : TEXT("Unknown"),
-		static_cast<uint8>(NewJob)
-	);
-	if (PS)
+	if (ALobbyGameMode* GM = GetWorld()->GetAuthGameMode<ALobbyGameMode>())
 	{
-		PS->SetPreviewJob(NewJob);
+		GM->TryPreviewJob(this, NewJob);
 	}
-
-	if (ABSGameMode* GM = GetWorld()->GetAuthGameMode<ALobbyGameMode>())
+	else
 	{
-		GM->SpawnPlayerCharacter(this, NewJob);
+		UE_LOG(LogTemp, Warning,
+			TEXT("[LobbyAction] Action=PreviewJob Player=Unknown Phase=Unknown Result=Rejected Reason=MissingGameMode"));
 	}
 }
 
 void ALobbyPlayerController::ServerToggleReady_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("[Server] PC: Ready 토글 요청 받음!"));
-
-	if (ALobbyPlayerState* PS = GetPlayerState<ALobbyPlayerState>())
+	if (ALobbyGameMode* GM = GetWorld()->GetAuthGameMode<ALobbyGameMode>())
 	{
-		PS->SetIsReady(!PS->bIsReady);
-
-		if (ALobbyGameMode* GM = GetWorld()->GetAuthGameMode<ALobbyGameMode>())
-		{
-			GM->CheckAllReady();
-		}
+		GM->TryToggleReady(this);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("[LobbyAction] Action=ToggleReady Player=Unknown Phase=Unknown Result=Rejected Reason=MissingGameMode"));
 	}
 }
 
@@ -325,7 +315,7 @@ void ALobbyPlayerController::RequestSkipVideo()
 {
 	ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>();
 	// 영상 재생 중일 때만 스킵 가능하게 방어
-	if (GS && GS->CurrentPhase == ELobbyPhase::GameStarting)
+	if (GS && GS->GetCurrentLobbyPhase() == ELobbyPhase::GameStarting)
 	{
 		ServerRequestSkipVideo();
 	}
@@ -333,13 +323,21 @@ void ALobbyPlayerController::RequestSkipVideo()
 
 void ALobbyPlayerController::ServerRequestSkipVideo_Implementation()
 {
-	if (!bHasVotedSkip)
+	if (bHasVotedSkip)
 	{
-		bHasVotedSkip = true;
-
-		if (ALobbyGameMode* GM = GetWorld()->GetAuthGameMode<ALobbyGameMode>())
-		{
-			GM->RegisterSkipVote();
-		}
+		UE_LOG(LogTemp, Warning,
+			TEXT("[LobbyAction] Action=SkipVideo Player=Unknown Phase=Unknown Result=Rejected Reason=AlreadyVoted"));
+		return;
 	}
+
+	ALobbyGameMode* GM = GetWorld()->GetAuthGameMode<ALobbyGameMode>();
+	if (!GM)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("[LobbyAction] Action=SkipVideo Player=Unknown Phase=Unknown Result=Rejected Reason=MissingGameMode"));
+		return;
+	}
+
+	if (GM->TryRegisterSkipVote(this))
+		bHasVotedSkip = true;
 }

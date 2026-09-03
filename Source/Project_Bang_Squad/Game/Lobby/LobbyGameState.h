@@ -23,19 +23,21 @@ UCLASS()
 class PROJECT_BANG_SQUAD_API ALobbyGameState : public ABSGameState
 {
 	GENERATED_BODY()
+	
+	//현재 로비 단계
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentPhase)
+	ELobbyPhase CurrentLobbyPhase = ELobbyPhase::PreviewJob;
 
 public:
 	ALobbyGameState();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	//현재 로비 단계
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentPhase)
-	ELobbyPhase CurrentPhase = ELobbyPhase::PreviewJob;
+	ELobbyPhase GetCurrentLobbyPhase() const {return CurrentLobbyPhase;}
+	void SetCurrentLobbyPhase(ELobbyPhase NewPhase);
 
 	UPROPERTY(BlueprintAssignable)
 	FOnLobbyPhaseChanged OnLobbyPhaseChanged;
 
-	void SetLobbyPhase(ELobbyPhase NewPhase);
 
 	//직업이 선택 가능한지 확인
 	bool IsJobAvailable(EJobType JobType) const ;

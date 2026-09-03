@@ -15,6 +15,10 @@ class PROJECT_BANG_SQUAD_API ALobbyPlayerState : public ABSPlayerState
 
 	UPROPERTY(ReplicatedUsing = OnRep_UpdateUI)
 	EJobType PreviewJob = EJobType::None;
+
+	//준비 완료 여부
+	UPROPERTY(ReplicatedUsing = OnRep_UpdateUI)
+	bool bIsReady = false;
 	
 public:
 	ALobbyPlayerState();
@@ -23,15 +27,15 @@ public:
 	EJobType GetPreviewJob() const { return PreviewJob; }
 	void SetPreviewJob(EJobType NewJob);
 	
-	//준비 완료 여부
-	UPROPERTY(ReplicatedUsing = OnRep_UpdateUI, BlueprintReadOnly)
-	bool bIsReady = false;
+
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnLobbyDataChanged OnLobbyDataChanged;
 
 	virtual void SetJob(EJobType NewJob) override;
+
 	void SetIsReady(bool NewIsReady);
+	bool GetIsReady() const { return bIsReady; }
 
 protected:
 	UFUNCTION()

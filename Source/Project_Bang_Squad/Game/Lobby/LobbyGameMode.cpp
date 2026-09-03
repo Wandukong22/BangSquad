@@ -53,17 +53,14 @@ EJobClaimResult ALobbyGameMode::TryClaimJob(EJobType Job, ALobbyPlayerState* Req
 	}
 
 	//Phase 확인
-	if (GS->CurrentPhase != ELobbyPhase::SelectJob)
+	if (GS->GetCurrentLobbyPhase() != ELobbyPhase::SelectJob)
 	{
 		LogJobClaim(EJobClaimResult::InvalidPhase);
 		return EJobClaimResult::InvalidPhase;
 	}
 
 	//요청 직업 확인
-	if (Job != EJobType::Titan &&
-		Job != EJobType::Striker &&
-		Job != EJobType::Mage &&
-		Job != EJobType::Paladin)
+	if (!IsPlayableJob(Job))
 	{
 		LogJobClaim(EJobClaimResult::InvalidJob);
 		return EJobClaimResult::InvalidJob;
@@ -101,6 +98,94 @@ EJobClaimResult ALobbyGameMode::TryClaimJob(EJobType Job, ALobbyPlayerState* Req
 	return EJobClaimResult::Success;
 }
 
+bool ALobbyGameMode::TryPreviewJob(ALobbyPlayerController* Requester, EJobType NewJob)
+{
+	//GameState 확인
+	ALobbyGameState* LobbyGameState = GetGameState<ALobbyGameState>();
+
+	//PlayerController 확인
+	if (!Requester)
+	{
+		LogActionRejected(TEXT("PreviewJob"), Requester, LobbyGameState, TEXT("InvalidRequester"));
+		return false;
+	}
+
+	if (!LobbyGameState)
+	{
+		LogActionRejected(TEXT("PreviewJob"), Requester, LobbyGameState, TEXT("MissingGameState"));
+		return false;
+	}
+
+	//현재 Phase가 PreviewJob인지 확인
+	if (LobbyGameState->GetCurrentLobbyPhase() != ELobbyPhase::PreviewJob)
+	{
+		LogActionRejected(TEXT("PreviewJob"), Requester, LobbyGameState, TEXT("InvalidPhase"));
+		return false;
+	}
+
+	//플레이 가능한 직업인지 확인
+	if (!IsPlayableJob(NewJob))
+	{
+		LogActionRejected(TEXT("PreviewJob"), Requester, LobbyGameState, TEXT("InvalidJob"));
+		return false;
+	}
+
+	//Requester의 LobbyPlayerState 획득
+	ALobbyPlayerState* LobbyPlayerState = Requester->GetPlayerState<ALobbyPlayerState>();
+	if (!LobbyPlayerState)
+	{
+		LogActionRejected(TEXT("PreviewJob"), Requester, LobbyGameState, TEXT("MissingPlayerState"));
+		return false;
+	}
+
+	//PreviewJob 변경
+	LobbyPlayerState->SetPreviewJob(NewJob);
+	//미리보기 캐릭터 생성
+	SpawnPlayerCharacter(Requester, NewJob);
+	return true;
+}
+
+bool ALobbyGameMode::TryToggleReady(ALobbyPlayerController* Requester)
+{
+	//LobbyGameState 확인
+	ALobbyGameState* GS = GetGameState<ALobbyGameState>();
+
+	//Requester 확인
+	if (!Requester)
+	{
+		LogActionRejected(TEXT("ToggleReady"), Requester, GS, TEXT("InvalidRequester"));
+		return false;
+	}
+
+	if (!GS)
+	{
+		LogActionRejected(TEXT("ToggleReady"), Requester, GS, TEXT("MissingGameState"));
+		return false;
+	}
+	
+	//현재 Phase가 PreviewJob인지 확인
+	if (GS->GetCurrentLobbyPhase() != ELobbyPhase::PreviewJob)
+	{
+		LogActionRejected(TEXT("ToggleReady"), Requester, GS, TEXT("InvalidPhase"));
+		return false;
+	}
+	
+	//Requester의 LobbyPlayerState 획득
+	ALobbyPlayerState* PS = Requester->GetPlayerState<ALobbyPlayerState>();
+	if (!PS)
+	{
+		LogActionRejected(TEXT("ToggleReady"), Requester, GS, TEXT("MissingPlayerState"));
+		return false;
+	}
+	
+	//SetIsReady(!LobbyPlayerState->bIsReady) 실행
+	PS->SetIsReady(!PS->GetIsReady());
+	
+	//CheckAllReady() 실행
+	CheckAllReady();
+	return true;
+}
+
 void ALobbyGameMode::CheckAllReady()
 {
 	ALobbyGameState* GS = GetGameState<ALobbyGameState>();
@@ -116,7 +201,7 @@ void ALobbyGameMode::CheckAllReady()
 		ALobbyPlayerState* LobbyPS = Cast<ALobbyPlayerState>(PS);
 		if (LobbyPS)
 		{
-			if (LobbyPS->bIsReady) ReadyCount++;
+			if (LobbyPS->GetIsReady()) ReadyCount++;
 			else bAllReady = false;
 		}
 	}
@@ -124,7 +209,7 @@ void ALobbyGameMode::CheckAllReady()
 	//이동
 	if (bAllReady && GS->PlayerArray.Num() == PlayerCount)
 	{
-		GS->SetLobbyPhase(ELobbyPhase::SelectJob);
+		GS->SetCurrentLobbyPhase(ELobbyPhase::SelectJob);
 	}
 }
 
@@ -169,7 +254,7 @@ void ALobbyGameMode::CheckConfirmedJob()
 	{
 		if (GS)
 		{
-			GS->SetLobbyPhase(ELobbyPhase::GameStarting);
+			GS->SetCurrentLobbyPhase(ELobbyPhase::GameStarting);
 			GS->SkipVoteCount = 0; // 혹시 모르니 투표수 0으로 초기화
 		}
 
@@ -182,20 +267,48 @@ void ALobbyGameMode::CheckConfirmedJob()
 }
 
 
-void ALobbyGameMode::RegisterSkipVote()
+bool ALobbyGameMode::TryRegisterSkipVote(ALobbyPlayerController* Requester)
 {
+	//LobbyGameState 확인
 	ALobbyGameState* GS = GetGameState<ALobbyGameState>();
-	if (GS)
-	{
-		GS->SkipVoteCount++;
-		GS->OnRep_SkipVoteCount(); // 서버 컴퓨터의 UI도 즉시 갱신되도록 강제 호출
 
-		// 만장일치 확인
-		if (GS->SkipVoteCount >= GS->PlayerArray.Num())
-		{
-			ForceStartGame();
-		}
+	if (!Requester)
+	{
+		LogActionRejected(TEXT("SkipVideo"), Requester, GS, TEXT("InvalidRequester"));
+		return false;
 	}
+
+	if (!GS)
+	{
+		LogActionRejected(TEXT("SkipVideo"), Requester, GS, TEXT("MissingGameState"));
+		return false;
+	}
+
+	//현재 Phase가 GameStarting인지 확인
+	if (GS->GetCurrentLobbyPhase() != ELobbyPhase::GameStarting)
+	{
+		LogActionRejected(TEXT("SkipVideo"), Requester, GS, TEXT("InvalidPhase"));
+		return false;
+	}
+
+	if (GS->PlayerArray.Num() <= 0)
+	{
+		LogActionRejected(TEXT("SkipVideo"), Requester, GS, TEXT("NoPlayers"));
+		return false;
+	}
+	
+	//통과하면 SkipVoteCount 증가
+	GS->SkipVoteCount++;
+	
+	//서버 UI 갱신 및 복제 처리
+	GS->OnRep_SkipVoteCount();
+	
+	//전체 인원 투표 완료 시 ForceStartGame()
+	if (GS->SkipVoteCount >= GS->PlayerArray.Num())
+	{
+		ForceStartGame();
+	}
+	return true;
 }
 
 void ALobbyGameMode::ForceStartGame()
@@ -210,4 +323,40 @@ void ALobbyGameMode::ForceStartGame()
 			GameFlowSubsystem->ServerTravelToStage(EStageIndex::Stage1, EStageSection::Main);
 		}
 	}
+}
+
+bool ALobbyGameMode::IsPlayableJob(EJobType Job) const
+{
+	return (Job == EJobType::Titan ||
+		Job == EJobType::Striker ||
+		Job == EJobType::Mage ||
+		Job == EJobType::Paladin);
+}
+
+void ALobbyGameMode::LogActionRejected(const TCHAR* Action, ALobbyPlayerController* Requester,
+	const ALobbyGameState* GS, const TCHAR* Reason) const
+{
+	FString PlayerName = TEXT("Unknown");
+
+	if (Requester)
+	{
+		if (const ALobbyPlayerState* PS = Requester->GetPlayerState<ALobbyPlayerState>())
+		{
+			PlayerName = PS->GetPlayerName();
+		}
+	}
+
+	const FString PhaseName = GS
+		? UEnum::GetValueAsString(GS->GetCurrentLobbyPhase())
+		: TEXT("Unknown");
+
+	UE_LOG(
+		LogTemp,
+		Warning,
+		TEXT("[LobbyAction] Action=%s Player=%s Phase=%s Result=Rejected Reason=%s"),
+		Action,
+		*PlayerName,
+		*PhaseName,
+		Reason
+	);
 }

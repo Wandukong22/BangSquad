@@ -8,6 +8,8 @@
 #include "Project_Bang_Squad/Game/Base/BSGameMode.h"
 #include "LobbyGameMode.generated.h"
 
+class ALobbyGameState;
+class ALobbyPlayerController;
 /**
  * 
  */
@@ -18,7 +20,7 @@ class PROJECT_BANG_SQUAD_API ALobbyGameMode : public ABSGameMode
 
 public:
 	ALobbyGameMode();
-	
+
 	//Ready 체크
 	void CheckAllReady();
 
@@ -26,9 +28,11 @@ public:
 	void CheckConfirmedJob();
 
 	EJobClaimResult TryClaimJob(EJobType Job, class ALobbyPlayerState* RequestingPS);
+	bool TryPreviewJob(ALobbyPlayerController* Requester, EJobType NewJob);
+	bool TryToggleReady(ALobbyPlayerController* Requester);
 
 	// 클라이언트가 스킵을 눌렀을 때 호출할 함수
-	void RegisterSkipVote();
+	bool TryRegisterSkipVote(ALobbyPlayerController* Requester);
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "BS|Lobby")
@@ -39,5 +43,14 @@ protected:
 
 	// 즉시 맵을 이동시키는 함수
 	void ForceStartGame();
-	
+
+private:
+	bool IsPlayableJob(EJobType Job) const;
+
+	//거절 로그
+	void LogActionRejected(
+		const TCHAR* Action,
+		ALobbyPlayerController* Requester,
+		const ALobbyGameState* GS,
+		const TCHAR* Reason) const;
 };

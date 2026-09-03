@@ -51,7 +51,7 @@ void ULobbyMainWidget::UpdatePlayerList()
 			{
 				Row->SetWidgetMode(ERowMode::Lobby);
 				Row->SetTargetPlayerState(LobbyPS);
-				Row->UpdateLobbyInfo(LobbyPS->bIsReady, LobbyPS->GetPreviewJob());
+				Row->UpdateLobbyInfo(LobbyPS->GetIsReady(), LobbyPS->GetPreviewJob());
 				PlayerListContainer->AddChild(Row);
 			}
 		}
@@ -63,7 +63,7 @@ void ULobbyMainWidget::UpdatePlayerList()
 		{
 			if (Txt_ReadyState)
 			{
-				if (LobbyPS->bIsReady)
+				if (LobbyPS->GetIsReady())
 				{
 					Txt_ReadyState->SetText(FText::FromString("READY"));
 					Txt_ReadyState->SetColorAndOpacity(FLinearColor::Green);
