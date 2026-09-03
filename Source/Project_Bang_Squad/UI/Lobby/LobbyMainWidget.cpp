@@ -51,7 +51,7 @@ void ULobbyMainWidget::UpdatePlayerList()
 			{
 				Row->SetWidgetMode(ERowMode::Lobby);
 				Row->SetTargetPlayerState(LobbyPS);
-				Row->UpdateLobbyInfo(LobbyPS->bIsReady, LobbyPS->GetJob());
+				Row->UpdateLobbyInfo(LobbyPS->bIsReady, LobbyPS->GetPreviewJob());
 				PlayerListContainer->AddChild(Row);
 			}
 		}
@@ -109,7 +109,7 @@ void ULobbyMainWidget::UpdateJobButtonStates()
 	ALobbyPlayerState* MyPS = PC->GetPlayerState<ALobbyPlayerState>();
 	if (!MyPS) return;
 
-	EJobType MyCurrentJob = MyPS->GetJob();
+	EJobType MyCurrentJob = MyPS->GetPreviewJob();
 
 	// 2. 람다 함수로 중복 제거 (버튼이 유효한지 체크 후 상태 설정)
 	auto SetButtonState = [&](UJobButton* Btn, EJobType TargetJob)

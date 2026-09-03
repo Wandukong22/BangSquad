@@ -13,10 +13,16 @@ class PROJECT_BANG_SQUAD_API ALobbyPlayerState : public ABSPlayerState
 {
 	GENERATED_BODY()
 
+	UPROPERTY(ReplicatedUsing = OnRep_UpdateUI)
+	EJobType PreviewJob = EJobType::None;
+	
 public:
 	ALobbyPlayerState();
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
+	EJobType GetPreviewJob() const { return PreviewJob; }
+	void SetPreviewJob(EJobType NewJob);
+	
 	//준비 완료 여부
 	UPROPERTY(ReplicatedUsing = OnRep_UpdateUI, BlueprintReadOnly)
 	bool bIsReady = false;

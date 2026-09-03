@@ -21,6 +21,28 @@ void ALobbyPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimePropert
 
 	DOREPLIFETIME(ALobbyPlayerState, bIsReady);
 	DOREPLIFETIME(ALobbyPlayerState, bIsConfirmedJob);
+	DOREPLIFETIME(ALobbyPlayerState, PreviewJob);
+}
+
+void ALobbyPlayerState::SetPreviewJob(EJobType NewJob)
+{
+	if (!HasAuthority() || PreviewJob == NewJob) return;
+
+	//로그용
+	const EJobType OldPreviewJob = PreviewJob;
+	PreviewJob = NewJob;
+
+	UE_LOG(
+		LogTemp,
+		Log,
+		TEXT("[PreviewJob][ServerCommit] Player=%s OldPreview=%d NewPreview=%d ConfirmedJob=%d"),
+		*GetPlayerName(),
+		static_cast<uint8>(OldPreviewJob),
+		static_cast<uint8>(PreviewJob),
+		static_cast<uint8>(GetJob())
+	);
+
+	OnRep_UpdateUI();
 }
 
 void ALobbyPlayerState::SetJob(EJobType NewJob)
@@ -56,6 +78,15 @@ void ALobbyPlayerState::SetIsConfirmedJob(bool NewIsConfirmedJob)
 
 void ALobbyPlayerState::OnRep_UpdateUI()
 {
+	UE_LOG(
+		LogTemp,
+		Log,
+		TEXT("[PreviewJob][Replicated] Player=%s NetMode=%d PreviewJob=%d ConfirmedJob=%d"),
+		*GetPlayerName(),
+		GetWorld() ? static_cast<int32>(GetWorld()->GetNetMode()) : -1,
+		static_cast<uint8>(PreviewJob),
+		static_cast<uint8>(GetJob())
+	);
 	OnLobbyDataChanged.Broadcast();
 	RefreshUI();
 }

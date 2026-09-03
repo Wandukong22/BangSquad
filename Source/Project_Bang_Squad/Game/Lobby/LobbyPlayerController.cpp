@@ -24,7 +24,7 @@ void ALobbyPlayerController::BeginPlay()
 			{
 				LobbyMainWidget->AddToViewport();
 				RegisterManagedWidget(LobbyMainWidget);
-				
+
 				SetMenuState(true);
 			}
 		}
@@ -32,7 +32,7 @@ void ALobbyPlayerController::BeginPlay()
 		//GetWorld()->GetTimerManager().SetTimer(InitTimerHandle, this, &ALobbyPlayerController::InitLobbyUI, 0.2f, true);
 
 		InitLobbyUI();
-		
+
 		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 		{
 			if (!GI->GetUserNickname().IsEmpty())
@@ -60,19 +60,20 @@ void ALobbyPlayerController::RequestConfirmedJob(EJobType FinalJob)
 		GI->SetPlayerJob(FinalJob);
 		UE_LOG(LogTemp, Log, TEXT("Local GameInstance Job Saved: %d"), (int32)FinalJob);
 		ServerConfirmedJob(FinalJob);
-	}}
+	}
+}
 
 void ALobbyPlayerController::RefreshLobbyUI()
 {
 	if (!GetWorld() || GetWorld()->IsInSeamlessTravel())
 	{
-		return; 
+		return;
 	}
-	
+
 	ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>();
 	if (GS && GS->CurrentPhase == ELobbyPhase::GameStarting)
 		return;
-	
+
 	if (IsValid(LobbyMainWidget) && LobbyMainWidget->IsInViewport())
 	{
 		LobbyMainWidget->UpdatePlayerList();
@@ -133,7 +134,7 @@ void ALobbyPlayerController::OnLobbyPhaseChanged(ELobbyPhase NewPhase)
 {
 	if (NewPhase == ELobbyPhase::PreviewJob)
 	{
-		if (JobSelectWidget) 
+		if (JobSelectWidget)
 			JobSelectWidget->SetVisibility(ESlateVisibility::Hidden);
 
 		SetMenuState(true);
@@ -182,14 +183,15 @@ void ALobbyPlayerController::OnLobbyPhaseChanged(ELobbyPhase NewPhase)
 void ALobbyPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-	
+
 	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		if (IA_ToggleLobbyMenu)
 		{
 			EIC->BindAction(IA_ToggleLobbyMenu, ETriggerEvent::Started, this, &ALobbyPlayerController::ToggleLobbyMenu);
 		}
-	}}
+	}
+}
 
 void ALobbyPlayerController::ToggleLobbyMenu()
 {
@@ -205,7 +207,6 @@ void ALobbyPlayerController::SetMenuState(bool bShow)
 	{
 		LobbyMainWidget->SetVisibility(ESlateVisibility::Visible);
 		LobbyMainWidget->SetMenuVisibility(bShow);
-		
 	}
 
 	//입력 모드 전환
@@ -231,11 +232,17 @@ void ALobbyPlayerController::SetMenuState(bool bShow)
 
 void ALobbyPlayerController::ServerPreviewJob_Implementation(EJobType NewJob)
 {
-	UE_LOG(LogTemp, Warning, TEXT("[Server] PC: PreviewJob 요청 받음! (JobIndex: %d)"), (uint8)NewJob);
-	
-	if (ALobbyPlayerState* PS = GetPlayerState<ALobbyPlayerState>())
+	ALobbyPlayerState* PS = GetPlayerState<ALobbyPlayerState>();
+	UE_LOG(
+		LogTemp,
+		Log,
+		TEXT("[PreviewJob][ServerRequest] Player=%s RequestedJob=%d"),
+		PS ? *PS->GetPlayerName() : TEXT("Unknown"),
+		static_cast<uint8>(NewJob)
+	);
+	if (PS)
 	{
-		PS->SetJob(NewJob);
+		PS->SetPreviewJob(NewJob);
 	}
 
 	if (ABSGameMode* GM = GetWorld()->GetAuthGameMode<ALobbyGameMode>())
@@ -247,7 +254,7 @@ void ALobbyPlayerController::ServerPreviewJob_Implementation(EJobType NewJob)
 void ALobbyPlayerController::ServerToggleReady_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("[Server] PC: Ready 토글 요청 받음!"));
-	
+
 	if (ALobbyPlayerState* PS = GetPlayerState<ALobbyPlayerState>())
 	{
 		PS->SetIsReady(!PS->bIsReady);
@@ -263,7 +270,7 @@ void ALobbyPlayerController::ServerConfirmedJob_Implementation(EJobType FinalJob
 {
 	ALobbyPlayerState* PS = GetPlayerState<ALobbyPlayerState>();
 	ALobbyGameMode* GM = GetWorld()->GetAuthGameMode<ALobbyGameMode>();
-	
+
 	if (PS && GM)
 	{
 		bool bSuccess = GM->TryConfirmJob(FinalJob, PS);
