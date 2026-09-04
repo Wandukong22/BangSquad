@@ -28,6 +28,7 @@ void ALobbyPlayerState::SetPreviewJob(EJobType NewJob)
 	//로그용
 	const EJobType OldPreviewJob = PreviewJob;
 	PreviewJob = NewJob;
+	NotifyLobbyDataChanged();
 
 	UE_LOG(
 		LogTemp,
@@ -38,8 +39,6 @@ void ALobbyPlayerState::SetPreviewJob(EJobType NewJob)
 		static_cast<uint8>(PreviewJob),
 		static_cast<uint8>(GetJob())
 	);
-
-	OnRep_UpdateUI();
 }
 
 void ALobbyPlayerState::SetJob(EJobType NewJob)
@@ -56,11 +55,28 @@ void ALobbyPlayerState::SetIsReady(bool NewIsReady)
 	if (HasAuthority())
 	{
 		bIsReady = NewIsReady;
-		OnRep_UpdateUI();
+		NotifyLobbyDataChanged();
 	}
 }
 
-void ALobbyPlayerState::OnRep_UpdateUI()
+void ALobbyPlayerState::OnRep_LobbyData()
+{
+	NotifyLobbyDataChanged();
+}
+
+void ALobbyPlayerState::OnRep_PlayerName()
+{
+	Super::OnRep_PlayerName();
+	NotifyLobbyDataChanged();
+}
+
+void ALobbyPlayerState::OnRep_JobType()
+{
+	Super::OnRep_JobType();
+	NotifyLobbyDataChanged();
+}
+
+void ALobbyPlayerState::NotifyLobbyDataChanged()
 {
 	UE_LOG(
 		LogTemp,
@@ -72,16 +88,4 @@ void ALobbyPlayerState::OnRep_UpdateUI()
 		static_cast<uint8>(GetJob())
 	);
 	OnLobbyDataChanged.Broadcast();
-}
-
-void ALobbyPlayerState::OnRep_PlayerName()
-{
-	Super::OnRep_PlayerName();
-	OnLobbyDataChanged.Broadcast();
-}
-
-void ALobbyPlayerState::OnRep_JobType()
-{
-	Super::OnRep_JobType();
-	OnRep_UpdateUI();
 }

@@ -21,14 +21,14 @@ void ALobbyGameState::SetCurrentLobbyPhase(ELobbyPhase NewPhase)
 	if (HasAuthority())
 	{
 		CurrentLobbyPhase = NewPhase;
-		OnRep_CurrentPhase(); //서버는 RepNotify 자동호출X라서 수동으로 함
+		NotifyLobbyPhaseChanged();
 	}
 }
 
-void ALobbyGameState::OnRep_CurrentPhase()
+void ALobbyGameState::OnRep_CurrentLobbyPhase()
 {
 	//모든 클라이언트(UI)에게 알림
-	OnLobbyPhaseChanged.Broadcast(CurrentLobbyPhase);
+	NotifyLobbyPhaseChanged();
 }
 
 void ALobbyGameState::AddPlayerState(APlayerState* PlayerState)
@@ -41,6 +41,11 @@ void ALobbyGameState::RemovePlayerState(APlayerState* PlayerState)
 {
 	Super::RemovePlayerState(PlayerState);
 	OnLobbyRosterChanged.Broadcast();
+}
+
+void ALobbyGameState::NotifyLobbyPhaseChanged()
+{
+	OnLobbyPhaseChanged.Broadcast(CurrentLobbyPhase);
 }
 
 void ALobbyGameState::OnRep_SkipVoteCount()

@@ -24,7 +24,7 @@ class PROJECT_BANG_SQUAD_API ALobbyGameState : public ABSGameState
 	GENERATED_BODY()
 	
 	//현재 로비 단계
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentPhase)
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentLobbyPhase)
 	ELobbyPhase CurrentLobbyPhase = ELobbyPhase::PreviewJob;
 
 public:
@@ -51,8 +51,11 @@ public:
 
 protected:
 	UFUNCTION()
-	void OnRep_CurrentPhase();
+	void OnRep_CurrentLobbyPhase();
 
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
 	virtual void RemovePlayerState(APlayerState* PlayerState) override;
+
+private:
+	void NotifyLobbyPhaseChanged();
 };
