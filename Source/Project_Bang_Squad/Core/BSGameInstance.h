@@ -19,18 +19,11 @@ protected:
 	virtual void Init() override;
 
 private:
-	//최종 선택된 직업
-	UPROPERTY()
-	EJobType PlayerJob = EJobType::None;
-
 	//닉네임 저장
 	UPROPERTY()
 	FString UserNickname;
 
 public:
-	FORCEINLINE EJobType GetPlayerJob() const { return PlayerJob; }
-	void SetPlayerJob(EJobType NewJob) { PlayerJob = NewJob; }
-
 	void SetUserNickname(FString NewName) { UserNickname = NewName; };
 	FString GetUserNickname() const { return UserNickname; }
 

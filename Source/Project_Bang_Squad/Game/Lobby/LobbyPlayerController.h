@@ -61,9 +61,9 @@ protected:
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
-	TSubclassOf<class UUserWidget> LobbyMainWidgetClass;
+	TSubclassOf<UUserWidget> LobbyMainWidgetClass;
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
-	TSubclassOf<class UUserWidget> JobSelectWidgetClass;
+	TSubclassOf<UUserWidget> JobSelectWidgetClass;
 	UPROPERTY()
 	class ULobbyMainWidget* LobbyMainWidget = nullptr;
 	UPROPERTY()

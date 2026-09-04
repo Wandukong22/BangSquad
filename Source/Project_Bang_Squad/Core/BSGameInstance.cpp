@@ -86,7 +86,6 @@ uint32 UBSGameInstance::GetStageKey(EStageIndex Stage, EStageSection Section) co
 void UBSGameInstance::ResetAllGameData()
 {
 	// 1. 캐릭터 및 인벤토리 데이터 초기화
-	PlayerJob = EJobType::None;
 	SavedPlayerCoins.Empty();
 
 	// 2. 스테이지 진행 데이터 초기화

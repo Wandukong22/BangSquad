@@ -82,12 +82,6 @@ void ALobbyPlayerController::RefreshLobbyUI()
 void ALobbyPlayerController::ClientJobClaimResult_Implementation(EJobType RequestedJob, EJobClaimResult Result)
 {
 	UE_LOG(LogTemp, Log, TEXT("직업: %s, 원인: %s"), *UEnum::GetValueAsString(RequestedJob), *UEnum::GetValueAsString(Result));
-	if (Result == EJobClaimResult::Success)
-	{
-		UBSGameInstance* GI = GetGameInstance<UBSGameInstance>();
-		if (GI)
-			GI->SetPlayerJob(RequestedJob);
-	}
 	if (JobSelectWidget)
 		JobSelectWidget->UpdateJobAvailability();
 }

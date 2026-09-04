@@ -22,6 +22,21 @@ EJobClaimResult ALobbyGameMode::TryClaimJob(EJobType Job, ALobbyPlayerState* Req
 	EJobType OldJob = EJobType::None;
 	auto LogJobClaim = [&](EJobClaimResult Result)
 	{
+		int32 OwnerCount = 0;
+
+		if (const ALobbyGameState* CurrentGS = GetGameState<ALobbyGameState>())
+		{
+			for (const APlayerState* PlayerState : CurrentGS->PlayerArray)
+			{
+				const ALobbyPlayerState* LobbyPS = Cast<ALobbyPlayerState>(PlayerState);
+
+				if (LobbyPS && LobbyPS->GetJob() == Job)
+				{
+					++OwnerCount;
+				}
+			}
+		}
+		
 		const FString PlayerName = RequestingPS
 			? RequestingPS->GetPlayerName()
 			: TEXT("Unknown");
@@ -29,12 +44,24 @@ EJobClaimResult ALobbyGameMode::TryClaimJob(EJobType Job, ALobbyPlayerState* Req
 		UE_LOG(
 			LogTemp,
 			Log,
-			TEXT("[JobClaim] Player=%s Requested=%s Previous=%s Result=%s"),
+			TEXT("[JobClaim] Player=%s Requested=%s Previous=%s Result=%s OwnerCount=%d"),
 			*PlayerName,
 			*UEnum::GetValueAsString(Job),
 			*UEnum::GetValueAsString(OldJob),
-			*UEnum::GetValueAsString(Result)
+			*UEnum::GetValueAsString(Result),
+			OwnerCount
 		);
+
+		if (OwnerCount > 1)
+		{
+			UE_LOG(
+				LogTemp,
+				Error,
+				TEXT("[JobClaimInvariantViolation] Job=%s OwnerCount=%d"),
+				*UEnum::GetValueAsString(Job),
+				OwnerCount
+			);
+		}
 	};
 	
 	//요청자 확인

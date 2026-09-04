@@ -49,7 +49,6 @@ void ALobbyPlayerState::SetJob(EJobType NewJob)
 	if (HasAuthority())
 	{
 		Super::SetJob(NewJob);
-		OnRep_UpdateUI();
 		ForceNetUpdate();
 	}
 }
