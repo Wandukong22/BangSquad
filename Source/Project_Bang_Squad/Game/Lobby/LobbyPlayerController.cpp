@@ -64,8 +64,8 @@ void ALobbyPlayerController::RefreshLobbyUI()
 		return;
 	}
 
-	ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>();
-	if (GS && GS->GetCurrentLobbyPhase() == ELobbyPhase::GameStarting)
+	if (!CachedLobbyGameState.IsValid()) return;
+	if (CachedLobbyGameState->GetCurrentLobbyPhase() == ELobbyPhase::GameStarting)
 		return;
 
 	if (IsValid(LobbyMainWidget) && LobbyMainWidget->IsInViewport())
@@ -88,13 +88,35 @@ void ALobbyPlayerController::ClientJobClaimResult_Implementation(EJobType Reques
 
 void ALobbyPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::EndPlay(EndPlayReason);
-
-	//Timer 정리
-	if (UWorld* World = GetWorld())
+	UWorld* World = GetWorld();
+	if (World)
 	{
+		//Delegate 정리
+		if (CachedLobbyGameState.IsValid())
+		{
+			CachedLobbyGameState->OnLobbyPhaseChanged.RemoveDynamic(this, &ALobbyPlayerController::HandleLobbyPhaseChanged);
+			CachedLobbyGameState->OnLobbyRosterChanged.RemoveAll(this);
+			
+		}
+		//Timer 정리
 		World->GetTimerManager().ClearTimer(InitTimerHandle);
 	}
+
+	for (const TWeakObjectPtr<ALobbyPlayerState>& PlayerState : BoundLobbyPlayerStates)
+	{
+		if (PlayerState.IsValid())
+		{
+			PlayerState->OnLobbyDataChanged.RemoveDynamic(
+				this,
+				&ALobbyPlayerController::HandleLobbyDataChanged
+			);
+		}
+	}
+
+	BoundLobbyPlayerStates.Empty();
+
+	
+	Super::EndPlay(EndPlayReason);
 }
 
 // void ALobbyPlayerController::ServerSetNickName_Implementation(const FString& NewName) 
@@ -112,16 +134,20 @@ void ALobbyPlayerController::InitLobbyUI()
 	UWorld* World = GetWorld();
 	if (!World) return;
 	
-	ALobbyGameState* GS = World->GetGameState<ALobbyGameState>();
-	if (!GS) return;
+	CachedLobbyGameState = World->GetGameState<ALobbyGameState>();
+	if (!CachedLobbyGameState.IsValid()) return;
 
 	ALobbyPlayerState* PS = GetPlayerState<ALobbyPlayerState>();
 	if (!PS) return;
 
 	World->GetTimerManager().ClearTimer(InitTimerHandle);
-	GS->OnLobbyPhaseChanged.RemoveDynamic(this, &ALobbyPlayerController::HandleLobbyPhaseChanged);
-	GS->OnLobbyPhaseChanged.AddDynamic(this, &ALobbyPlayerController::HandleLobbyPhaseChanged);
-	HandleLobbyPhaseChanged(GS->GetCurrentLobbyPhase());
+	CachedLobbyGameState->OnLobbyPhaseChanged.RemoveDynamic(this, &ALobbyPlayerController::HandleLobbyPhaseChanged);
+	CachedLobbyGameState->OnLobbyPhaseChanged.AddDynamic(this, &ALobbyPlayerController::HandleLobbyPhaseChanged);
+	CachedLobbyGameState->OnLobbyRosterChanged.RemoveAll(this);
+	CachedLobbyGameState->OnLobbyRosterChanged.AddUObject(this, &ALobbyPlayerController::HandleLobbyRosterChanged);
+	RebindLobbyPlayerStateDelegates();
+	
+	HandleLobbyPhaseChanged(CachedLobbyGameState->GetCurrentLobbyPhase());
 	RefreshLobbyUI();
 }
 
@@ -149,8 +175,7 @@ void ALobbyPlayerController::HandleLobbyPhaseChanged(ELobbyPhase NewPhase)
 			JobSelectWidget->SetVisibility(ESlateVisibility::Visible);
 			JobSelectWidget->StartUp();
 
-			if (ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>())
-				JobSelectWidget->UpdateJobAvailability();
+			JobSelectWidget->UpdateJobAvailability();
 		}
 	}
 	else if (NewPhase == ELobbyPhase::GameStarting)
@@ -223,6 +248,47 @@ void ALobbyPlayerController::SetMenuState(bool bShow)
 		SetInputMode(InputMode);
 		bShowMouseCursor = false;
 	}
+}
+
+void ALobbyPlayerController::RebindLobbyPlayerStateDelegates()
+{
+	//이전에 연결한 Delegate 해제
+	for (const TWeakObjectPtr<ALobbyPlayerState>& PlayerState : BoundLobbyPlayerStates)
+	{
+		if (PlayerState.IsValid())
+		{
+			PlayerState->OnLobbyDataChanged.RemoveDynamic(this, &ALobbyPlayerController::HandleLobbyDataChanged);
+		}
+	}
+
+	//기존 바인딩 목록 초기화
+	BoundLobbyPlayerStates.Empty();
+	
+	UWorld* World = GetWorld();
+	if (!World) return;
+	if (!CachedLobbyGameState.IsValid()) return;
+	
+	//PlayerArray 순회
+	for (APlayerState* PlayerState : CachedLobbyGameState->PlayerArray)
+	{
+		ALobbyPlayerState* LobbyPlayerState = Cast<ALobbyPlayerState>(PlayerState);
+		if (!LobbyPlayerState) continue;
+
+		LobbyPlayerState->OnLobbyDataChanged.AddDynamic(this, &ALobbyPlayerController::HandleLobbyDataChanged);
+
+		BoundLobbyPlayerStates.Add(LobbyPlayerState);
+	}
+}
+
+void ALobbyPlayerController::HandleLobbyRosterChanged()
+{
+	RebindLobbyPlayerStateDelegates();
+	RefreshLobbyUI();
+}
+
+void ALobbyPlayerController::HandleLobbyDataChanged()
+{
+	RefreshLobbyUI();
 }
 
 void ALobbyPlayerController::DebugClaimJob(const FString& JobName)
@@ -310,9 +376,9 @@ void ALobbyPlayerController::ServerConfirmedJob_Implementation(EJobType FinalJob
 
 void ALobbyPlayerController::RequestSkipVideo()
 {
-	ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>();
+	if (!CachedLobbyGameState.IsValid()) return;
 	// 영상 재생 중일 때만 스킵 가능하게 방어
-	if (GS && GS->GetCurrentLobbyPhase() == ELobbyPhase::GameStarting)
+	if (CachedLobbyGameState->GetCurrentLobbyPhase() == ELobbyPhase::GameStarting)
 	{
 		ServerRequestSkipVideo();
 	}

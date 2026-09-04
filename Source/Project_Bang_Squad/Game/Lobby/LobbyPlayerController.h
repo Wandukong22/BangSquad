@@ -10,6 +10,7 @@
 #include "Project_Bang_Squad/Game/Base/BSPlayerController.h"
 #include "LobbyPlayerController.generated.h"
 
+class ALobbyPlayerState;
 /**
  * 
  */
@@ -18,9 +19,9 @@ class PROJECT_BANG_SQUAD_API ALobbyPlayerController : public ABSPlayerController
 {
 	GENERATED_BODY()
 
-public:
-	virtual void BeginPlay() override;
+	TWeakObjectPtr<ALobbyGameState> CachedLobbyGameState;
 
+public:
 	//체험 직업 변경 요청
 	UFUNCTION(BlueprintCallable)
 	void RequestChangePreviewJob(EJobType NewJob);
@@ -41,6 +42,8 @@ public:
 	void RequestSkipVideo();
 
 protected:
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
 	UFUNCTION(Server, Reliable)
 	void ServerPreviewJob(EJobType NewJob);
@@ -53,9 +56,7 @@ protected:
 
 	UFUNCTION(Client, Reliable)
 	void ClientJobClaimResult(EJobType RequestedJob, EJobClaimResult Result);
-
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
+	
 	UFUNCTION(Server, Reliable)
 	void ServerRequestSkipVideo();
 
@@ -78,10 +79,10 @@ private:
 
 	// 영상 재생용 UI 위젯
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")
-	TSubclassOf<class UUserWidget> VideoWidgetClass;
+	TSubclassOf<UUserWidget> VideoWidgetClass;
 
 	UPROPERTY()
-	class UUserWidget* VideoWidget = nullptr;
+	UUserWidget* VideoWidget = nullptr;
 
 	// 한 명이 여러 번 투표하는 것 방지
 	bool bHasVotedSkip = false;
@@ -90,17 +91,23 @@ protected:
 	virtual void SetupInputComponent() override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "BS|Input")
-	class UInputAction* IA_ToggleLobbyMenu;
+	UInputAction* IA_ToggleLobbyMenu;
 
-
-	
 private:
 	bool bIsMenuVisible = true;
 
-	//확인해보려고 BlueprintCallable추가해놓음
 	UFUNCTION(BlueprintCallable)
 	void ToggleLobbyMenu();
 	void SetMenuState(bool bShow);
+
+	//PlayerState Delegate 연결하는 전용 함수
+	void RebindLobbyPlayerStateDelegates();
+	UFUNCTION()
+	void HandleLobbyRosterChanged();
+	UFUNCTION()
+	void HandleLobbyDataChanged();
+
+	TArray<TWeakObjectPtr<ALobbyPlayerState>> BoundLobbyPlayerStates;
 
 public:
 	UFUNCTION(Exec)
