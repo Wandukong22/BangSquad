@@ -16,10 +16,10 @@ ALobbyGameMode::ALobbyGameMode()
 	GameStateClass = ALobbyGameState::StaticClass();
 }
 
-EJobClaimResult ALobbyGameMode::TryClaimJob(EJobType Job, ALobbyPlayerState* RequestingPS)
+EJobClaimResult ALobbyGameMode::TryClaimJob(EJobType Job, ALobbyPlayerController* Requester)
 {
 	
-	EJobType OldJob = EJobType::None;
+	/*EJobType OldJob = EJobType::None;
 	auto LogJobClaim = [&](EJobClaimResult Result)
 	{
 		int32 OwnerCount = 0;
@@ -62,53 +62,31 @@ EJobClaimResult ALobbyGameMode::TryClaimJob(EJobType Job, ALobbyPlayerState* Req
 				OwnerCount
 			);
 		}
-	};
-	
+	};*/
+	if (!Requester) return EJobClaimResult::InvalidPlayer;
+
 	//요청자 확인
-	if (!RequestingPS)
-	{
-		LogJobClaim(EJobClaimResult::InvalidPlayer);
-		return EJobClaimResult::InvalidPlayer;
-	}
-	
-	//요청 플레이어의 확정 직업 가져와서 저장
-	OldJob = RequestingPS->GetJob();
+	ALobbyPlayerState* LobbyPS = Requester->GetPlayerState<ALobbyPlayerState>();
+	if (!LobbyPS) return EJobClaimResult::InvalidPlayer;
 
 	//LobbyGameState 확인
 	ALobbyGameState* GS = GetGameState<ALobbyGameState>();
-	if (!GS)
-	{
-		LogJobClaim(EJobClaimResult::InternalError);
-		return EJobClaimResult::InternalError;
-	}
-
+	if (!GS) return EJobClaimResult::InternalError;
+	
 	//Phase 확인
-	if (GS->GetCurrentLobbyPhase() != ELobbyPhase::SelectJob)
-	{
-		LogJobClaim(EJobClaimResult::InvalidPhase);
-		return EJobClaimResult::InvalidPhase;
-	}
-
+	if (GS->GetCurrentLobbyPhase() != ELobbyPhase::SelectJob) return EJobClaimResult::InvalidPhase;
+	
 	//요청 직업 확인
-	if (!IsPlayableJob(Job))
-	{
-		LogJobClaim(EJobClaimResult::InvalidJob);
-		return EJobClaimResult::InvalidJob;
-	}
-
+	if (!IsPlayableJob(Job)) return EJobClaimResult::InvalidJob;
+	
 	//이미 같은 직업을 확정한 상태인지
-	if (!IsJobAvailable(Job, RequestingPS))
-	{
-		LogJobClaim(EJobClaimResult::AlreadyTaken);
-		return EJobClaimResult::AlreadyTaken;
-	}
+	if (!IsJobAvailable(Job, LobbyPS)) return EJobClaimResult::AlreadyTaken;
 	
 	//플레이어 상태 업데이트
-	RequestingPS->SetJob(Job);
+	LobbyPS->SetJob(Job);
 
 	CheckConfirmedJob();
 
-	LogJobClaim(EJobClaimResult::Success);
 	return EJobClaimResult::Success;
 }
 

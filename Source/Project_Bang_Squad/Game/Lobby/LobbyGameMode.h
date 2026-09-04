@@ -8,6 +8,7 @@
 #include "Project_Bang_Squad/Game/Base/BSGameMode.h"
 #include "LobbyGameMode.generated.h"
 
+class ALobbyPlayerState;
 class ALobbyGameState;
 class ALobbyPlayerController;
 /**
@@ -27,7 +28,7 @@ public:
 	//직업 확정했는지 체크
 	void CheckConfirmedJob();
 
-	EJobClaimResult TryClaimJob(EJobType Job, class ALobbyPlayerState* RequestingPS);
+	EJobClaimResult TryClaimJob(EJobType Job, ALobbyPlayerController* Requester);
 	bool TryPreviewJob(ALobbyPlayerController* Requester, EJobType NewJob);
 	bool TryToggleReady(ALobbyPlayerController* Requester);
 

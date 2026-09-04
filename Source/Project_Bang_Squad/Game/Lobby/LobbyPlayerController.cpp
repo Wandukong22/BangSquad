@@ -257,7 +257,6 @@ void ALobbyPlayerController::DebugClaimJob(const FString& JobName)
 	UE_LOG(LogTemp, Log, TEXT("[DebugClaim] Requesting job: %s"), *JobName);
 
 	// UI 입력만 우회하고, 동일한 서버 직업 확정 경로를 호출한다.
-	// 서버 승인 성공 시 ClientJobClaimResult를 통해 GameInstance도 갱신된다.
 	ServerConfirmedJob(RequestedJob);
 }
 
@@ -305,9 +304,7 @@ void ALobbyPlayerController::ServerConfirmedJob_Implementation(EJobType FinalJob
 		ClientJobClaimResult(FinalJob, EJobClaimResult::InternalError);
 		return;
 	}
-	ALobbyPlayerState* PS = GetPlayerState<ALobbyPlayerState>();
-
-	EJobClaimResult JobClaimResult = GM->TryClaimJob(FinalJob, PS);
+	EJobClaimResult JobClaimResult = GM->TryClaimJob(FinalJob, this);
 	ClientJobClaimResult(FinalJob, JobClaimResult);
 }
 
