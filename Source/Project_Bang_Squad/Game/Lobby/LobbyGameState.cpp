@@ -31,6 +31,18 @@ void ALobbyGameState::OnRep_CurrentPhase()
 	OnLobbyPhaseChanged.Broadcast(CurrentLobbyPhase);
 }
 
+void ALobbyGameState::AddPlayerState(APlayerState* PlayerState)
+{
+	Super::AddPlayerState(PlayerState);
+	OnLobbyRosterChanged.Broadcast();
+}
+
+void ALobbyGameState::RemovePlayerState(APlayerState* PlayerState)
+{
+	Super::RemovePlayerState(PlayerState);
+	OnLobbyRosterChanged.Broadcast();
+}
+
 void ALobbyGameState::OnRep_SkipVoteCount()
 {
 	// UI에 현재 투표수와 전체 플레이어 수를 전달

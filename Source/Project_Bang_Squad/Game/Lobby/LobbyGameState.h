@@ -16,6 +16,7 @@ enum class ELobbyPhase : uint8
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLobbyPhaseChanged, ELobbyPhase, NewPhase);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSkipVoteChanged, int32, CurrentVotes, int32, TotalVotes);
+DECLARE_MULTICAST_DELEGATE(FOnLobbyRosterChanged);
 
 UCLASS()
 class PROJECT_BANG_SQUAD_API ALobbyGameState : public ABSGameState
@@ -36,6 +37,8 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnLobbyPhaseChanged OnLobbyPhaseChanged;
 
+	FOnLobbyRosterChanged OnLobbyRosterChanged;
+
 	// 현재 스킵을 누른 인원 수
 	UPROPERTY(ReplicatedUsing = OnRep_SkipVoteCount, BlueprintReadOnly)
 	int32 SkipVoteCount = 0;
@@ -49,4 +52,7 @@ public:
 protected:
 	UFUNCTION()
 	void OnRep_CurrentPhase();
+
+	virtual void AddPlayerState(APlayerState* PlayerState) override;
+	virtual void RemovePlayerState(APlayerState* PlayerState) override;
 };
