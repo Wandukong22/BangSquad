@@ -44,6 +44,8 @@ protected:
 	// 즉시 맵을 이동시키는 함수
 	void ForceStartGame();
 
+	virtual void Logout(AController* Exiting) override;
+
 private:
 	bool IsPlayableJob(EJobType Job) const;
 

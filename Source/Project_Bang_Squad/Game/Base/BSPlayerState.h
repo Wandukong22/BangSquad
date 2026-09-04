@@ -23,7 +23,7 @@ public:
 	virtual void BeginPlay() override; // 시작 시 돈 지급용
 
 	UFUNCTION()
-	FORCEINLINE EJobType GetJob() { return JobType; }
+	FORCEINLINE EJobType GetJob() const { return JobType; }
 	virtual void SetJob(EJobType NewJob);
 
 	void SetRespawnEndTime(float NewTime);

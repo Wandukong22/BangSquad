@@ -312,6 +312,52 @@ void ALobbyGameMode::ForceStartGame()
 	}
 }
 
+void ALobbyGameMode::Logout(AController* Exiting)
+{
+	FString LeavingPlayerName = TEXT("Unknown");
+	EJobType ReleasedJob = EJobType::None;
+
+	if (Exiting)
+	{
+		if (const ALobbyPlayerState* PS = Exiting->GetPlayerState<ALobbyPlayerState>())
+		{
+			LeavingPlayerName = PS->GetPlayerName();
+			ReleasedJob = PS->GetJob();
+		}
+	}
+	APlayerState* LeavingPlayerState = Exiting ? Exiting->PlayerState : nullptr;
+	
+	Super::Logout(Exiting);
+	
+	int32 RemainingOwnerCount = 0;
+
+	if (const ALobbyGameState* GS = GetGameState<ALobbyGameState>())
+	{
+		for (const APlayerState* PlayerState : GS->PlayerArray)
+		{
+			const ALobbyPlayerState* LobbyPS =
+				Cast<ALobbyPlayerState>(PlayerState);
+
+			if (ReleasedJob != EJobType::None &&
+				PlayerState != LeavingPlayerState &&
+				LobbyPS &&
+				LobbyPS->GetJob() == ReleasedJob)
+			{
+				++RemainingOwnerCount;
+			}
+		}
+	}
+
+	UE_LOG(
+		LogTemp,
+		Log,
+		TEXT("[JobRelease] Player=%s ReleasedJob=%s RemainingOwnerCount=%d"),
+		*LeavingPlayerName,
+		*UEnum::GetValueAsString(ReleasedJob),
+		RemainingOwnerCount
+	);
+}
+
 bool ALobbyGameMode::IsPlayableJob(EJobType Job) const
 {
 	return (Job == EJobType::Titan ||
