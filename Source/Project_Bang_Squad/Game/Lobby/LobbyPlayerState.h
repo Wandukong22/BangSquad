@@ -27,8 +27,6 @@ public:
 	EJobType GetPreviewJob() const { return PreviewJob; }
 	void SetPreviewJob(EJobType NewJob);
 	
-
-	
 	UPROPERTY(BlueprintAssignable)
 	FOnLobbyDataChanged OnLobbyDataChanged;
 
@@ -45,10 +43,5 @@ protected:
 	//닉네임이 서버로부터 복제되어 내 컴퓨터에 도착했을 때 실행
 	virtual void OnRep_PlayerName() override;
 
-	virtual void BeginPlay() override;
-	virtual void Destroyed() override;
-
 	virtual void OnRep_JobType() override;
-
-	void RefreshUI();
 };

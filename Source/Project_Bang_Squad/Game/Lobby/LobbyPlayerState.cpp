@@ -2,8 +2,6 @@
 
 
 #include "Project_Bang_Squad/Game/Lobby/LobbyPlayerState.h"
-
-#include "LobbyPlayerController.h"
 #include "Net/UnrealNetwork.h"
 
 ALobbyPlayerState::ALobbyPlayerState()
@@ -74,43 +72,16 @@ void ALobbyPlayerState::OnRep_UpdateUI()
 		static_cast<uint8>(GetJob())
 	);
 	OnLobbyDataChanged.Broadcast();
-	RefreshUI();
 }
 
 void ALobbyPlayerState::OnRep_PlayerName()
 {
 	Super::OnRep_PlayerName();
-	RefreshUI();
-}
-
-void ALobbyPlayerState::BeginPlay()
-{
-	Super::BeginPlay();
-	RefreshUI();
-}
-
-void ALobbyPlayerState::Destroyed()
-{
-	Super::Destroyed();
-	RefreshUI();
+	OnLobbyDataChanged.Broadcast();
 }
 
 void ALobbyPlayerState::OnRep_JobType()
 {
 	Super::OnRep_JobType();
-
 	OnRep_UpdateUI();
-}
-
-void ALobbyPlayerState::RefreshUI()
-{
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		APlayerController* PC = World->GetFirstPlayerController();
-		if (ALobbyPlayerController* LobbyPC = Cast<ALobbyPlayerController>(PC))
-		{
-			LobbyPC->RefreshLobbyUI();
-		}
-	}
 }
