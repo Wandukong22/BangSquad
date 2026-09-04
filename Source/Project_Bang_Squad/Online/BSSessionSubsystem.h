@@ -59,6 +59,8 @@ public:
 	void JoinSession(const FGuid& ResultId);
 	void DestroySession();
 
+	int32 GetMaxPlayerNum() const;
+
 private:
 	//Online Session 비동기 작업 완료 콜백
 	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful);

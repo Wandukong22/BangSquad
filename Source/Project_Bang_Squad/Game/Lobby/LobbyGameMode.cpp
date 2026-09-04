@@ -8,6 +8,7 @@
 #include "LobbyPlayerState.h"
 #include "GameFramework/GameStateBase.h"
 #include "Project_Bang_Squad/Core/BSGameFlowSubsystem.h"
+#include "Project_Bang_Squad/Online/BSSessionSubsystem.h"
 
 ALobbyGameMode::ALobbyGameMode()
 {
@@ -199,7 +200,7 @@ void ALobbyGameMode::CheckAllReady()
 	}
 
 	//이동
-	if (bAllReady && GS->PlayerArray.Num() == PlayerCount)
+	if (bAllReady && GS->PlayerArray.Num() == RequiredPlayerCount)
 	{
 		GS->SetCurrentLobbyPhase(ELobbyPhase::SelectJob);
 	}
@@ -224,25 +225,7 @@ void ALobbyGameMode::CheckConfirmedJob()
 		}
 	}
 
-	////모두 직업 확정 완료
-	//if (ConfirmedCount == TotalPlayers)
-	//{
-	//	//상태 변경
-	//	if (GS)
-	//		GS->SetLobbyPhase(ELobbyPhase::GameStarting);
-
-	//	//상태 동기화 시간 벌기 위해 1초 뒤 이동
-	//	FTimerHandle TravelTimer;
-	//	GetWorldTimerManager().SetTimer(TravelTimer, [this, WeakThis = TWeakObjectPtr<ALobbyGameMode>(this)]()
-	//	{
-	//		if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
-	//		{
-	//			GI->MoveToStage(EStageIndex::Stage1, EStageSection::Main);
-	//		}
-	//	}, 1.f, false);
-	//}
-
-	if (ConfirmedCount == TotalPlayers)
+	if (ConfirmedCount == RequiredPlayerCount && TotalPlayers == RequiredPlayerCount)
 	{
 		if (GS)
 		{
@@ -361,6 +344,20 @@ void ALobbyGameMode::Logout(AController* Exiting)
 		*UEnum::GetValueAsString(ReleasedJob),
 		RemainingOwnerCount
 	);
+}
+
+void ALobbyGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (UBSGameInstance* GameInstance = GetGameInstance<UBSGameInstance>())
+	{
+		if (UBSSessionSubsystem* SessionSubsystem = GameInstance->GetSubsystem<UBSSessionSubsystem>())
+		{
+			RequiredPlayerCount = SessionSubsystem->GetMaxPlayerNum();
+			if (RequiredPlayerCount <= 0 || RequiredPlayerCount > 4) RequiredPlayerCount = 4;
+		}
+	}
 }
 
 bool ALobbyGameMode::IsPlayableJob(EJobType Job) const

@@ -19,6 +19,8 @@ class PROJECT_BANG_SQUAD_API ALobbyGameMode : public ABSGameMode
 {
 	GENERATED_BODY()
 
+	UPROPERTY()
+	int32 RequiredPlayerCount = 4;
 public:
 	ALobbyGameMode();
 
@@ -35,10 +37,9 @@ public:
 	// 클라이언트가 스킵을 눌렀을 때 호출할 함수
 	bool TryRegisterSkipVote(ALobbyPlayerController* Requester);
 
-protected:
-	UPROPERTY(EditAnywhere, Category = "BS|Lobby")
-	int32 PlayerCount = 4;
+	int32 GetRequiredPlayerCount() const { return RequiredPlayerCount; }
 
+protected:
 	// 영상 대기 타이머를 중간에 취소하기 위한 변수
 	FTimerHandle VideoTravelTimerHandle;
 
@@ -46,6 +47,7 @@ protected:
 	void ForceStartGame();
 
 	virtual void Logout(AController* Exiting) override;
+	virtual void BeginPlay() override;
 
 private:
 	bool IsPlayableJob(EJobType Job) const;

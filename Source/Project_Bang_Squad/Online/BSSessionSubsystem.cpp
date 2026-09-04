@@ -298,6 +298,15 @@ void UBSSessionSubsystem::DestroySession()
 	}
 }
 
+int32 UBSSessionSubsystem::GetMaxPlayerNum() const
+{
+	if (!SessionInterface.IsValid()) return 0;
+	FNamedOnlineSession* Session = SessionInterface->GetNamedSession(NAME_GameSession);
+	if (!Session) return 0;
+
+	return Session->SessionSettings.NumPublicConnections;
+}
+
 void UBSSessionSubsystem::OnFindSessionsComplete(bool bWasSuccessful)
 {
 	if (CurrentState != EBSSessionState::Finding) return;
