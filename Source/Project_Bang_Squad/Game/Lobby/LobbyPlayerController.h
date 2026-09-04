@@ -74,7 +74,7 @@ private:
 	FTimerHandle InitTimerHandle;
 
 	UFUNCTION()
-	void OnLobbyPhaseChanged(ELobbyPhase NewPhase);
+	void HandleLobbyPhaseChanged(ELobbyPhase NewPhase);
 
 	// 영상 재생용 UI 위젯
 	UPROPERTY(EditDefaultsOnly, Category = "BS|UI")

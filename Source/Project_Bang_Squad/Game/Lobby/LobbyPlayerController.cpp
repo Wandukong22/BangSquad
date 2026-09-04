@@ -28,8 +28,7 @@ void ALobbyPlayerController::BeginPlay()
 				SetMenuState(true);
 			}
 		}
-		//GameState 복제 안됐을 수도 있어서 Timer씀
-		//GetWorld()->GetTimerManager().SetTimer(InitTimerHandle, this, &ALobbyPlayerController::InitLobbyUI, 0.2f, true);
+		GetWorld()->GetTimerManager().SetTimer(InitTimerHandle, this, &ALobbyPlayerController::InitLobbyUI, 0.2f, true);
 
 		InitLobbyUI();
 
@@ -116,18 +115,23 @@ void ALobbyPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ALobbyPlayerController::InitLobbyUI()
 {
-	ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>();
-	if (GS)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(InitTimerHandle);
+	UWorld* World = GetWorld();
+	if (!World) return;
+	
+	ALobbyGameState* GS = World->GetGameState<ALobbyGameState>();
+	if (!GS) return;
 
-		GS->OnLobbyPhaseChanged.AddDynamic(this, &ALobbyPlayerController::OnLobbyPhaseChanged);
+	ALobbyPlayerState* PS = GetPlayerState<ALobbyPlayerState>();
+	if (!PS) return;
 
-		OnLobbyPhaseChanged(GS->GetCurrentLobbyPhase());
-	}
+	World->GetTimerManager().ClearTimer(InitTimerHandle);
+	GS->OnLobbyPhaseChanged.RemoveDynamic(this, &ALobbyPlayerController::HandleLobbyPhaseChanged);
+	GS->OnLobbyPhaseChanged.AddDynamic(this, &ALobbyPlayerController::HandleLobbyPhaseChanged);
+	HandleLobbyPhaseChanged(GS->GetCurrentLobbyPhase());
+	RefreshLobbyUI();
 }
 
-void ALobbyPlayerController::OnLobbyPhaseChanged(ELobbyPhase NewPhase)
+void ALobbyPlayerController::HandleLobbyPhaseChanged(ELobbyPhase NewPhase)
 {
 	if (NewPhase == ELobbyPhase::PreviewJob)
 	{
