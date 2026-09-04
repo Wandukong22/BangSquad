@@ -115,7 +115,6 @@ void UJobSelectWidget::OnConfirmClicked()
 	ALobbyPlayerController* PC = Cast<ALobbyPlayerController>(GetOwningPlayer());
 	if (PC)
 	{
-		ConfirmJob = PendingJob;
 		PC->RequestConfirmedJob(PendingJob);
 	}
 }

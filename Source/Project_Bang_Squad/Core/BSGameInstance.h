@@ -135,7 +135,7 @@ public:
 	//  로딩 UI 시스템
 	// =========================================================================
 	UPROPERTY(EditAnywhere, Category = "UI|Loading")
-	TSubclassOf<class UUserWidget> LoadingWidgetClass;
+	TSubclassOf<UUserWidget> LoadingWidgetClass;
 
 	// 스테이지 번호가 아닌, 맵 데이터에 있는 이미지 자체를 받는다.
 	UFUNCTION(BlueprintCallable, Category = "UI|Loading")

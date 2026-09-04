@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "LobbyGameState.h"
+#include "LobbyGameTypes.h"
 #include "GameFramework/PlayerController.h"
 #include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "Project_Bang_Squad/Game/Base/BSPlayerController.h"
@@ -51,7 +52,7 @@ protected:
 	void ServerConfirmedJob(EJobType FinalJob);
 
 	UFUNCTION(Client, Reliable)
-	void Client_JobSelectFailed(EJobType FailedJob);
+	void ClientJobClaimResult(EJobType RequestedJob, EJobClaimResult Result);
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 

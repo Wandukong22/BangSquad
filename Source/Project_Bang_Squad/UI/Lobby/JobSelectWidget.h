@@ -37,7 +37,6 @@ public:
 	void UpdateJobAvailability();
 private:
 	EJobType PendingJob = EJobType::None;
-	EJobType ConfirmJob = EJobType::None;
 	
 	UFUNCTION()
 	void OnJobButtonClicked(EJobType SelectedJob);

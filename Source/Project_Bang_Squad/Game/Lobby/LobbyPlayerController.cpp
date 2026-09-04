@@ -55,12 +55,7 @@ void ALobbyPlayerController::RequestToggleReady()
 
 void ALobbyPlayerController::RequestConfirmedJob(EJobType FinalJob)
 {
-	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
-	{
-		GI->SetPlayerJob(FinalJob);
-		UE_LOG(LogTemp, Log, TEXT("Local GameInstance Job Saved: %d"), (int32)FinalJob);
-		ServerConfirmedJob(FinalJob);
-	}
+	ServerConfirmedJob(FinalJob);
 }
 
 void ALobbyPlayerController::RefreshLobbyUI()
@@ -85,6 +80,19 @@ void ALobbyPlayerController::RefreshLobbyUI()
 	}
 }
 
+void ALobbyPlayerController::ClientJobClaimResult_Implementation(EJobType RequestedJob, EJobClaimResult Result)
+{
+	UE_LOG(LogTemp, Log, TEXT("직업: %s, 원인: %s"), *UEnum::GetValueAsString(RequestedJob), *UEnum::GetValueAsString(Result));
+	if (Result == EJobClaimResult::Success)
+	{
+		UBSGameInstance* GI = GetGameInstance<UBSGameInstance>();
+		if (GI)
+			GI->SetPlayerJob(RequestedJob);
+	}
+	if (JobSelectWidget)
+		JobSelectWidget->UpdateJobAvailability();
+}
+
 void ALobbyPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
@@ -93,14 +101,6 @@ void ALobbyPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(InitTimerHandle);
-	}
-}
-
-void ALobbyPlayerController::Client_JobSelectFailed_Implementation(EJobType FailedJob)
-{
-	if (JobSelectWidget)
-	{
-		JobSelectWidget->UpdateJobAvailability();
 	}
 }
 
@@ -258,7 +258,8 @@ void ALobbyPlayerController::DebugClaimJob(const FString& JobName)
 
 	UE_LOG(LogTemp, Log, TEXT("[DebugClaim] Requesting job: %s"), *JobName);
 
-	// UI와 GameInstance 저장을 우회하고 서버 검증 경로만 호출
+	// UI 입력만 우회하고, 동일한 서버 직업 확정 경로를 호출한다.
+	// 서버 승인 성공 시 ClientJobClaimResult를 통해 GameInstance도 갱신된다.
 	ServerConfirmedJob(RequestedJob);
 }
 
@@ -294,22 +295,22 @@ void ALobbyPlayerController::ServerToggleReady_Implementation()
 
 void ALobbyPlayerController::ServerConfirmedJob_Implementation(EJobType FinalJob)
 {
-	ALobbyPlayerState* PS = GetPlayerState<ALobbyPlayerState>();
-	ALobbyGameMode* GM = GetWorld()->GetAuthGameMode<ALobbyGameMode>();
-
-	if (PS && GM)
+	UWorld* World = GetWorld();
+	if (!World)
 	{
-		EJobClaimResult JobClaimResult = GM->TryClaimJob(FinalJob, PS);
-
-		if (JobClaimResult != EJobClaimResult::Success)
-		{
-			Client_JobSelectFailed(FinalJob);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Log, TEXT("[Server] 직업 확정 성공: %d"), (uint8)FinalJob);
-		}
+		ClientJobClaimResult(FinalJob, EJobClaimResult::InternalError);
+		return;
 	}
+	ALobbyGameMode* GM = World->GetAuthGameMode<ALobbyGameMode>();
+	if (!GM)
+	{
+		ClientJobClaimResult(FinalJob, EJobClaimResult::InternalError);
+		return;
+	}
+	ALobbyPlayerState* PS = GetPlayerState<ALobbyPlayerState>();
+
+	EJobClaimResult JobClaimResult = GM->TryClaimJob(FinalJob, PS);
+	ClientJobClaimResult(FinalJob, JobClaimResult);
 }
 
 void ALobbyPlayerController::RequestSkipVideo()
