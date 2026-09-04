@@ -60,11 +60,6 @@ void ABSPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 	DOREPLIFETIME(ABSPlayerState, CurrentEquippedSkinID);
 }
 
-void ABSPlayerState::Server_SetJob_Implementation(EJobType NewJob)
-{
-	JobType = NewJob;
-}
-
 // --- [기존] 코인 로직 ---
 void ABSPlayerState::AddCoin(int32 Amount)
 {

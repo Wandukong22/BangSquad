@@ -11,7 +11,6 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Project_Bang_Squad/Character/Base/BaseCharacter.h"
-#include "Project_Bang_Squad/Core/BSGameInstance.h"
 #include "Project_Bang_Squad/Game/Interface/InteractionInterface.h"
 #include "Project_Bang_Squad/Game/MiniGame/MiniGameMode.h"
 #include "Project_Bang_Squad/UI/Stage/StageMainWidget.h"
@@ -23,14 +22,9 @@ void AStagePlayerController::BeginPlay()
 	//Local인 경우에만
 	if (IsLocalPlayerController())
 	{
-		EJobType MyJob = EJobType::None;
-		if (UBSGameInstance* GI = GetGameInstance<UBSGameInstance>())
-		{
-			MyJob = GI->GetPlayerJob();
-		}
-		ServerRequestSpawn(MyJob);
+		ServerRequestSpawn();
 		CreateGameWidget();
-		
+
 		// 캐릭터 밝기 조절
 		if (WorldSettingsMPC)
 		{
@@ -50,7 +44,7 @@ void AStagePlayerController::BeginPlay()
 			UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), WorldSettingsMPC,
 			                                                TEXT("GlobalCharacterEmissive"), TargetEmissive);
 		}
-		
+
 		FInputModeGameOnly GameInputMode;
 		SetInputMode(GameInputMode);
 		bShowMouseCursor = false;
@@ -220,33 +214,23 @@ void AStagePlayerController::Server_Interact_Implementation()
 	}
 }
 
-void AStagePlayerController::ServerRequestSpawn_Implementation(EJobType Job)
+void AStagePlayerController::ServerRequestSpawn_Implementation()
 {
-	EJobType FinalJob = EJobType::None;
+	UWorld* World = GetWorld();
+	if (!World) return;
+	
 	ABSPlayerState* PS = GetPlayerState<ABSPlayerState>();
-	if (PS)
-	{
-		FinalJob = PS->GetJob();
-	}
+	if (!PS) return;
 
-	if (FinalJob == EJobType::None)
-	{
-		FinalJob = Job;
-		if (PS)
-		{
-			PS->Server_SetJob(FinalJob);
-		}
-	}
-	
-	if (HasAuthority())
-	{
-		AGameModeBase* GM = GetWorld()->GetAuthGameMode();
-	
-		if (ABSGameMode* BSGM = GetWorld()->GetAuthGameMode<ABSGameMode>())
-		{
-			BSGM->SpawnPlayerCharacter(this, FinalJob);
-		}
-	}
+	EJobType FinalJob = PS->GetJob();
+	if (FinalJob != EJobType::Titan &&
+		FinalJob != EJobType::Striker &&
+		FinalJob != EJobType::Mage &&
+		FinalJob != EJobType::Paladin) return;
+
+	ABSGameMode* GM = World->GetAuthGameMode<ABSGameMode>();
+	if (!GM) return;
+	GM->SpawnPlayerCharacter(this, FinalJob);
 }
 
 

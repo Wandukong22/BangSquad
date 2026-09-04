@@ -19,9 +19,6 @@ class PROJECT_BANG_SQUAD_API ABSPlayerState : public APlayerState
 
 public:
 	// --- 기본 직업/리스폰 관련 ---
-	UFUNCTION(Server, Reliable)
-	void Server_SetJob(EJobType NewJob);
-
 	virtual void OnRep_PlayerName() override;
 	virtual void BeginPlay() override; // 시작 시 돈 지급용
 

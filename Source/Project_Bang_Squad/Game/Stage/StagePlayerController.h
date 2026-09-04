@@ -23,7 +23,7 @@ protected:
 public:
 	//서버에게 소환해달라고 요청하는 함수
 	UFUNCTION(Server, Reliable)
-	void ServerRequestSpawn(EJobType Job);
+	void ServerRequestSpawn();
 
 	//서버에게 닉네임 알리기
 	//UFUNCTION(Server, Reliable)

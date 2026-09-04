@@ -22,18 +22,6 @@ void ABSPlayerController::BeginPlay()
 	}
 	ManagedWidgets.Empty();
 
-	if (IsLocalController())
-	{
-		if (UBSGameInstance* GI = GetGameInstance<UBSGameInstance>())
-		{
-			EJobType MyJob = GI->GetPlayerJob();
-			if (ABSPlayerState* PS = GetPlayerState<ABSPlayerState>())
-			{
-				PS->Server_SetJob(MyJob);
-			}
-		}
-	}
-
 	if (!IsLocalController() || !InGameMenuClass) return;
 	InGameMenu = CreateWidget<UInGameMenu>(this, InGameMenuClass);
 }
