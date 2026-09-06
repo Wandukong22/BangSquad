@@ -102,11 +102,11 @@ void ALobbyPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		World->GetTimerManager().ClearTimer(InitTimerHandle);
 	}
 
-	for (const TWeakObjectPtr<ALobbyPlayerState>& PlayerState : BoundLobbyPlayerStates)
+	for (const TWeakObjectPtr<ALobbyPlayerState>& BoundPlayerState : BoundLobbyPlayerStates)
 	{
-		if (PlayerState.IsValid())
+		if (BoundPlayerState.IsValid())
 		{
-			PlayerState->OnLobbyDataChanged.RemoveDynamic(
+			BoundPlayerState->OnLobbyDataChanged.RemoveDynamic(
 				this,
 				&ALobbyPlayerController::HandleLobbyDataChanged
 			);
@@ -253,11 +253,11 @@ void ALobbyPlayerController::SetMenuState(bool bShow)
 void ALobbyPlayerController::RebindLobbyPlayerStateDelegates()
 {
 	//이전에 연결한 Delegate 해제
-	for (const TWeakObjectPtr<ALobbyPlayerState>& PlayerState : BoundLobbyPlayerStates)
+	for (const TWeakObjectPtr<ALobbyPlayerState>& BoundPlayerState : BoundLobbyPlayerStates)
 	{
-		if (PlayerState.IsValid())
+		if (BoundPlayerState.IsValid())
 		{
-			PlayerState->OnLobbyDataChanged.RemoveDynamic(this, &ALobbyPlayerController::HandleLobbyDataChanged);
+			BoundPlayerState->OnLobbyDataChanged.RemoveDynamic(this, &ALobbyPlayerController::HandleLobbyDataChanged);
 		}
 	}
 
@@ -269,9 +269,9 @@ void ALobbyPlayerController::RebindLobbyPlayerStateDelegates()
 	if (!CachedLobbyGameState.IsValid()) return;
 	
 	//PlayerArray 순회
-	for (APlayerState* PlayerState : CachedLobbyGameState->PlayerArray)
+	for (APlayerState* BoundPlayerState : CachedLobbyGameState->PlayerArray)
 	{
-		ALobbyPlayerState* LobbyPlayerState = Cast<ALobbyPlayerState>(PlayerState);
+		ALobbyPlayerState* LobbyPlayerState = Cast<ALobbyPlayerState>(BoundPlayerState);
 		if (!LobbyPlayerState) continue;
 
 		LobbyPlayerState->OnLobbyDataChanged.AddDynamic(this, &ALobbyPlayerController::HandleLobbyDataChanged);
