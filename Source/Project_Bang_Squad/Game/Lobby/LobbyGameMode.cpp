@@ -6,6 +6,8 @@
 #include "LobbyGameState.h"
 #include "LobbyPlayerController.h"
 #include "LobbyPlayerState.h"
+#include "OnlineSubsystem.h"
+#include "OnlineSubsystemUtils.h"
 #include "GameFramework/GameStateBase.h"
 #include "Project_Bang_Squad/Core/BSGameFlowSubsystem.h"
 #include "Project_Bang_Squad/Online/BSSessionSubsystem.h"
@@ -357,6 +359,43 @@ void ALobbyGameMode::BeginPlay()
 			RequiredPlayerCount = SessionSubsystem->GetMaxPlayerNum();
 			if (RequiredPlayerCount <= 0 || RequiredPlayerCount > 4) RequiredPlayerCount = 4;
 		}
+	}
+
+	//NetDriver 확인
+	if (UWorld* World = GetWorld())
+	{
+		UNetDriver* NetDriver = World->GetNetDriver();
+		UE_LOG(
+			LogTemp,
+			Warning,
+			TEXT("[BSSession][LobbyGameMode][Host] NetMode=%d, NetDriver=%s"),
+			static_cast<int32>(World->GetNetMode()),
+			NetDriver ? *NetDriver->GetName() : TEXT("NULL")
+		);
+
+		IOnlineSubsystem* OnlineSubsystem = Online::GetSubsystem(World);
+		if (OnlineSubsystem)
+		{
+			const int32 Port = GetPortFromNetDriver(OnlineSubsystem->GetInstanceName());
+
+			UE_LOG(
+				LogTemp,
+				Warning,
+				TEXT("[BSSession][LobbyGameMode][DEBUG] Instance=%s, GetPortFromNetDriver=%d"),
+				*OnlineSubsystem->GetInstanceName().ToString(),
+				Port
+			);
+		}
+		
+		UE_LOG(LogTemp, Warning,
+			TEXT("[Lobby] URL=%s"),
+			*World->URL.ToString());
+
+		UE_LOG(LogTemp, Warning,
+			TEXT("[Lobby] Has listen=%s"),
+			World->URL.HasOption(TEXT("listen"))
+				? TEXT("true")
+				: TEXT("false"));
 	}
 }
 

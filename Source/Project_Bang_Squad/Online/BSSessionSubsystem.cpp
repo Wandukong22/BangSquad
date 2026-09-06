@@ -104,6 +104,7 @@ void UBSSessionSubsystem::CreateSession(const FBSCreateSessionRequest& Request)
 	//세션 인터페이스 유효성 검사
 	if (!IsValidSessionInterface()) return;
 
+
 	// Standalone은 기본 NetDriver가 없으므로 이 상태에서 세션을 만들면
 	// OnlineSubsystemNull이 접속 포트를 0으로 광고한다.
 	// 세션 정보를 만들기 전에 Listen 서버를 열어 실제 포트를 등록한다.
@@ -118,13 +119,37 @@ void UBSSessionSubsystem::CreateSession(const FBSCreateSessionRequest& Request)
 		return;
 	}
 
-	if (World->GetNetMode() == NM_Standalone && !GameInstance->EnableListenServer(true))
+	/*if (World->GetNetMode() == NM_Standalone && !GameInstance->EnableListenServer(true))
 	{
 		HandleFailure(
 			EBSSessionError::CreateFailed,
 			TEXT("Listen 서버를 시작할 수 없습니다."),
 			EBSSessionState::Idle);
 		return;
+	}*/
+
+	//NetDriver 확인
+	UNetDriver* NetDriver = World->GetNetDriver();
+	UE_LOG(
+		LogTemp,
+		Warning,
+		TEXT("[BSSession][CreateSession][Host] NetMode=%d, NetDriver=%s"),
+		static_cast<int32>(World->GetNetMode()),
+		NetDriver ? *NetDriver->GetName() : TEXT("NULL")
+	);
+
+	if (NetDriver)
+	{
+		const TSharedPtr<const FInternetAddr> LocalAddr = NetDriver->GetLocalAddr();
+
+		UE_LOG(
+			LogTemp,
+			Warning,
+			TEXT("[BSSession][Host] LocalAddr=%s"),
+			LocalAddr.IsValid()
+			? *LocalAddr->ToString(true)
+			: TEXT("INVALID")
+		);
 	}
 
 	//기존 세션이 있는지 확인
@@ -162,6 +187,20 @@ void UBSSessionSubsystem::CreateSession(const FBSCreateSessionRequest& Request)
 		SETTING_HOST_NAME,
 		HostName,
 		EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+
+	IOnlineSubsystem* OnlineSubsystem = Online::GetSubsystem(World);
+	if (OnlineSubsystem)
+	{
+		const int32 Port = GetPortFromNetDriver(OnlineSubsystem->GetInstanceName());
+
+		UE_LOG(
+			LogTemp,
+			Warning,
+			TEXT("[BSSession][CreateSession][DEBUG] Instance=%s, GetPortFromNetDriver=%d"),
+			*OnlineSubsystem->GetInstanceName().ToString(),
+			Port
+		);
+	}
 
 	//실제 생성 요청
 	if (!SessionInterface->CreateSession(0, NAME_GameSession, SessionSettings))
@@ -396,6 +435,8 @@ void UBSSessionSubsystem::OnJoinSessionComplete(FName SessionName, EOnJoinSessio
 	}
 	//InSession 상태 변경
 	SetState(EBSSessionState::InSession);
+
+	UE_LOG(LogTemp, Log, TEXT("[BSSession] 세션 참가 성공, ConnectString: %s"), *ConnectString);
 	//접속 주소를 성공 이벤트로 전달
 	OnBSJoinSessionSucceeded.Broadcast(ConnectString);
 }

@@ -5,6 +5,7 @@
 
 #include "BSGameInstance.h"
 #include "BSGameSettings.h"
+#include "GameFramework/GameModeBase.h"
 #include "Project_Bang_Squad/Data/DataAsset/BSMapData.h"
 #include "Project_Bang_Squad/Game/Base/BSPlayerController.h"
 #include "Project_Bang_Squad/Online/BSSessionSubsystem.h"
@@ -12,7 +13,7 @@
 void UBSGameFlowSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	
+
 	//의존성 명시
 	Collection.InitializeDependency<UBSSessionSubsystem>();
 
@@ -20,11 +21,11 @@ void UBSGameFlowSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	const UBSGameSettings* Settings = GetDefault<UBSGameSettings>();
 	if (!Settings) return;
 	MapData = Settings->MapData.LoadSynchronous();
-	
+
 	//세션 델리게이트 등록
 	UGameInstance* GameInstance = GetGameInstance();
 	if (!IsValid(GameInstance)) return;
-	
+
 	SessionSubsystem = GameInstance->GetSubsystem<UBSSessionSubsystem>();
 	if (!IsValid(SessionSubsystem)) return;
 
@@ -83,12 +84,12 @@ void UBSGameFlowSubsystem::HandlePostLoadMap(UWorld* LoadedWorld)
 }
 
 void UBSGameFlowSubsystem::HandleNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType,
-	const FString& ErrorString)
+                                                const FString& ErrorString)
 {
 	bIsTraveling = false;
 
 	UE_LOG(LogTemp, Error,
-		TEXT("Network Failure: %s"), *ErrorString);
+	       TEXT("Network Failure: %s"), *ErrorString);
 
 	if (IsValid(SessionSubsystem))
 	{
@@ -101,12 +102,12 @@ void UBSGameFlowSubsystem::HandleNetworkFailure(UWorld* World, UNetDriver* NetDr
 }
 
 void UBSGameFlowSubsystem::HandleTravelFailure(UWorld* World, ETravelFailure::Type FailureType,
-	const FString& ErrorString)
+                                               const FString& ErrorString)
 {
 	bIsTraveling = false;
 
 	UE_LOG(LogTemp, Error,
-		TEXT("Travel Failure: %s"), *ErrorString);
+	       TEXT("Travel Failure: %s"), *ErrorString);
 
 	if (IsValid(SessionSubsystem))
 	{
@@ -121,7 +122,7 @@ void UBSGameFlowSubsystem::HandleTravelFailure(UWorld* World, ETravelFailure::Ty
 void UBSGameFlowSubsystem::ServerTravelToStage(EStageIndex StageIndex, EStageSection Section)
 {
 	if (bIsTraveling) return;
-	
+
 	//서버에서 호출됐는지 확인
 	UWorld* World = GetWorld();
 	if (!World || World->GetNetMode() == ENetMode::NM_Client) return;
@@ -148,10 +149,9 @@ void UBSGameFlowSubsystem::ServerTravelToStage(EStageIndex StageIndex, EStageSec
 		}
 	}
 	bIsTraveling = true;
-	
+
 	//맵 이동
 	if (!World->ServerTravel(MapPath + "?listen")) bIsTraveling = false;
-	
 }
 
 void UBSGameFlowSubsystem::HostTravelToLobby()
@@ -173,6 +173,59 @@ void UBSGameFlowSubsystem::HostTravelToLobby()
 	bIsTraveling = true;
 
 	const FString TravelURL = LobbyPath + TEXT("?listen");
+
+	UE_LOG(
+		LogTemp,
+		Warning,
+		TEXT("[Travel][Before] URL=%s, NetMode=%d, NetDriver=%s"),
+		*TravelURL,
+		static_cast<int32>(World->GetNetMode()),
+		World->GetNetDriver()
+		? *World->GetNetDriver()->GetName()
+		: TEXT("NULL")
+	);
+	const bool bTravelStarted = World->ServerTravel(TravelURL);
+	UE_LOG(
+		LogTemp,
+		Warning,
+		TEXT("[Travel] ServerTravel Result=%s"),
+		bTravelStarted ? TEXT("true") : TEXT("false")
+	);
+
+	if (AGameModeBase* GameMode = GetWorld()->GetAuthGameMode())
+	{
+		UE_LOG(
+			LogTemp,
+			Warning,
+			TEXT("[TravelDebug] World=%s | WorldType=%d | GameMode=%s | "
+				 "WorldNetMode=%d | GameModeNetMode=%d | "
+				 "WorldNetDriver=%s | bUseSeamlessTravel=%d"),
+			World ? *World->GetName() : TEXT("NULL"),
+			World ? static_cast<int32>(World->WorldType) : -1,
+			GameMode ? *GameMode->GetName() : TEXT("NULL"),
+			World ? static_cast<int32>(World->GetNetMode()) : -1,
+			GameMode ? static_cast<int32>(GameMode->GetNetMode()) : -1,
+			World && World->GetNetDriver()
+				? *World->GetNetDriver()->GetName()
+				: TEXT("NULL"),
+			GameMode ? GameMode->bUseSeamlessTravel : false);
+
+		UE_LOG(
+	LogTemp,
+	Warning,
+	TEXT("[TravelDebug] WorldPtr=%p GameModeWorldPtr=%p"),
+	World,
+	GameMode ? GameMode->GetWorld() : nullptr
+);
+
+
+	}
+	UE_LOG(
+LogTemp,
+Warning,
+TEXT("[TravelDebug] NextURL=%s"),
+*World->NextURL
+);
 	if (!World->ServerTravel(TravelURL)) bIsTraveling = false;
 }
 
